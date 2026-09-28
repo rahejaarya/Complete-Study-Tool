@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <aside class="sidebar">
+
+            <div class="logo">
+                <div class="logo-mark">✦</div>
+                <span>StudyTool</span>
+            </div>
+
+            <nav class="navigation">
+
+                <a href="/" class="nav-link">
+                    <span class="nav-icon">▦</span>
+                    Dashboard
+                </a>
+
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">⌕</span>
+                    Study Resources
+                </a>
+
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">◷</span>
+                    Focus Mode
+                </a>
+
+                <a href="#" class="nav-link active">
+                    <span class="nav-icon">✓</span>
+                    Time Management
+                </a>
+
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">♡</span>
+                    Student Support
+                </a>
+
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">♪</span>
+                    Focus Sounds
+                </a>
+
+            </nav>
+
+            <div class="sidebar-bottom">
+
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">⚙</span>
+                    Settings
+                </a>
+
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">?</span>
+                    Help
+                </a>
+
+            </div>
+
+        </aside>
+
+        <main class="main-content">
+
+            <header class="topbar">
+
+                <button class="mobile-menu">☰</button>
+
+                <div class="welcome">
+
+                    <div class="welcome-icon">
+                        ⏱
+                    </div>
+
+                    <div>
+                        <h1>Time Management</h1>
+                        <p>Plan smarter, study better, stay balanced.</p>
+                    </div>
+
+                </div>
+
+                <div class="top-actions">
+                    <button>＋</button>
+                    <button>ϟ</button>
+                    <button>♧</button>
+                </div>
+
+            </header>
+
+            <section class="dashboard">
+
+                <div class="main-card study-card">
+
+                    <div class="eyebrow">
+                        STUDY PLAN
+                    </div>
+
+                    <h2>Build a routine that fits your week.</h2>
+
+                    <p>
+                        Stay consistent with focused blocks, clear priorities, and intentional breaks.
+                    </p>
+
+                    <div class="search-box">
+
+                        <span class="search-icon">⌕</span>
+
+                        <span>
+                            Plan your next study session...
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="section-heading">
+                    <h2>Quick Start</h2>
+                </div>
+
+                <div class="feature-grid">
+
+                    <div class="feature-card">
+
+                        <div class="feature-icon time-icon">
+                            ✓
+                        </div>
+
+                        <div class="feature-content">
+
+                            <h3>Top Priorities</h3>
+
+                            <p>
+                                Choose the three most important tasks for today.
+                            </p>
+
+                        </div>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+                    <div class="feature-card">
+
+                        <div class="feature-icon focus-icon">
+                            ◷
+                        </div>
+
+                        <div class="feature-content">
+
+                            <h3>Pomodoro Method</h3>
+
+                            <p>
+                                Work for 50 minutes, then take a 10-minute break.
+                            </p>
+
+                        </div>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+                    <div class="feature-card">
+
+                        <div class="feature-icon resources-icon">
+                            📚
+                        </div>
+
+                        <div class="feature-content">
+
+                            <h3>Study Blocks</h3>
+
+                            <p>
+                                Split big tasks into short, manageable sessions.
+                            </p>
+
+                        </div>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+                    <div class="feature-card">
+
+                        <div class="feature-icon support-icon">
+                            ♡
+                        </div>
+
+                        <div class="feature-content">
+
+                            <h3>Healthy Balance</h3>
+
+                            <p>
+                                Protect your energy and avoid burnout with rest.
+                            </p>
+
+                        </div>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="lower-grid">
+
+                    <div class="main-card progress-card">
+
+                        <div class="card-header">
+
+                            <div>
+
+                                <div class="eyebrow">
+                                    WEEKLY FLOW
+                                </div>
+
+                                <h2>This Week</h2>
+
+                            </div>
+
+                            <span class="card-arrow">
+                                →
+                            </span>
+
+                        </div>
+
+                        <div class="progress-chart">
+
+                            <div class="chart-day">
+                                <div class="bar bar-1"></div>
+                                <span>Mon</span>
+                            </div>
+
+                            <div class="chart-day">
+                                <div class="bar bar-2"></div>
+                                <span>Tue</span>
+                            </div>
+
+                            <div class="chart-day">
+                                <div class="bar bar-3"></div>
+                                <span>Wed</span>
+                            </div>
+
+                            <div class="chart-day">
+                                <div class="bar bar-4"></div>
+                                <span>Thu</span>
+                            </div>
+
+                            <div class="chart-day">
+                                <div class="bar bar-5"></div>
+                                <span>Fri</span>
+                            </div>
+
+                            <div class="chart-day">
+                                <div class="bar bar-6"></div>
+                                <span>Sat</span>
+                            </div>
+
+                            <div class="chart-day">
+                                <div class="bar bar-7"></div>
+                                <span>Sun</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="main-card motivation-card">
+
+                        <div class="eyebrow">
+                            FOCUS REMINDER
+                        </div>
+
+                        <h2>
+                            Consistency beats intensity.
+                        </h2>
+
+                        <p>
+                            A realistic schedule is easier to keep and leads to better results.
+                        </p>
+
+                        <div class="motivation-message">
+                            ✦ Protect your study time
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="main-card activity-card">
+
+                    <div class="card-header">
+
+                        <div>
+
+                            <div class="eyebrow">
+                                DAILY ROUTINE
+                            </div>
+
+                            <h2>Your study rhythm</h2>
+
+                        </div>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+                    <div class="empty-activity">
+
+                        <div class="activity-icon">
+                            ◷
+                        </div>
+
+                        <div>
+
+                            <h3>Suggested plan</h3>
+
+                            <p>
+                                9:00 AM - review notes, 1:00 PM - assignments, 6:30 PM - recap and reset.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <nav class="mobile-navigation">
+
+        <a href="/" class="mobile-link active">
+            <span>▦</span>
+            <small>Home</small>
+        </a>
+
+        <a href="#" class="mobile-link">
+            <span>📚</span>
+            <small>Resources</small>
+        </a>
+
+        <a href="#" class="mobile-link">
+            <span>◷</span>
+            <small>Focus</small>
+        </a>
+
+        <a href="#" class="mobile-link">
+            <span>✓</span>
+            <small>Tasks</small>
+        </a>
+
+        <a href="#" class="mobile-link">
+            <span>♡</span>
+            <small>Support</small>
+        </a>
+
+    </nav>
+
+</body>
+</html>

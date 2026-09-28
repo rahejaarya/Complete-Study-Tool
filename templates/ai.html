@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Study Help - StudyTool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+
+            <div class="logo">
+                <div class="logo-mark">✦</div>
+                <span>StudyTool</span>
+            </div>
+
+            <nav class="navigation">
+
+                <a href="{{ url_for('home') }}" class="nav-link">
+                    <span class="nav-icon">▦</span>
+                    Dashboard
+                </a>
+
+                <a href="{{ url_for('resources') }}" class="nav-link">
+                    <span class="nav-icon">⌕</span>
+                    Study Resources
+                </a>
+
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">◷</span>
+                    Focus Mode
+                </a>
+
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">✓</span>
+                    Time Management
+                </a>
+
+                <a href="{{ url_for('support') }}" class="nav-link">
+                    <span class="nav-icon">♡</span>
+                    Student Support
+                </a>
+
+                <a href="{{ url_for('ai_help') }}" class="nav-link active">
+                    <span class="nav-icon">♪</span>
+                    AI Study Help
+                </a>
+
+            </nav>
+
+            <div class="sidebar-bottom">
+
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">⚙</span>
+                    Settings
+                </a>
+
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">?</span>
+                    Help
+                </a>
+
+            </div>
+
+        </aside>
+
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Top Bar -->
+            <header class="topbar">
+
+                <button class="mobile-menu">☰</button>
+
+                <div class="welcome">
+
+                    <div class="welcome-icon">
+                        ♪
+                    </div>
+
+                    <div>
+                        <h1>AI Study Help</h1>
+                        <p>Get assistance with your homework, summaries, and revision</p>
+                    </div>
+
+                </div>
+
+                <div class="top-actions">
+                    <button>＋</button>
+                    <button>ϟ</button>
+                    <button>♧</button>
+                </div>
+
+            </header>
+
+
+            <!-- Dashboard / Tools Section -->
+            <section class="dashboard">
+
+                <!-- Prompt Input Box -->
+                <div class="main-card study-card">
+
+                    <div class="eyebrow">
+                        AI ASSISTANT
+                    </div>
+
+                    <h2>Ask a question or request notes summary</h2>
+
+                    <p>
+                        Type your prompt below to get instant study help.
+                    </p>
+
+                    <div class="search-box">
+
+                        <span class="search-icon">♪</span>
+
+                        <input 
+                            type="text" 
+                            placeholder="Explain quantum mechanics simply or summarize my notes..." 
+                            style="border:none; background:transparent; width:100%; outline:none; font-size:14px; color:var(--text);"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- Quick Start AI Tools -->
+                <div class="section-heading">
+                    <h2>AI Features</h2>
+                </div>
+
+
+                <div class="feature-grid">
+
+                    <!-- Summarize -->
+                    <div class="feature-card">
+
+                        <div class="feature-icon resources-icon">
+                            📝
+                        </div>
+
+                        <div class="feature-content">
+
+                            <h3>Text Summarizer</h3>
+
+                            <p>
+                                Convert long readings into bulleted study points.
+                            </p>
+
+                        </div>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+
+                    <!-- Flashcard Generator -->
+                    <div class="feature-card">
+
+                        <div class="feature-icon focus-icon">
+                            🗂
+                        </div>
+
+                        <div class="feature-content">
+
+                            <h3>Flashcard Generator</h3>
+
+                            <p>
+                                Automatically generate flashcard decks from topics.
+                            </p>
+
+                        </div>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+
+                    <!-- Math Helper -->
+                    <div class="feature-card">
+
+                        <div class="feature-icon time-icon">
+                            📐
+                        </div>
+
+                        <div class="feature-content">
+
+                            <h3>Problem Solver</h3>
+
+                            <p>
+                                Step-by-step solutions for complex math equations.
+                            </p>
+
+                        </div>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+
+                    <!-- Quiz Generator -->
+                    <div class="feature-card">
+
+                        <div class="feature-icon support-icon">
+                            ❓
+                        </div>
+
+                        <div class="feature-content">
+
+                            <h3>Practice Quizzer</h3>
+
+                            <p>
+                                Generate practice questions to test your knowledge.
+                            </p>
+
+                        </div>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-navigation">
+
+        <a href="{{ url_for('home') }}" class="mobile-link">
+            <span>▦</span>
+            <small>Home</small>
+        </a>
+
+        <a href="{{ url_for('resources') }}" class="mobile-link">
+            <span>📚</span>
+            <small>Resources</small>
+        </a>
+
+        <a href="#" class="mobile-link">
+            <span>◷</span>
+            <small>Focus</small>
+        </a>
+
+        <a href="#" class="mobile-link">
+            <span>✓</span>
+            <small>Tasks</small>
+        </a>
+
+        <a href="{{ url_for('support') }}" class="mobile-link">
+            <span>♡</span>
+            <small>Support</small>
+        </a>
+
+    </nav>
+
+</body>
+</html>

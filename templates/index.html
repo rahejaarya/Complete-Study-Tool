@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Complete Study Tool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+
+            <div class="logo">
+                <div class="logo-mark">✦</div>
+                <span>StudyTool</span>
+            </div>
+
+            <nav class="navigation">
+
+                <a href="{{ url_for('home') }}" class="nav-link active">
+                    <span class="nav-icon">▦</span>
+                    Dashboard
+                </a>
+
+                <a href="{{ url_for('resources') }}" class="nav-link">
+                    <span class="nav-icon">⌕</span>
+                    Study Resources
+                </a>
+
+                <a href="{{ url_for('focus') }}" class="nav-link">
+                    <span class="nav-icon">◷</span>
+                    Focus Mode
+                </a>
+
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">✓</span>
+                    Time Management
+                </a>
+
+                <a href="{{ url_for('support') }}" class="nav-link">
+                    <span class="nav-icon">♡</span>
+                    Student Support
+                </a>
+
+                <a href="{{ url_for('ai_help') }}" class="nav-link">
+                    <span class="nav-icon">♪</span>
+                    AI Study Help
+                </a>
+
+            </nav>
+
+            <div class="sidebar-bottom">
+
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">⚙</span>
+                    Settings
+                </a>
+
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">?</span>
+                    Help
+                </a>
+
+            </div>
+
+        </aside>
+
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Top Bar -->
+            <header class="topbar">
+
+                <button class="mobile-menu">☰</button>
+
+                <div class="welcome">
+
+                    <div class="welcome-icon">
+                        ☀
+                    </div>
+
+                    <div>
+                        <h1>Welcome back, User</h1>
+                        <p>Ready to make some progress?</p>
+                    </div>
+
+                </div>
+
+                <div class="top-actions">
+                    <button>＋</button>
+                    <button>ϟ</button>
+                    <button>♧</button>
+                </div>
+
+            </header>
+
+
+            <!-- Dashboard -->
+            <section class="dashboard">
+
+                <!-- Study Search Form -->
+                <div class="main-card study-card">
+
+                    <div class="eyebrow">
+                        STUDY TODAY
+                    </div>
+
+                    <h2>What are you working on?</h2>
+
+                    <p>
+                        Find resources and tools to help you study.
+                    </p>
+
+                    <form action="{{ url_for('resources') }}" method="GET" class="search-box">
+                        <span class="search-icon">⌕</span>
+                        <input 
+                            type="text" 
+                            name="query" 
+                            placeholder="Search for a subject or topic..." 
+                            style="border:none; background:transparent; width:100%; outline:none; font-size:14px; color:var(--text);"
+                        >
+                    </form>
+
+                </div>
+
+
+                <!-- Quick Start -->
+                <div class="section-heading">
+                    <h2>Quick Start</h2>
+                </div>
+
+
+                <div class="feature-grid">
+
+                    <!-- Resources (Clickable) -->
+                    <a href="{{ url_for('resources') }}" style="text-decoration: none; color: inherit; display: block;">
+                        <div class="feature-card">
+
+                            <div class="feature-icon resources-icon">
+                                📚
+                            </div>
+
+                            <div class="feature-content">
+
+                                <h3>Study Resources</h3>
+
+                                <p>
+                                    Find free notes, videos and study materials.
+                                </p>
+
+                            </div>
+
+                            <span class="card-arrow">
+                                →
+                            </span>
+
+                        </div>
+                    </a>
+
+
+                    <!-- Focus Mode -->
+                    <a href="{{ url_for('focus') }}" style="text-decoration: none; color: inherit; display: block;">
+                    <div class="feature-card">
+
+                        <div class="feature-icon focus-icon">
+                            ◷
+                        </div>
+
+                        <div class="feature-content">
+
+                            <h3>Focus Mode</h3>
+
+                            <p>
+                                Stay focused and reduce distractions.
+                            </p>
+
+                        </div>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </div>
+                    </a>
+
+
+                    <!-- Time Management (Unclickable) -->
+                    
+                    <a href="timeManagement.html" style="text-decoration: none; color: inherit; display: block;">
+                    <div class="feature-card">
+
+                        <div class="feature-icon time-icon">
+                            ✓
+                        </div>
+
+                        <div class="feature-content">
+                                <h3 type="submit" class="text-button">Time Management</h3>
+                            <p>
+                                Plan your study time and tasks.
+                            </p>
+                        </div>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </div>
+                    </a>
+
+                    <!-- Support (Clickable) -->
+                    <a href="{{ url_for('support') }}" style="text-decoration: none; color: inherit; display: block;">
+                        <div class="feature-card">
+
+                            <div class="feature-icon support-icon">
+                                ♡
+                            </div>
+
+                            <div class="feature-content">
+
+                                <h3>Student Support</h3>
+
+                                <p>
+                                    Find information and trusted resources.
+                                </p>
+
+                            </div>
+
+                            <span class="card-arrow">
+                                →
+                            </span>
+
+                        </div>
+                    </a>
+
+                </div>
+
+
+                <!-- Lower Cards -->
+                <div class="lower-grid">
+
+                    <!-- Progress -->
+                    <div class="main-card progress-card">
+
+                        <div class="card-header">
+
+                            <div>
+
+                                <div class="eyebrow">
+                                    MY PROGRESS
+                                </div>
+
+                                <h2>This Week</h2>
+
+                            </div>
+
+                            <span class="card-arrow">
+                                →
+                            </span>
+
+                        </div>
+
+
+                        <div class="progress-chart">
+
+                            <div class="chart-day">
+                                <div class="bar bar-1"></div>
+                                <span>Mon</span>
+                            </div>
+
+                            <div class="chart-day">
+                                <div class="bar bar-2"></div>
+                                <span>Tue</span>
+                            </div>
+
+                            <div class="chart-day">
+                                <div class="bar bar-3"></div>
+                                <span>Wed</span>
+                            </div>
+
+                            <div class="chart-day">
+                                <div class="bar bar-4"></div>
+                                <span>Thu</span>
+                            </div>
+
+                            <div class="chart-day">
+                                <div class="bar bar-5"></div>
+                                <span>Fri</span>
+                            </div>
+
+                            <div class="chart-day">
+                                <div class="bar bar-6"></div>
+                                <span>Sat</span>
+                            </div>
+
+                            <div class="chart-day">
+                                <div class="bar bar-7"></div>
+                                <span>Sun</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Motivation -->
+                    <div class="main-card motivation-card">
+
+                        <div class="eyebrow">
+                            KEEP GOING
+                        </div>
+
+                        <h2>
+                            Small progress adds up.
+                        </h2>
+
+                        <p>
+                            Stay consistent, take breaks,
+                            and keep moving forward.
+                        </p>
+
+                        <div class="motivation-message">
+                            ✦ Your progress matters
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Recent Activity -->
+                <div class="main-card activity-card">
+
+                    <div class="card-header">
+
+                        <div>
+
+                            <div class="eyebrow">
+                                RECENT ACTIVITY
+                            </div>
+
+                            <h2>Your study activity</h2>
+
+                        </div>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+
+                    <div class="empty-activity">
+
+                        <div class="activity-icon">
+                            ◷
+                        </div>
+
+                        <div>
+
+                            <h3>No activity yet</h3>
+
+                            <p>
+                                Start studying to see your progress here.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-navigation">
+
+        <a href="{{ url_for('home') }}" class="mobile-link active">
+            <span>▦</span>
+            <small>Home</small>
+        </a>
+
+        <a href="{{ url_for('resources') }}" class="mobile-link">
+            <span>📚</span>
+            <small>Resources</small>
+        </a>
+
+        <a href="{{ url_for('focus') }}" class="mobile-link">
+            <span>◷</span>
+            <small>Focus</small>
+        </a>
+
+        <a href="#" class="mobile-link">
+            <span>✓</span>
+            <small>Tasks</small>
+        </a>
+
+        <a href="{{ url_for('support') }}" class="mobile-link">
+            <span>♡</span>
+            <small>Support</small>
+        </a>
+
+    </nav>
+
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Support - StudyTool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-mark">✦</div>
+                <span>StudyTool</span>
+            </div>
+
+            <nav class="navigation">
+                <a href="{{ url_for('home') }}" class="nav-link">
+                    <span class="nav-icon">▦</span>
+                    Dashboard
+                </a>
+                <a href="{{ url_for('resources') }}" class="nav-link">
+                    <span class="nav-icon">⌕</span>
+                    Study Resources
+                </a>
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">◷</span>
+                    Focus Mode
+                </a>
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">✓</span>
+                    Time Management
+                </a>
+                <a href="{{ url_for('support') }}" class="nav-link active">
+                    <span class="nav-icon">♡</span>
+                    Student Support
+                </a>
+                <a href="{{ url_for('ai_help') }}" class="nav-link">
+                    <span class="nav-icon">♪</span>
+                    AI Study Help
+                </a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">⚙</span>
+                    Settings
+                </a>
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">?</span>
+                    Help
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <header class="topbar">
+                <button class="mobile-menu">☰</button>
+                <div class="welcome">
+                    <div class="welcome-icon">♡</div>
+                    <div>
+                        <h1>Student Support</h1>
+                        <p>Guidance, wellbeing, and academic assistance</p>
+                    </div>
+                </div>
+            </header>
+
+            <section class="dashboard">
+
+                <div class="main-card study-card">
+                    <div class="eyebrow">HELP & WELLBEING</div>
+                    <h2>How can we assist you today?</h2>
+                    <p>Access campus resources, academic advisors, and student guidance tools.</p>
+                </div>
+
+                <div class="feature-grid">
+
+                    <div class="feature-card">
+                        <div class="feature-icon support-icon">💬</div>
+                        <div class="feature-content">
+                            <h3>Academic Advising</h3>
+                            <p>Connect with counselors for course planning and degree tracking.</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon support-icon">🧘</div>
+                        <div class="feature-content">
+                            <h3>Mental Health & Wellness</h3>
+                            <p>Find free mindfulness tools and support services.</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon support-icon">📖</div>
+                        <div class="feature-content">
+                            <h3>Tutoring Network</h3>
+                            <p>Join peer study groups or get 1-on-1 subject tutoring.</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon support-icon">✉</div>
+                        <div class="feature-content">
+                            <h3>Contact Support</h3>
+                            <p>Reach out to the student helpdesk directly.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-navigation">
+        <a href="{{ url_for('home') }}" class="mobile-link">
+            <span>▦</span>
+            <small>Home</small>
+        </a>
+        <a href="{{ url_for('resources') }}" class="mobile-link">
+            <span>📚</span>
+            <small>Resources</small>
+        </a>
+        <a href="#" class="mobile-link">
+            <span>◷</span>
+            <small>Focus</small>
+        </a>
+        <a href="#" class="mobile-link">
+            <span>✓</span>
+            <small>Tasks</small>
+        </a>
+        <a href="{{ url_for('support') }}" class="mobile-link active">
+            <span>♡</span>
+            <small>Support</small>
+        </a>
+    </nav>
+
+</body>
+</html>
