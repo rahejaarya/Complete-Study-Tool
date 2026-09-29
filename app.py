@@ -1,6 +1,6 @@
 import json
 import os
-from flask import Flask, render_template, request
+from flask import Flask, redirect, render_template, request
 
 app = Flask(__name__)
 
@@ -44,6 +44,10 @@ def schedule():
 @app.route("/time-management")
 def time_management():
     return render_template("time_management.html")
+
+@app.route("/timeManagement.html")
+def legacy_time_management():
+    return redirect("/time-management", code=301)
 
 @app.route("/support")
 def support():
