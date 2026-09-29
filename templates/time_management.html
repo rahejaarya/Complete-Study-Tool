@@ -328,6 +328,7 @@
             const eventStorageKey = "studytool_time_management_events_v1";
 
             let selectedPreset = { work: 25, rest: 5, name: "Pomodoro Technique" };
+            let sessionPhase = "work";
             let remainingSeconds = selectedPreset.work * 60;
             let timerInterval;
             let storageAvailable = true;
@@ -342,6 +343,11 @@
                 timerReadout.textContent = formatTime(remainingSeconds);
             }
 
+            function renderSessionLabel() {
+                const phaseLabel = sessionPhase === "work" ? "Work session" : "Break";
+                timerLabel.textContent = `${selectedPreset.name} · ${phaseLabel} (${selectedPreset.work} min work / ${selectedPreset.rest} min break)`;
+            }
+
             function stopTimer() {
                 window.clearInterval(timerInterval);
                 timerInterval = undefined;
@@ -353,7 +359,7 @@
                 if (timerInterval || remainingSeconds <= 0) {
                     return;
                 }
-                timerStatus.textContent = `${selectedPreset.name} in progress.`;
+                timerStatus.textContent = `${selectedPreset.name} ${sessionPhase === "work" ? "study" : "break"} session in progress.`;
                 startButton.disabled = true;
                 pauseButton.disabled = false;
                 timerInterval = window.setInterval(() => {
@@ -362,8 +368,21 @@
                     if (remainingSeconds <= 0) {
                         remainingSeconds = 0;
                         renderTimer();
+                        if (sessionPhase === "work") {
+                            sessionPhase = "break";
+                            remainingSeconds = selectedPreset.rest * 60;
+                            renderSessionLabel();
+                            renderTimer();
+                            timerStatus.textContent = "Study session complete. Your break has started.";
+                            return;
+                        }
+
                         stopTimer();
-                        timerStatus.textContent = "Session complete. Take your planned break!";
+                        sessionPhase = "work";
+                        remainingSeconds = selectedPreset.work * 60;
+                        renderSessionLabel();
+                        renderTimer();
+                        timerStatus.textContent = "Break complete. Start your next study session when you are ready.";
                     }
                 }, 1000);
             }
@@ -373,12 +392,14 @@
                     return;
                 }
                 stopTimer();
-                timerStatus.textContent = "Timer paused.";
+                timerStatus.textContent = `Timer paused during your ${sessionPhase === "work" ? "study session" : "break"}.`;
             }
 
             function resetTimer() {
                 stopTimer();
+                sessionPhase = "work";
                 remainingSeconds = selectedPreset.work * 60;
+                renderSessionLabel();
                 renderTimer();
                 timerStatus.textContent = "Timer reset. Ready when you are.";
             }
@@ -397,7 +418,6 @@
                         rest: Number(button.dataset.break),
                         name: button.dataset.name
                     };
-                    timerLabel.textContent = `${selectedPreset.name} · Work session (${selectedPreset.work} min work / ${selectedPreset.rest} min break)`;
                     resetTimer();
                 });
             });
@@ -418,7 +438,6 @@
                     rest: Number(customBreakInput.value),
                     name: "Custom Session"
                 };
-                timerLabel.textContent = `Custom Session · Work session (${selectedPreset.work} min work / ${selectedPreset.rest} min break)`;
                 resetTimer();
                 timerStatus.textContent = "Custom study and break times applied.";
             });
