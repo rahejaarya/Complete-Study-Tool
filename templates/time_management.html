@@ -117,6 +117,21 @@
                             <span>Advanced deep-work blocks</span>
                         </button>
                     </div>
+                    <form id="custom-preset-form" class="custom-preset-form">
+                        <div class="custom-preset-copy">
+                            <h3>Make your own timer</h3>
+                            <p>Choose the study and break lengths that work for you.</p>
+                        </div>
+                        <label>
+                            <span>Study minutes</span>
+                            <input id="custom-work-minutes" name="workMinutes" type="number" min="1" max="180" step="1" value="10" required>
+                        </label>
+                        <label>
+                            <span>Break minutes</span>
+                            <input id="custom-break-minutes" name="breakMinutes" type="number" min="1" max="60" step="1" value="5" required>
+                        </label>
+                        <button class="timer-button timer-button-primary" type="submit">Use custom times</button>
+                    </form>
                     <p class="timer-note">The timer counts down the work session. Use the paired break length as a reminder to step away and recharge.</p>
                 </section>
 
@@ -300,6 +315,9 @@
             const pauseButton = document.getElementById("timer-pause");
             const resetButton = document.getElementById("timer-reset");
             const presetButtons = Array.from(document.querySelectorAll(".preset-button"));
+            const customPresetForm = document.getElementById("custom-preset-form");
+            const customWorkInput = document.getElementById("custom-work-minutes");
+            const customBreakInput = document.getElementById("custom-break-minutes");
             const plannerForm = document.getElementById("planner-form");
             const plannerTitle = document.getElementById("planner-title");
             const plannerType = document.getElementById("planner-type");
@@ -371,6 +389,7 @@
                         preset.classList.remove("is-active");
                         preset.setAttribute("aria-pressed", "false");
                     });
+                    customPresetForm.classList.remove("is-active");
                     button.classList.add("is-active");
                     button.setAttribute("aria-pressed", "true");
                     selectedPreset = {
@@ -381,6 +400,27 @@
                     timerLabel.textContent = `${selectedPreset.name} · Work session (${selectedPreset.work} min work / ${selectedPreset.rest} min break)`;
                     resetTimer();
                 });
+            });
+
+            customPresetForm.addEventListener("submit", (submitEvent) => {
+                submitEvent.preventDefault();
+                if (!customPresetForm.reportValidity()) {
+                    return;
+                }
+
+                presetButtons.forEach((preset) => {
+                    preset.classList.remove("is-active");
+                    preset.setAttribute("aria-pressed", "false");
+                });
+                customPresetForm.classList.add("is-active");
+                selectedPreset = {
+                    work: Number(customWorkInput.value),
+                    rest: Number(customBreakInput.value),
+                    name: "Custom Session"
+                };
+                timerLabel.textContent = `Custom Session · Work session (${selectedPreset.work} min work / ${selectedPreset.rest} min break)`;
+                resetTimer();
+                timerStatus.textContent = "Custom study and break times applied.";
             });
 
             startButton.addEventListener("click", startTimer);

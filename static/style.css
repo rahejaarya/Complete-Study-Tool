@@ -1124,6 +1124,65 @@ body {
     font-weight: 700;
 }
 
+.custom-preset-form {
+    margin-top: 14px;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: minmax(200px, 1fr) minmax(105px, 150px) minmax(105px, 150px) auto;
+    align-items: end;
+    gap: 11px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: #fbfaff;
+    text-align: left;
+}
+
+.custom-preset-form.is-active {
+    border-color: var(--purple);
+    background: var(--purple-light);
+    box-shadow: 0 0 0 1px var(--purple);
+}
+
+.custom-preset-copy h3 {
+    font-size: 14px;
+}
+
+.custom-preset-copy p {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.custom-preset-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.custom-preset-form label span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.custom-preset-form input {
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--white);
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+}
+
+.custom-preset-form input:focus {
+    border-color: var(--purple);
+    outline: 2px solid var(--purple-light);
+}
+
 .timer-note {
     margin-top: 15px;
     font-size: 12px;
@@ -1426,6 +1485,15 @@ body {
     .planner-submit {
         grid-column: 1 / -1;
     }
+
+    .custom-preset-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .custom-preset-copy,
+    .custom-preset-form > button {
+        grid-column: 1 / -1;
+    }
 }
 
 @media (max-width: 700px) {
@@ -1445,6 +1513,15 @@ body {
 
     .preset-button {
         min-height: 88px;
+    }
+
+    .custom-preset-form {
+        grid-template-columns: 1fr;
+    }
+
+    .custom-preset-copy,
+    .custom-preset-form > button {
+        grid-column: auto;
     }
 
     .schedule-section-header {
