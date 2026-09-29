@@ -673,35 +673,77 @@ body {
         );
 }
 
-
 .motivation-card h2 {
-    max-width: 260px;
-
-    font-size: 26px;
-
-    line-height: 1.25;
+    max-width: none;
+    font-size: 20px;
 }
 
-
-.motivation-card p {
-    color: var(--muted);
-
-    line-height: 1.55;
-
-    font-size: 14px;
-
-    margin-top: 12px;
+.quote-slide {
+    min-height: 112px;
+    margin: 14px 0 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: opacity 180ms ease;
 }
 
+.quote-slide.is-changing {
+    opacity: 0;
+}
 
-.motivation-message {
-    margin-top: 30px;
-
-    color: var(--purple);
-
-    font-size: 13px;
-
+.quote-slide p {
+    color: var(--text);
+    font-size: 18px;
     font-weight: 600;
+    line-height: 1.45;
+}
+
+.quote-slide cite {
+    color: var(--muted);
+    font-size: 14px;
+    font-style: normal;
+    margin-top: 10px;
+}
+
+.quote-controls {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.quote-progress {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.quote-toggle {
+    padding: 7px 12px;
+    border: 1px solid rgba(118, 101, 216, 0.25);
+    border-radius: 10px;
+    background: var(--white);
+    color: var(--purple);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.quote-toggle:hover,
+.quote-toggle:focus-visible {
+    background: var(--purple-light);
+}
+
+.quote-toggle:focus-visible {
+    outline: 2px solid var(--purple);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .quote-slide {
+        transition: none;
+    }
 }
 
 
