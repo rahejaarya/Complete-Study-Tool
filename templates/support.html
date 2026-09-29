@@ -27,11 +27,11 @@
                     <span class="nav-icon">⌕</span>
                     Study Resources
                 </a>
-                <a href="#" class="nav-link">
+                <a href="{{ url_for('focus') }}" class="nav-link">
                     <span class="nav-icon">◷</span>
                     Focus Mode
                 </a>
-                <a href="#" class="nav-link">
+                <a href="{{ url_for('time_management') }}" class="nav-link">
                     <span class="nav-icon">✓</span>
                     Time Management
                 </a>
@@ -73,47 +73,106 @@
 
             <section class="dashboard">
 
-                <div class="main-card study-card">
-                    <div class="eyebrow">HELP & WELLBEING</div>
-                    <h2>How can we assist you today?</h2>
-                    <p>Access campus resources, academic advisors, and student guidance tools.</p>
+                <section class="main-card support-emergency" aria-labelledby="emergency-title">
+                    <div class="emergency-heading">
+                        <span class="emergency-icon" aria-hidden="true">!</span>
+                        <div>
+                            <div class="eyebrow">YOU ARE NOT ALONE</div>
+                            <h2 id="emergency-title">Need Immediate Help? Confidential 24/7 Crisis Helplines</h2>
+                        </div>
+                    </div>
+                    <p class="emergency-intro">If you or someone else may be in immediate danger, call emergency services. For confidential support, contact a crisis line below.</p>
+                    <div class="helpline-grid">
+                        <a class="helpline-badge" href="tel:988">
+                            <strong>988 Suicide &amp; Crisis Lifeline</strong>
+                            <span>Call/Text 988</span>
+                        </a>
+                        <a class="helpline-badge" href="sms:741741?body=HOME">
+                            <strong>Crisis Text Line</strong>
+                            <span>Text HOME to 741741</span>
+                        </a>
+                        <a class="helpline-badge" href="tel:18006624357">
+                            <strong>SAMHSA Hotline</strong>
+                            <span>Call 1-800-662-4357</span>
+                        </a>
+                    </div>
+                </section>
+
+                <div class="section-heading support-section-heading">
+                    <h2>What would you like help with?</h2>
+                    <p>Explore practical, judgment-free guidance for school and life.</p>
                 </div>
 
                 <div class="feature-grid">
 
                     <div class="feature-card">
-                        <div class="feature-icon support-icon">💬</div>
+                        <div class="feature-icon support-icon" aria-hidden="true">⏳</div>
                         <div class="feature-content">
-                            <h3>Academic Advising</h3>
-                            <p>Connect with counselors for course planning and degree tracking.</p>
+                            <h3>Procrastination &amp; Focus</h3>
+                            <p>Overcome burnout, get started on tough tasks, and try manageable 15-minute micro-steps.</p>
                         </div>
+                        <span class="card-arrow" aria-hidden="true">→</span>
                     </div>
 
                     <div class="feature-card">
-                        <div class="feature-icon support-icon">🧘</div>
+                        <div class="feature-icon support-icon" aria-hidden="true">👥</div>
                         <div class="feature-content">
-                            <h3>Mental Health & Wellness</h3>
-                            <p>Find free mindfulness tools and support services.</p>
+                            <h3>Peer Pressure &amp; Boundaries</h3>
+                            <p>Find practical strategies and scripts for saying what feels right for you.</p>
                         </div>
+                        <span class="card-arrow" aria-hidden="true">→</span>
                     </div>
 
                     <div class="feature-card">
-                        <div class="feature-icon support-icon">📖</div>
+                        <div class="feature-icon support-icon" aria-hidden="true">🛑</div>
                         <div class="feature-content">
-                            <h3>Tutoring Network</h3>
-                            <p>Join peer study groups or get 1-on-1 subject tutoring.</p>
+                            <h3>Bullying &amp; Cyberbullying</h3>
+                            <p>Learn to document online incidents, report safely, and protect your privacy.</p>
                         </div>
+                        <span class="card-arrow" aria-hidden="true">→</span>
                     </div>
 
                     <div class="feature-card">
-                        <div class="feature-icon support-icon">✉</div>
+                        <div class="feature-icon support-icon" aria-hidden="true">🧠</div>
                         <div class="feature-content">
-                            <h3>Contact Support</h3>
-                            <p>Reach out to the student helpdesk directly.</p>
+                            <h3>Mental Health &amp; Mood</h3>
+                            <p>Try grounding exercises, manage anxiety, and find professional support.</p>
                         </div>
+                        <span class="card-arrow" aria-hidden="true">→</span>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon support-icon" aria-hidden="true">🚭</div>
+                        <div class="feature-content">
+                            <h3>Substance Awareness</h3>
+                            <p>Get unbiased facts about vaping, alcohol, and drugs, plus non-judgmental ways to get support.</p>
+                        </div>
+                        <span class="card-arrow" aria-hidden="true">→</span>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon support-icon" aria-hidden="true">🔋</div>
+                        <div class="feature-content">
+                            <h3>Academic Burnout</h3>
+                            <p>Balance AP/IB demands, sports, and downtime without sacrificing sleep.</p>
+                        </div>
+                        <span class="card-arrow" aria-hidden="true">→</span>
                     </div>
 
                 </div>
+
+                <section class="main-card grounding-card" aria-labelledby="grounding-title">
+                    <div class="eyebrow">A QUICK RESET</div>
+                    <h2 id="grounding-title">5-4-3-2-1 Sensory Grounding Technique</h2>
+                    <p class="grounding-intro">Pause, take a slow breath, and check off each step as you go.</p>
+                    <ul class="grounding-steps">
+                        <li><label><input type="checkbox"> <span><strong>5</strong> things you see</span></label></li>
+                        <li><label><input type="checkbox"> <span><strong>4</strong> things you feel</span></label></li>
+                        <li><label><input type="checkbox"> <span><strong>3</strong> things you hear</span></label></li>
+                        <li><label><input type="checkbox"> <span><strong>2</strong> things you smell</span></label></li>
+                        <li><label><input type="checkbox"> <span><strong>1</strong> positive thought</span></label></li>
+                    </ul>
+                </section>
 
             </section>
 
@@ -131,17 +190,21 @@
             <span>📚</span>
             <small>Resources</small>
         </a>
-        <a href="#" class="mobile-link">
+        <a href="{{ url_for('focus') }}" class="mobile-link">
             <span>◷</span>
             <small>Focus</small>
         </a>
-        <a href="#" class="mobile-link">
+        <a href="{{ url_for('time_management') }}" class="mobile-link">
             <span>✓</span>
-            <small>Tasks</small>
+            <small>Time</small>
         </a>
         <a href="{{ url_for('support') }}" class="mobile-link active">
             <span>♡</span>
             <small>Support</small>
+        </a>
+        <a href="{{ url_for('ai_help') }}" class="mobile-link">
+            <span>♪</span>
+            <small>AI Help</small>
         </a>
     </nav>
 
