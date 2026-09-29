@@ -301,10 +301,9 @@
                     <section class="main-card motivation-card" aria-label="Motivational quote slideshow">
                         <blockquote class="quote-slide" id="quote-slide" aria-live="polite" aria-atomic="true">
                             <p id="quote-text">Your time is limited, so don't waste it living someone else's life.</p>
-                            <cite id="quote-author">Steve Jobs · Entrepreneur</cite>
+                            <cite id="quote-author">— Steve Jobs · Entrepreneur</cite>
                         </blockquote>
                         <div class="quote-controls">
-                            <span class="quote-progress" id="quote-progress">1 of 30</span>
                             <button class="quote-toggle" id="quote-toggle" type="button" aria-pressed="false">
                                 Pause
                             </button>
@@ -396,43 +395,134 @@
     <script>
         (() => {
             const quotes = [
-                { text: "Your time is limited, so don't waste it living someone else's life.", author: "Steve Jobs · Entrepreneur" },
-                { text: "I've failed over and over and over again in my life. And that is why I succeed.", author: "Michael Jordan · Basketball player" },
-                { text: "A champion is defined by how they recover when they fall.", author: "Serena Williams · Tennis champion" },
-                { text: "You miss 100% of the shots you don't take.", author: "Wayne Gretzky · Hockey player" },
-                { text: "He who is not courageous enough to take risks will accomplish nothing in life.", author: "Muhammad Ali · Boxer" },
-                { text: "A life is not important except in the impact it has on other lives.", author: "Jackie Robinson · Baseball player" },
-                { text: "Champions keep playing until they get it right.", author: "Billie Jean King · Tennis champion" },
-                { text: "The biggest adventure you can take is to live the life of your dreams.", author: "Oprah Winfrey · Media entrepreneur" },
-                { text: "Done is better than perfect.", author: "Sheryl Sandberg · Business leader" },
-                { text: "Well done is better than well said.", author: "Benjamin Franklin · Inventor and statesman" },
-                { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt · Writer and diplomat" },
-                { text: "Alone we can do so little; together we can do so much.", author: "Helen Keller · Author and advocate" },
-                { text: "Nothing will work unless you do.", author: "Maya Angelou · Poet and teacher" },
-                { text: "One child, one teacher, one book, one pen can change the world.", author: "Malala Yousafzai · Education activist" },
-                { text: "Kids don't learn from people they don't like.", author: "Rita Pierson · Teacher" },
-                { text: "Do not let what you cannot do interfere with what you can do.", author: "John Wooden · Teacher and coach" },
-                { text: "It was like a new world opened to me.", author: "Marie Curie · Physicist and chemist" },
-                { text: "You must not fool yourself—and you are the easiest person to fool.", author: "Richard Feynman · Physicist and teacher" },
-                { text: "Like what you do, and then you will do your best.", author: "Katherine Johnson · Mathematician" },
-                { text: "Somewhere, something incredible is waiting to be known.", author: "Carl Sagan · Astronomer and educator" },
-                { text: "That's one small step for a man, one giant leap for mankind.", author: "Neil Armstrong · Astronaut" },
-                { text: "That brain of mine is something more than merely mortal.", author: "Ada Lovelace · Mathematician" },
-                { text: "However difficult life may seem, there is always something you can do and succeed at.", author: "Stephen Hawking · Physicist" },
-                { text: "Education is the most powerful weapon which you can use to change the world.", author: "Nelson Mandela · Teacher and leader" },
-                { text: "If there is no struggle, there is no progress.", author: "Frederick Douglass · Writer and abolitionist" },
-                { text: "The credit belongs to the man who is actually in the arena.", author: "Theodore Roosevelt · President and writer" },
-                { text: "What you do makes a difference.", author: "Jane Goodall · Primatologist" },
-                { text: "Anyone who does anything to help a child is a hero to me.", author: "Fred Rogers · Educator and TV host" },
-                { text: "The only place success comes before work is in the dictionary.", author: "Vince Lombardi · Football coach" },
-                { text: "The most difficult thing is the decision to act; the rest is tenacity.", author: "Amelia Earhart · Aviator" }
+                { text: "Your time is limited, so don't waste it living someone else's life.", author: "— Steve Jobs · Entrepreneur" },
+                { text: "I've failed over and over and over again in my life. And that is why I succeed.", author: "— Michael Jordan · Basketball player" },
+                { text: "A champion is defined by how they recover when they fall.", author: "— Serena Williams · Tennis champion" },
+                { text: "You miss 100% of the shots you don't take.", author: "— Wayne Gretzky · Hockey player" },
+                { text: "He who is not courageous enough to take risks will accomplish nothing in life.", author: "— Muhammad Ali · Boxer" },
+                { text: "A life is not important except in the impact it has on other lives.", author: "— Jackie Robinson · Baseball player" },
+                { text: "Champions keep playing until they get it right.", author: "— Billie Jean King · Tennis champion" },
+                { text: "The biggest adventure you can take is to live the life of your dreams.", author: "— Oprah Winfrey · Media entrepreneur" },
+                { text: "Done is better than perfect.", author: "— Sheryl Sandberg · Business leader" },
+                { text: "Well done is better than well said.", author: "— Benjamin Franklin · Inventor and statesman" },
+                { text: "The future belongs to those who believe in the beauty of their dreams.", author: "— Eleanor Roosevelt · Writer and diplomat" },
+                { text: "Alone we can do so little; together we can do so much.", author: "— Helen Keller · Author and advocate" },
+                { text: "Nothing will work unless you do.", author: "— Maya Angelou · Poet and teacher" },
+                { text: "One child, one teacher, one book, one pen can change the world.", author: "— Malala Yousafzai · Education activist" },
+                { text: "Kids don't learn from people they don't like.", author: "— Rita Pierson · Teacher" },
+                { text: "Do not let what you cannot do interfere with what you can do.", author: "— John Wooden · Teacher and coach" },
+                { text: "It was like a new world opened to me.", author: "— Marie Curie · Physicist and chemist" },
+                { text: "You must not fool yourself—and you are the easiest person to fool.", author: "— Richard Feynman · Physicist and teacher" },
+                { text: "Like what you do, and then you will do your best.", author: "— Katherine Johnson · Mathematician" },
+                { text: "Somewhere, something incredible is waiting to be known.", author: "— Carl Sagan · Astronomer and educator" },
+                { text: "That's one small step for a man, one giant leap for mankind.", author: "— Neil Armstrong · Astronaut" },
+                { text: "That brain of mine is something more than merely mortal.", author: "— Ada Lovelace · Mathematician" },
+                { text: "However difficult life may seem, there is always something you can do and succeed at.", author: "— Stephen Hawking · Physicist" },
+                { text: "Education is the most powerful weapon which you can use to change the world.", author: "— Nelson Mandela · Teacher and leader" },
+                { text: "If there is no struggle, there is no progress.", author: "— Frederick Douglass · Writer and abolitionist" },
+                { text: "The credit belongs to the man who is actually in the arena.", author: "— Theodore Roosevelt · President and writer" },
+                { text: "What you do makes a difference.", author: "— Jane Goodall · Primatologist" },
+                { text: "Anyone who does anything to help a child is a hero to me.", author: "— Fred Rogers · Educator and TV host" },
+                { text: "The only place success comes before work is in the dictionary.", author: "— Vince Lombardi · Football coach" },
+                { text: "The most difficult thing is the decision to act; the rest is tenacity.", author: "— Amelia Earhart · Aviator" },
+                { text: "It always seems impossible until it's done.", author: "— Nelson Mandela" },
+                { text: "The future depends on what you do today.", author: "— Mahatma Gandhi" },
+                { text: "Great things are done by a series of small things brought together.", author: "— Vincent van Gogh" },
+                { text: "Energy and persistence conquer all things.", author: "— Benjamin Franklin" },
+                { text: "Success is the sum of small efforts, repeated day in and day out.", author: "— Robert Collier" },
+                { text: "Act as if what you do makes a difference. It does.", author: "— William James" },
+                { text: "The secret of getting ahead is getting started.", author: "— Mark Twain" },
+                { text: "Start where you are. Use what you have. Do what you can.", author: "— Arthur Ashe" },
+                { text: "Do what you can, with what you have, where you are.", author: "— Theodore Roosevelt" },
+                { text: "Fall seven times, stand up eight.", author: "— Japanese proverb" },
+                { text: "A journey of a thousand miles begins with a single step.", author: "— Lao Tzu" },
+                { text: "If you can dream it, you can do it.", author: "— Walt Disney" },
+                { text: "Everything you've ever wanted is on the other side of fear.", author: "— George Addair" },
+                { text: "Believe you can and you're halfway there.", author: "— Theodore Roosevelt" },
+                { text: "It does not matter how slowly you go as long as you do not stop.", author: "— Confucius" },
+                { text: "Success is not final, failure is not fatal.", author: "— Winston Churchill" },
+                { text: "The harder the conflict, the greater the triumph.", author: "— George Washington" },
+                { text: "Live as if you were to die tomorrow. Learn as if you were to live forever.", author: "— Mahatma Gandhi" },
+                { text: "The beautiful thing about learning is that nobody can take it away from you.", author: "— B.B. King" },
+                { text: "An investment in knowledge pays the best interest.", author: "— Benjamin Franklin" },
+                { text: "The mind is not a vessel to be filled, but a fire to be kindled.", author: "— Plutarch" },
+                { text: "I am still learning.", author: "— Michelangelo" },
+                { text: "The roots of education are bitter, but the fruit is sweet.", author: "— Aristotle" },
+                { text: "Knowledge is power.", author: "— Francis Bacon" },
+                { text: "Learning never exhausts the mind.", author: "— Leonardo da Vinci" },
+                { text: "Study without desire spoils the memory, and it retains nothing that it takes in.", author: "— Leonardo da Vinci" },
+                { text: "Education is not preparation for life; education is life itself.", author: "— John Dewey" },
+                { text: "The expert in anything was once a beginner.", author: "— Helen Hayes" },
+                { text: "Anyone who stops learning is old, whether at twenty or eighty.", author: "— Henry Ford" },
+                { text: "The more I learn, the more I realize how much I don't know.", author: "— Albert Einstein" },
+                { text: "Tell me and I forget. Teach me and I remember. Involve me and I learn.", author: "— Benjamin Franklin" },
+                { text: "Change is the end result of all true learning.", author: "— Leo Buscaglia" },
+                { text: "Curiosity is the wick in the candle of learning.", author: "— William Arthur Ward" },
+                { text: "The capacity to learn is a gift; the ability to learn is a skill.", author: "— Brian Herbert" },
+                { text: "Wisdom is not a product of schooling but of the lifelong attempt to acquire it.", author: "— Albert Einstein" },
+                { text: "Learning is experience. Everything else is just information.", author: "— Albert Einstein" },
+                { text: "You have to expect things of yourself before you can do them.", author: "— Michael Jordan" },
+                { text: "Hard work beats talent when talent doesn't work hard.", author: "— Tim Notke" },
+                { text: "The only way to prove that you are a good loser is to lose.", author: "— Ernie Banks" },
+                { text: "A champion is afraid of losing. Everyone else is afraid of winning.", author: "— Billie Jean King" },
+                { text: "You've got to stay strong to be strong in tough times.", author: "— Gabrielle Douglas" },
+                { text: "The will to win is important, but the will to prepare is vital.", author: "— Joe Paterno" },
+                { text: "The difference between the impossible and the possible lies in a person's determination.", author: "— Tommy Lasorda" },
+                { text: "Make each day your masterpiece.", author: "— John Wooden" },
+                { text: "It's hard to beat a person who never gives up.", author: "— Babe Ruth" },
+                { text: "Never say never because limits, like fears, are often just an illusion.", author: "— Michael Jordan" },
+                { text: "Set your goals high, and don't stop till you get there.", author: "— Bo Jackson" },
+                { text: "If you fail to prepare, you're prepared to fail.", author: "— Mark Spitz" },
+                { text: "The way to get started is to quit talking and begin doing.", author: "— Walt Disney" },
+                { text: "Innovation distinguishes between a leader and a follower.", author: "— Steve Jobs" },
+                { text: "Stay hungry. Stay foolish.", author: "— Steve Jobs" },
+                { text: "Your most unhappy customers are your greatest source of learning.", author: "— Bill Gates" },
+                { text: "Don't compare yourself with anyone in this world. If you do so, you are insulting yourself.", author: "— Bill Gates" },
+                { text: "If you think you are too small to be effective, you have never been in the dark with a mosquito.", author: "— Betty Reese" },
+                { text: "Ideas are easy. Implementation is hard.", author: "— Guy Kawasaki" },
+                { text: "The value of an idea lies in the using of it.", author: "— Thomas Edison" },
+                { text: "Genius is one percent inspiration and ninety-nine percent perspiration.", author: "— Thomas Edison" },
+                { text: "I have not failed. I've just found 10,000 ways that won't work.", author: "— Thomas Edison" },
+                { text: "When something is important enough, you do it even if the odds are not in your favor.", author: "— Elon Musk" },
+                { text: "The best way to predict the future is to invent it.", author: "— Alan Kay" },
+                { text: "Make something people want.", author: "— Paul Graham" },
+                { text: "The only way to do great work is to love what you do.", author: "— Steve Jobs" },
+                { text: "Imagination is more important than knowledge.", author: "— Albert Einstein" },
+                { text: "Creativity is intelligence having fun.", author: "— Albert Einstein" },
+                { text: "The important thing is not to stop questioning.", author: "— Albert Einstein" },
+                { text: "Logic will get you from A to B. Imagination will take you everywhere.", author: "— Albert Einstein" },
+                { text: "Creativity takes courage.", author: "— Henri Matisse" },
+                { text: "Everything you can imagine is real.", author: "— Pablo Picasso" },
+                { text: "The chief enemy of creativity is good sense.", author: "— Pablo Picasso" },
+                { text: "You can't use up creativity. The more you use, the more you have.", author: "— Maya Angelou" },
+                { text: "There is no innovation and creativity without failure.", author: "— Brené Brown" },
+                { text: "Curiosity about life in all of its aspects, I think, is still the secret of great creative people.", author: "— Leo Burnett" },
+                { text: "Life is really simple, but we insist on making it complicated.", author: "— Confucius" },
+                { text: "Happiness depends upon ourselves.", author: "— Aristotle" },
+                { text: "The only impossible journey is the one you never begin.", author: "— Tony Robbins" },
+                { text: "Life shrinks or expands in proportion to one's courage.", author: "— Anaïs Nin" },
+                { text: "In the middle of difficulty lies opportunity.", author: "— Albert Einstein" },
+                { text: "Nothing is permanent in this wicked world, not even our troubles.", author: "— Charlie Chaplin" },
+                { text: "Keep your face always toward the sunshine, and shadows will fall behind you.", author: "— Walt Whitman" },
+                { text: "Turn your wounds into wisdom.", author: "— Oprah Winfrey" },
+                { text: "The purpose of our lives is to be happy.", author: "— Dalai Lama" },
+                { text: "No act of kindness, no matter how small, is ever wasted.", author: "— Aesop" },
+                { text: "Leadership and learning are indispensable to each other.", author: "— John F. Kennedy" },
+                { text: "A leader is one who knows the way, goes the way, and shows the way.", author: "— John C. Maxwell" },
+                { text: "The greatest glory in living lies not in never falling, but in rising every time we fall.", author: "— Nelson Mandela" },
+                { text: "Example is not the main thing in influencing others. It is the only thing.", author: "— Albert Schweitzer" },
+                { text: "The time is always right to do what is right.", author: "— Martin Luther King Jr." },
+                { text: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", author: "— Often attributed to Aristotle" },
+                { text: "Do unto others as you would have them do unto you.", author: "— The Golden Rule" },
+                { text: "No one can make you feel inferior without your consent.", author: "— Eleanor Roosevelt" },
+                { text: "The best way out is always through.", author: "— Robert Frost" },
+                { text: "What you do speaks so loudly that I cannot hear what you say.", author: "— Ralph Waldo Emerson" }
             ];
 
-            const storageKey = "studytool_motivational_quotes_v2";
+            const storageKey = "studytool_motivational_quotes_v3";
             const quoteText = document.getElementById("quote-text");
             const quoteAuthor = document.getElementById("quote-author");
             const quoteSlide = document.getElementById("quote-slide");
-            const quoteProgress = document.getElementById("quote-progress");
             const toggleButton = document.getElementById("quote-toggle");
             let storageAvailable = true;
             let changeTimer;
@@ -493,7 +583,6 @@
                 const quote = quotes[state.order[state.index]];
                 quoteText.textContent = quote.text;
                 quoteAuthor.textContent = quote.author;
-                quoteProgress.textContent = `${state.index + 1} of ${quotes.length}`;
             }
 
             function advanceQuote() {
@@ -517,7 +606,7 @@
             }
 
             function startSlideshow() {
-                changeTimer = window.setInterval(advanceQuote, 5000);
+                changeTimer = window.setInterval(advanceQuote, 10000);
                 toggleButton.textContent = "Pause";
                 toggleButton.setAttribute("aria-pressed", "false");
             }

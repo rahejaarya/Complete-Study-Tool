@@ -708,11 +708,6 @@ body {
     gap: 12px;
 }
 
-.quote-progress {
-    color: var(--muted);
-    font-size: 12px;
-}
-
 .quote-toggle {
     padding: 7px 12px;
     border: 1px solid rgba(118, 101, 216, 0.25);
