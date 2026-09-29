@@ -1264,13 +1264,33 @@ body {
     background: var(--white);
 }
 
+.weekly-day.is-today {
+    background: var(--purple-light);
+    box-shadow: inset 0 3px 0 var(--purple);
+}
+
 .weekly-day:last-child {
     border-right: 0;
 }
 
 .weekly-day h3 {
     margin: 1px 2px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
     font-size: 14px;
+}
+
+.calendar-date {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.weekly-day.is-today .calendar-weekday,
+.weekly-day.is-today .calendar-date {
+    color: var(--purple);
+    font-weight: 700;
 }
 
 .schedule-block {

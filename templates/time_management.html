@@ -176,52 +176,32 @@
                     <div class="schedule-section-header">
                         <div>
                             <div class="eyebrow">YOUR WEEK AT A GLANCE</div>
-                            <h2 id="weekly-schedule-heading">Weekly Schedule</h2>
+                            <h2 id="weekly-schedule-heading">This Week</h2>
                         </div>
-                        <p>Sample blocks you can adjust to fit your week.</p>
+                        <p>Your week, with today highlighted.</p>
                     </div>
                     <div class="weekly-grid-scroll" tabindex="0" aria-label="Weekly schedule, scroll horizontally to see all days">
                         <div class="weekly-grid">
-                            <div class="weekly-day" data-day-index="1">
-                                <h3>Monday</h3>
-                                <div class="schedule-block schedule-school"><span>8:00 AM – 3:00 PM</span><strong>School</strong></div>
-                                <div class="schedule-block schedule-homework"><span>4:00 PM – 5:00 PM</span><strong>Homework</strong></div>
-                                <div class="schedule-block schedule-rest"><span>5:00 PM – 5:30 PM</span><strong>Rest / Break</strong></div>
+                            <div class="weekly-day">
+                                <h3><span class="calendar-weekday">Monday</span><time class="calendar-date"></time></h3>
                             </div>
-                            <div class="weekly-day" data-day-index="2">
-                                <h3>Tuesday</h3>
-                                <div class="schedule-block schedule-school"><span>8:00 AM – 3:00 PM</span><strong>School</strong></div>
-                                <div class="schedule-block schedule-homework"><span>4:00 PM – 5:15 PM</span><strong>Homework</strong></div>
-                                <div class="schedule-block schedule-exam"><span>5:30 PM – 6:00 PM</span><strong>Exam Prep</strong></div>
+                            <div class="weekly-day">
+                                <h3><span class="calendar-weekday">Tuesday</span><time class="calendar-date"></time></h3>
                             </div>
-                            <div class="weekly-day" data-day-index="3">
-                                <h3>Wednesday</h3>
-                                <div class="schedule-block schedule-school"><span>8:00 AM – 3:00 PM</span><strong>School</strong></div>
-                                <div class="schedule-block schedule-rest"><span>3:30 PM – 4:00 PM</span><strong>Rest / Break</strong></div>
-                                <div class="schedule-block schedule-homework"><span>4:00 PM – 5:00 PM</span><strong>Homework</strong></div>
+                            <div class="weekly-day">
+                                <h3><span class="calendar-weekday">Wednesday</span><time class="calendar-date"></time></h3>
                             </div>
-                            <div class="weekly-day" data-day-index="4">
-                                <h3>Thursday</h3>
-                                <div class="schedule-block schedule-school"><span>8:00 AM – 3:00 PM</span><strong>School</strong></div>
-                                <div class="schedule-block schedule-homework"><span>4:00 PM – 5:00 PM</span><strong>Homework</strong></div>
-                                <div class="schedule-block schedule-exam"><span>5:15 PM – 6:00 PM</span><strong>Exam Prep</strong></div>
+                            <div class="weekly-day">
+                                <h3><span class="calendar-weekday">Thursday</span><time class="calendar-date"></time></h3>
                             </div>
-                            <div class="weekly-day" data-day-index="5">
-                                <h3>Friday</h3>
-                                <div class="schedule-block schedule-school"><span>8:00 AM – 3:00 PM</span><strong>School</strong></div>
-                                <div class="schedule-block schedule-rest"><span>4:00 PM – 5:00 PM</span><strong>Rest / Break</strong></div>
+                            <div class="weekly-day">
+                                <h3><span class="calendar-weekday">Friday</span><time class="calendar-date"></time></h3>
                             </div>
-                            <div class="weekly-day" data-day-index="6">
-                                <h3>Saturday</h3>
-                                <div class="schedule-block schedule-exam"><span>10:00 AM – 11:00 AM</span><strong>Exam Prep</strong></div>
-                                <div class="schedule-block schedule-homework"><span>11:15 AM – 12:00 PM</span><strong>Homework</strong></div>
-                                <div class="schedule-block schedule-rest"><span>Afternoon</span><strong>Rest / Break</strong></div>
+                            <div class="weekly-day">
+                                <h3><span class="calendar-weekday">Saturday</span><time class="calendar-date"></time></h3>
                             </div>
-                            <div class="weekly-day" data-day-index="0">
-                                <h3>Sunday</h3>
-                                <div class="schedule-block schedule-rest"><span>Morning</span><strong>Rest / Break</strong></div>
-                                <div class="schedule-block schedule-homework"><span>4:00 PM – 4:45 PM</span><strong>Homework</strong></div>
-                                <div class="schedule-block schedule-exam"><span>5:00 PM – 5:30 PM</span><strong>Plan / Exam Prep</strong></div>
+                            <div class="weekly-day">
+                                <h3><span class="calendar-weekday">Sunday</span><time class="calendar-date"></time></h3>
                             </div>
                         </div>
                     </div>
@@ -325,6 +305,7 @@
             const plannerTime = document.getElementById("planner-time");
             const plannerStatus = document.getElementById("planner-status");
             const plannerList = document.getElementById("planner-list");
+            const weeklyDays = Array.from(document.querySelectorAll(".weekly-day"));
             const eventStorageKey = "studytool_time_management_events_v1";
 
             let selectedPreset = { work: 25, rest: 5, name: "Pomodoro Technique" };
@@ -496,6 +477,35 @@
                 return date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
             }
 
+            function formatDateKey(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const day = String(date.getDate()).padStart(2, "0");
+                return `${year}-${month}-${day}`;
+            }
+
+            function renderCalendarDates() {
+                const today = new Date();
+                const weekStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+
+                weeklyDays.forEach((dayColumn, index) => {
+                    const date = new Date(weekStart);
+                    date.setDate(weekStart.getDate() + index);
+                    const dateKey = formatDateKey(date);
+                    const dateLabel = dayColumn.querySelector(".calendar-date");
+                    dayColumn.dataset.calendarDate = dateKey;
+                    dateLabel.dateTime = dateKey;
+                    dateLabel.textContent = date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+                    dayColumn.classList.toggle("is-today", dateKey === formatDateKey(today));
+                    if (dateKey === formatDateKey(today)) {
+                        dayColumn.setAttribute("aria-current", "date");
+                    } else {
+                        dayColumn.removeAttribute("aria-current");
+                    }
+                });
+            }
+
             function renderEvents() {
                 plannerList.replaceChildren();
                 if (events.length === 0) {
@@ -556,13 +566,10 @@
             }
 
             function renderScheduleEvents() {
-                document.querySelectorAll(".weekly-day").forEach((dayColumn) => {
+                weeklyDays.forEach((dayColumn) => {
                     dayColumn.querySelectorAll(".user-schedule-block").forEach((block) => block.remove());
-                    const dayIndex = Number(dayColumn.dataset.dayIndex);
-                    const dayEvents = events.filter((event) => {
-                        const eventDate = new Date(`${event.date}T12:00:00`);
-                        return eventDate.getDay() === dayIndex;
-                    });
+                    const dayDate = dayColumn.dataset.calendarDate;
+                    const dayEvents = events.filter((event) => event.date === dayDate);
 
                     dayEvents.forEach((event) => {
                         const block = document.createElement("div");
@@ -610,6 +617,7 @@
             });
 
             plannerTitle.addEventListener("input", () => plannerTitle.setCustomValidity(""));
+            renderCalendarDates();
             renderEvents();
             renderScheduleEvents();
         })();
