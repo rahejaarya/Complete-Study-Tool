@@ -3,23 +3,397 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Study Resources</title>
-
+    <title>Study Resources - StudyTool</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
 
-    <div class="resources-page">
+    <div class="app">
 
-        <h1>Study Resources</h1>
+        <!-- Sidebar -->
+        <aside class="sidebar">
 
-        <p>Find free notes, videos, and study materials.</p>
+            <div class="logo">
+                <div class="logo-mark">✦</div>
+                <span>StudyTool</span>
+            </div>
 
-        <a href="/" class="back-button">← Back to Dashboard</a>
+            <nav class="navigation">
+
+                <a href="{{ url_for('home') }}" class="nav-link">
+                    <span class="nav-icon">▦</span>
+                    Dashboard
+                </a>
+
+                <a href="{{ url_for('resources') }}" class="nav-link active">
+                    <span class="nav-icon">⌕</span>
+                    Study Resources
+                </a>
+
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">◷</span>
+                    Focus Mode
+                </a>
+
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">✓</span>
+                    Time Management
+                </a>
+
+                <a href="{{ url_for('support') }}" class="nav-link">
+                    <span class="nav-icon">♡</span>
+                    Student Support
+                </a>
+
+                <a href="{{ url_for('ai_help') }}" class="nav-link">
+                    <span class="nav-icon">♪</span>
+                    AI Study Help
+                </a>
+
+            </nav>
+
+            <div class="sidebar-bottom">
+
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">⚙</span>
+                    Settings
+                </a>
+
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">?</span>
+                    Help
+                </a>
+
+            </div>
+
+        </aside>
+
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Top Header -->
+            <header class="topbar">
+
+                <button class="mobile-menu">☰</button>
+
+                <div class="welcome">
+                    <div class="welcome-icon">📚</div>
+                    <div>
+                        <h1>What do you want to learn?</h1>
+                        <p>Find free resources for any subject or topic.</p>
+                    </div>
+                </div>
+
+            </header>
+
+
+            <!-- Resources Content -->
+            <section class="dashboard">
+
+                <!-- Search Input Form -->
+                <div class="main-card study-card">
+
+                    <form id="resource-search-form" action="{{ url_for('resources') }}" method="GET">
+
+                        <div class="search-box" style="margin: 0;">
+                            <span class="search-icon">🔍</span>
+                            <input 
+                                type="text" 
+                                id="search-input"
+                                name="query" 
+                                value="{{ query if query else '' }}"
+                                placeholder="Search a topic, subject, or assignment..." 
+                                style="border:none; background:transparent; width:100%; outline:none; font-size:15px; color:var(--text);"
+                            >
+                        </div>
+
+                    </form>
+
+                </div>
+
+
+                <!-- Recent Searches -->
+                <div class="section-heading" style="margin-top: 20px;">
+                    <h2>Your Recent Searches</h2>
+                </div>
+
+                <div id="recent-searches-list" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 25px;">
+                    <!-- JavaScript dynamically adds recent search chips here -->
+                </div>
+
+
+                <!-- Browse by Subject -->
+                <div class="section-heading">
+                    <h2>Browse by Subject</h2>
+                </div>
+
+                <div class="feature-grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); margin-bottom: 30px;">
+
+                    <a href="{{ url_for('resources', query='Math') }}" style="text-decoration: none; color: inherit;">
+                        <div class="feature-card" style="text-align: center; justify-content: center;">
+                            <h3>📐 Math</h3>
+                        </div>
+                    </a>
+
+                    <a href="{{ url_for('resources', query='Science') }}" style="text-decoration: none; color: inherit;">
+                        <div class="feature-card" style="text-align: center; justify-content: center;">
+                            <h3>🧪 Science</h3>
+                        </div>
+                    </a>
+
+                    <a href="{{ url_for('resources', query='English') }}" style="text-decoration: none; color: inherit;">
+                        <div class="feature-card" style="text-align: center; justify-content: center;">
+                            <h3>📖 English</h3>
+                        </div>
+                    </a>
+
+                    <a href="{{ url_for('resources', query='History') }}" style="text-decoration: none; color: inherit;">
+                        <div class="feature-card" style="text-align: center; justify-content: center;">
+                            <h3>🏛 History</h3>
+                        </div>
+                    </a>
+
+                    <a href="{{ url_for('resources', query='Computer Science') }}" style="text-decoration: none; color: inherit;">
+                        <div class="feature-card" style="text-align: center; justify-content: center;">
+                            <h3>💻 Computer Science</h3>
+                        </div>
+                    </a>
+
+                    <a href="{{ url_for('resources', query='Languages') }}" style="text-decoration: none; color: inherit;">
+                        <div class="feature-card" style="text-align: center; justify-content: center;">
+                            <h3>🗣 Languages</h3>
+                        </div>
+                    </a>
+
+                </div>
+
+
+                <!-- Search Results Header -->
+                <div class="section-heading">
+                    <h2>
+                        {% if query %}
+                            Results for "{{ query }}"
+                        {% else %}
+                            Results for "Newton's Laws"
+                        {% endif %}
+                    </h2>
+                </div>
+
+
+                <!-- Category 1: Videos -->
+                <div style="margin-bottom: 25px;">
+                    <h3 style="margin-bottom: 12px;">📺 Videos</h3>
+
+                    <div class="feature-grid">
+
+                        <div class="feature-card">
+                            <div class="feature-icon resources-icon">▶</div>
+                            <div class="feature-content">
+                                <h3>Short Explanations</h3>
+                                <p>Quick 5-minute visual recaps and concept breakdowns.</p>
+                            </div>
+                            <span class="card-arrow">→</span>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon resources-icon">🎥</div>
+                            <div class="feature-content">
+                                <h3>Full Lessons</h3>
+                                <p>In-depth video lectures with worked step-by-step examples.</p>
+                            </div>
+                            <span class="card-arrow">→</span>
+                        </div>
+
+                    </div>
+                </div>
+
+
+                <!-- Category 2: Notes & Guides -->
+                <div style="margin-bottom: 25px;">
+                    <h3 style="margin-bottom: 12px;">📝 Notes & Guides</h3>
+
+                    <div class="feature-grid">
+
+                        <div class="feature-card">
+                            <div class="feature-icon support-icon">📄</div>
+                            <div class="feature-content">
+                                <h3>Study Notes</h3>
+                                <p>Comprehensive summary sheets and key formulas.</p>
+                            </div>
+                            <span class="card-arrow">→</span>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon support-icon">🌐</div>
+                            <div class="feature-content">
+                                <h3>Articles & Reading</h3>
+                                <p>Verified reference guides and textbook summaries.</p>
+                            </div>
+                            <span class="card-arrow">→</span>
+                        </div>
+
+                    </div>
+                </div>
+
+
+                <!-- Category 3: Practice -->
+                <div style="margin-bottom: 25px;">
+                    <h3 style="margin-bottom: 12px;">✏️ Practice</h3>
+
+                    <div class="feature-grid">
+
+                        <div class="feature-card">
+                            <div class="feature-icon focus-icon">❓</div>
+                            <div class="feature-content">
+                                <h3>Practice Questions</h3>
+                                <p>Test questions grouped by difficulty level.</p>
+                            </div>
+                            <span class="card-arrow">→</span>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon focus-icon">📊</div>
+                            <div class="feature-content">
+                                <h3>Interactive Quizzes</h3>
+                                <p>Self-assessed multiple-choice checks with instant feedback.</p>
+                            </div>
+                            <span class="card-arrow">→</span>
+                        </div>
+
+                    </div>
+                </div>
+
+
+                <!-- Category 4: Other Resources -->
+                <div style="margin-bottom: 25px;">
+                    <h3 style="margin-bottom: 12px;">🔗 Other Resources</h3>
+
+                    <div class="feature-grid">
+
+                        <div class="feature-card">
+                            <div class="feature-icon time-icon">🎮</div>
+                            <div class="feature-content">
+                                <h3>Interactive Simulations</h3>
+                                <p>Hands-on visual models and virtual lab experiments.</p>
+                            </div>
+                            <span class="card-arrow">→</span>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon time-icon">🌐</div>
+                            <div class="feature-content">
+                                <h3>Useful External Websites</h3>
+                                <p>Curated links to reliable subject tools and reference sites.</p>
+                            </div>
+                            <span class="card-arrow">→</span>
+                        </div>
+
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
 
     </div>
+
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-navigation">
+
+        <a href="{{ url_for('home') }}" class="mobile-link">
+            <span>▦</span>
+            <small>Home</small>
+        </a>
+
+        <a href="{{ url_for('resources') }}" class="mobile-link active">
+            <span>📚</span>
+            <small>Resources</small>
+        </a>
+
+        <a href="#" class="mobile-link">
+            <span>◷</span>
+            <small>Focus</small>
+        </a>
+
+        <a href="#" class="mobile-link">
+            <span>✓</span>
+            <small>Tasks</small>
+        </a>
+
+        <a href="{{ url_for('support') }}" class="mobile-link">
+            <span>♡</span>
+            <small>Support</small>
+        </a>
+
+    </nav>
+
+
+    <!-- Recent Searches Local Storage Script -->
+    <script>
+        const DEFAULT_SEARCHES = ["Newton's Laws", "Quadratic Equations", "AP Euro Renaissance"];
+        const searchInput = document.getElementById('search-input');
+        const searchForm = document.getElementById('resource-search-form');
+        const recentSearchesContainer = document.getElementById('recent-searches-list');
+
+        function getRecentSearches() {
+            const saved = localStorage.getItem('recent_study_searches');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+            return DEFAULT_SEARCHES;
+        }
+
+        function saveRecentSearch(query) {
+            if (!query.trim()) return;
+            let searches = getRecentSearches();
+            searches = searches.filter(item => item.toLowerCase() !== query.toLowerCase());
+            searches.unshift(query.trim());
+            if (searches.length > 5) {
+                searches = searches.slice(0, 5);
+            }
+            localStorage.setItem('recent_study_searches', JSON.stringify(searches));
+        }
+
+        function renderRecentSearches() {
+            const searches = getRecentSearches();
+            recentSearchesContainer.innerHTML = '';
+
+            searches.forEach(term => {
+                const chip = document.createElement('a');
+                chip.href = `/resources?query=${encodeURIComponent(term)}`;
+                chip.textContent = term;
+                chip.style.cssText = `
+                    background: var(--card-bg, #ffffff);
+                    border: 1px solid var(--border-color, #e0e0e0);
+                    padding: 6px 14px;
+                    border-radius: 20px;
+                    font-size: 13px;
+                    text-decoration: none;
+                    color: var(--text, #333333);
+                    cursor: pointer;
+                    transition: background 0.2s ease;
+                `;
+                recentSearchesContainer.appendChild(chip);
+            });
+        }
+
+        searchForm.addEventListener('submit', function() {
+            if (searchInput.value.trim()) {
+                saveRecentSearch(searchInput.value.trim());
+            }
+        });
+
+        // Save active query if submitted
+        const currentQuery = "{{ query }}";
+        if (currentQuery) {
+            saveRecentSearch(currentQuery);
+        }
+
+        renderRecentSearches();
+    </script>
 
 </body>
 </html>
