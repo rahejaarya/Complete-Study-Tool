@@ -178,7 +178,6 @@
                             <div class="eyebrow">YOUR WEEK AT A GLANCE</div>
                             <h2 id="weekly-schedule-heading">This Week</h2>
                         </div>
-                        <p>Your week, with today highlighted.</p>
                     </div>
                     <div class="weekly-grid-scroll" tabindex="0" aria-label="Weekly schedule, scroll horizontally to see all days">
                         <div class="weekly-grid">
@@ -222,7 +221,7 @@
                                 <option value="to-do">To-do</option>
                                 <option value="event">Event</option>
                                 <option value="homework">Homework</option>
-                                <option value="exam">Exam prep</option>
+                                <option value="exam">Test / Quiz / Exam</option>
                                 <option value="rest">Rest / Break</option>
                             </select>
                         </label>
@@ -243,23 +242,7 @@
                 <section class="main-card deadline-section" aria-labelledby="deadlines-heading">
                     <div class="eyebrow">PLAN AHEAD</div>
                     <h2 id="deadlines-heading">Upcoming Deadlines</h2>
-                    <div class="deadline-grid">
-                        <article class="deadline-card">
-                            <span class="deadline-tag">3 Days Left</span>
-                            <h3>AP Bio Exam</h3>
-                            <p>Review cell processes and practice key concepts.</p>
-                        </article>
-                        <article class="deadline-card">
-                            <span class="deadline-tag">5 Days Left</span>
-                            <h3>History Essay</h3>
-                            <p>Finish your draft, revise, and check your sources.</p>
-                        </article>
-                        <article class="deadline-card">
-                            <span class="deadline-tag">1 Week Left</span>
-                            <h3>Algebra Unit Test</h3>
-                            <p>Practice equations and note questions to review.</p>
-                        </article>
-                    </div>
+                    <div id="deadlines-list" class="deadline-grid" aria-live="polite"></div>
                 </section>
             </section>
         </main>
@@ -305,6 +288,7 @@
             const plannerTime = document.getElementById("planner-time");
             const plannerStatus = document.getElementById("planner-status");
             const plannerList = document.getElementById("planner-list");
+            const deadlinesList = document.getElementById("deadlines-list");
             const weeklyDays = Array.from(document.querySelectorAll(".weekly-day"));
             const eventStorageKey = "studytool_time_management_events_v1";
 
@@ -477,11 +461,20 @@
                 return date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
             }
 
+            function formatEventType(type) {
+                return type === "exam" ? "Test / Quiz / Exam" : type;
+            }
+
             function formatDateKey(date) {
                 const year = date.getFullYear();
                 const month = String(date.getMonth() + 1).padStart(2, "0");
                 const day = String(date.getDate()).padStart(2, "0");
                 return `${year}-${month}-${day}`;
+            }
+
+            function parseDateKey(dateKey) {
+                const [year, month, day] = dateKey.split("-").map(Number);
+                return new Date(year, month - 1, day);
             }
 
             function renderCalendarDates() {
@@ -531,7 +524,7 @@
                     const title = document.createElement("h3");
                     title.textContent = event.title;
                     const metadata = document.createElement("p");
-                    metadata.textContent = `${event.type} · ${formatEventDate(event.date)}${event.time ? ` · ${event.time}` : ""}`;
+                    metadata.textContent = `${formatEventType(event.type)} · ${formatEventDate(event.date)}${event.time ? ` · ${event.time}` : ""}`;
                     details.append(title, metadata);
 
                     const actions = document.createElement("div");
@@ -545,6 +538,7 @@
                         event.done = !event.done;
                         saveEvents();
                         renderEvents();
+                        renderDeadlines();
                     });
 
                     const deleteButton = document.createElement("button");
@@ -557,11 +551,51 @@
                         saveEvents();
                         renderEvents();
                         renderScheduleEvents();
+                        renderDeadlines();
                     });
 
                     actions.append(doneButton, deleteButton);
                     item.append(details, actions);
                     plannerList.append(item);
+                });
+            }
+
+            function renderDeadlines() {
+                deadlinesList.replaceChildren();
+                const today = parseDateKey(formatDateKey(new Date()));
+                const deadlineEvents = events
+                    .filter((event) =>
+                        !event.done
+                        && ["to-do", "homework", "exam"].includes(event.type)
+                        && parseDateKey(event.date) >= today
+                    )
+                    .sort((left, right) => left.date.localeCompare(right.date));
+
+                if (deadlineEvents.length === 0) {
+                    const emptyMessage = document.createElement("p");
+                    emptyMessage.className = "planner-empty";
+                    emptyMessage.textContent = "No upcoming deadlines. Add homework, a to-do, or a test with a due date to see it here.";
+                    deadlinesList.append(emptyMessage);
+                    return;
+                }
+
+                deadlineEvents.forEach((event) => {
+                    const daysLeft = Math.round((parseDateKey(event.date) - today) / 86400000);
+                    const card = document.createElement("article");
+                    card.className = "deadline-card";
+
+                    const tag = document.createElement("span");
+                    tag.className = "deadline-tag";
+                    tag.textContent = daysLeft === 0
+                        ? "Due today"
+                        : `${daysLeft} ${daysLeft === 1 ? "day" : "days"} left`;
+
+                    const title = document.createElement("h3");
+                    title.textContent = event.title;
+                    const details = document.createElement("p");
+                    details.textContent = `${formatEventType(event.type)} · ${formatEventDate(event.date)}`;
+                    card.append(tag, title, details);
+                    deadlinesList.append(card);
                 });
             }
 
@@ -614,12 +648,14 @@
                 plannerForm.reset();
                 renderEvents();
                 renderScheduleEvents();
+                renderDeadlines();
             });
 
             plannerTitle.addEventListener("input", () => plannerTitle.setCustomValidity(""));
             renderCalendarDates();
             renderEvents();
             renderScheduleEvents();
+            renderDeadlines();
         })();
     </script>
 </body>
