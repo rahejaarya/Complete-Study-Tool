@@ -962,6 +962,519 @@ body {
     }
 }
 
+/* Time Management & Schedule */
+
+.schedule-dashboard {
+    display: grid;
+    gap: 22px;
+}
+
+.timer-card,
+.study-ratios-card,
+.weekly-schedule-card,
+.planner-card,
+.deadline-section {
+    padding: 28px;
+}
+
+.timer-card {
+    text-align: center;
+}
+
+.timer-intro h2,
+.study-ratios-card > h2,
+.planner-card > h2,
+.deadline-section > h2 {
+    font-size: 24px;
+}
+
+.timer-intro p,
+.preset-heading p,
+.timer-note,
+.schedule-section-header > p,
+.planner-intro {
+    margin-top: 7px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.timer-readout {
+    margin: 20px 0 16px;
+    color: var(--text);
+    font-size: clamp(56px, 10vw, 82px);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    letter-spacing: -3px;
+    line-height: 1;
+}
+
+.timer-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.timer-button {
+    min-height: 42px;
+    padding: 10px 19px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--white);
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.timer-button:hover:not(:disabled) {
+    border-color: var(--purple);
+    background: var(--purple-light);
+}
+
+.timer-button:focus-visible,
+.preset-button:focus-visible,
+.planner-action:focus-visible {
+    outline: 2px solid var(--purple);
+    outline-offset: 2px;
+}
+
+.timer-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.timer-button-primary {
+    border-color: var(--purple);
+    background: var(--purple);
+    color: var(--white);
+}
+
+.timer-button-primary:hover:not(:disabled) {
+    border-color: #6253c8;
+    background: #6253c8;
+    color: var(--white);
+}
+
+.timer-status {
+    min-height: 21px;
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.preset-heading {
+    margin-top: 28px;
+}
+
+.preset-heading h3 {
+    font-size: 17px;
+}
+
+.preset-grid {
+    margin-top: 15px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 11px;
+    text-align: left;
+}
+
+.preset-button {
+    min-height: 108px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--white);
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.preset-button:hover {
+    border-color: var(--purple);
+}
+
+.preset-button.is-active {
+    border-color: var(--purple);
+    background: var(--purple-light);
+    box-shadow: 0 0 0 1px var(--purple);
+}
+
+.preset-button strong {
+    font-size: 14px;
+}
+
+.preset-button > span:last-child {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.preset-time {
+    color: var(--purple);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.timer-note {
+    margin-top: 15px;
+    font-size: 12px;
+}
+
+.study-ratios-card > h2,
+.deadline-section > h2 {
+    margin-bottom: 18px;
+}
+
+.ratio-guide-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 13px;
+}
+
+.ratio-guide {
+    padding: 17px;
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    background: #fbfaff;
+}
+
+.ratio-guide h3 {
+    margin-bottom: 9px;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.ratio-guide p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.ratio-guide p + p {
+    margin-top: 7px;
+}
+
+.ratio-guide strong {
+    color: var(--text);
+}
+
+.schedule-section-header {
+    margin-bottom: 18px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.schedule-section-header h2,
+.planner-card > h2 {
+    font-size: 22px;
+}
+
+.schedule-section-header > p {
+    max-width: 310px;
+    margin: 0;
+    text-align: right;
+}
+
+.weekly-grid-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 15px;
+}
+
+.weekly-grid {
+    min-width: 1050px;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(140px, 1fr));
+}
+
+.weekly-day {
+    min-height: 220px;
+    padding: 13px 10px;
+    border-right: 1px solid var(--border);
+    background: var(--white);
+}
+
+.weekly-day:last-child {
+    border-right: 0;
+}
+
+.weekly-day h3 {
+    margin: 1px 2px 12px;
+    font-size: 14px;
+}
+
+.schedule-block {
+    margin-bottom: 8px;
+    padding: 9px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-left: 3px solid var(--purple);
+    border-radius: 8px;
+    background: var(--purple-light);
+}
+
+.schedule-block span {
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.schedule-block strong {
+    font-size: 12px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.schedule-school {
+    border-color: #547bc3;
+    background: var(--blue-light);
+}
+
+.schedule-homework,
+.schedule-to-do {
+    border-color: #579672;
+    background: var(--green-light);
+}
+
+.schedule-exam {
+    border-color: #b98b2e;
+    background: var(--yellow-light);
+}
+
+.schedule-rest {
+    border-color: #c16d91;
+    background: var(--pink-light);
+}
+
+.schedule-event {
+    border-color: var(--purple);
+    background: var(--purple-light);
+}
+
+.planner-intro {
+    margin-bottom: 18px;
+}
+
+.planner-form {
+    display: grid;
+    grid-template-columns: minmax(200px, 2fr) repeat(3, minmax(135px, 1fr)) auto;
+    align-items: end;
+    gap: 11px;
+}
+
+.planner-form label {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.planner-form label > span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.planner-form input,
+.planner-form select {
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--white);
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+}
+
+.planner-form input:focus,
+.planner-form select:focus {
+    border-color: var(--purple);
+    outline: 2px solid var(--purple-light);
+}
+
+.planner-submit {
+    white-space: nowrap;
+}
+
+.planner-status {
+    min-height: 18px;
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.planner-list {
+    display: grid;
+    gap: 9px;
+}
+
+.planner-empty {
+    padding: 15px;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+}
+
+.planner-item {
+    padding: 13px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fbfaff;
+}
+
+.planner-item-details {
+    min-width: 0;
+}
+
+.planner-item h3 {
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.planner-item p {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: capitalize;
+}
+
+.planner-item.is-done .planner-item-details {
+    opacity: 0.6;
+    text-decoration: line-through;
+}
+
+.planner-item-actions {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 7px;
+}
+
+.planner-action {
+    padding: 7px 9px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--white);
+    color: var(--text);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.planner-delete {
+    color: #a33450;
+}
+
+.deadline-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 13px;
+}
+
+.deadline-card {
+    padding: 17px;
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    background: #fbfaff;
+}
+
+.deadline-tag {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: var(--yellow-light);
+    color: #80601e;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.deadline-card h3 {
+    margin-top: 12px;
+    font-size: 16px;
+}
+
+.deadline-card p {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+@media (max-width: 1000px) {
+    .planner-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .planner-submit {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 700px) {
+    .timer-card,
+    .study-ratios-card,
+    .weekly-schedule-card,
+    .planner-card,
+    .deadline-section {
+        padding: 22px;
+    }
+
+    .preset-grid,
+    .ratio-guide-grid,
+    .deadline-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .preset-button {
+        min-height: 88px;
+    }
+
+    .schedule-section-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .schedule-section-header > p {
+        text-align: left;
+    }
+
+    .planner-form {
+        grid-template-columns: 1fr;
+    }
+
+    .planner-submit {
+        grid-column: auto;
+    }
+
+    .planner-item {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .planner-item-actions {
+        align-self: flex-end;
+    }
+}
+
 
 .empty-activity h3 {
     font-size: 15px;

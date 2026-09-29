@@ -43,7 +43,7 @@ def schedule():
 
 @app.route("/time-management")
 def time_management():
-    return render_template("timeManagement.html")
+    return render_template("time_management.html")
 
 @app.route("/support")
 def support():

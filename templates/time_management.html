@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Management &amp; Schedule | StudyTool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-mark">✦</div>
+                <span>StudyTool</span>
+            </div>
+
+            <nav class="navigation">
+                <a href="{{ url_for('home') }}" class="nav-link">
+                    <span class="nav-icon">▦</span>
+                    Dashboard
+                </a>
+                <a href="{{ url_for('resources') }}" class="nav-link">
+                    <span class="nav-icon">⌕</span>
+                    Study Resources
+                </a>
+                <a href="{{ url_for('focus') }}" class="nav-link">
+                    <span class="nav-icon">◷</span>
+                    Focus Mode
+                </a>
+                <a href="{{ url_for('time_management') }}" class="nav-link active" aria-current="page">
+                    <span class="nav-icon">✓</span>
+                    Time Management
+                </a>
+                <a href="{{ url_for('support') }}" class="nav-link">
+                    <span class="nav-icon">♡</span>
+                    Student Support
+                </a>
+                <a href="{{ url_for('ai_help') }}" class="nav-link">
+                    <span class="nav-icon">♪</span>
+                    AI Study Help
+                </a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">⚙</span>
+                    Settings
+                </a>
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">?</span>
+                    Help
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <button class="mobile-menu" type="button" aria-label="Open menu">☰</button>
+                <div class="welcome">
+                    <div class="welcome-icon" aria-hidden="true">⏱</div>
+                    <div>
+                        <h1>Time Management &amp; Schedule</h1>
+                        <p>Research-backed study timers and visual scheduling tools.</p>
+                    </div>
+                </div>
+            </header>
+
+            <section class="dashboard schedule-dashboard">
+                <section class="main-card timer-card" aria-labelledby="timer-heading">
+                    <div class="timer-intro">
+                        <div class="eyebrow">FOCUS, THEN RECHARGE</div>
+                        <h2 id="timer-heading">Study Timer</h2>
+                        <p id="timer-session-label">Pomodoro Technique · Work session</p>
+                    </div>
+                    <div class="timer-readout" id="timer-readout" role="timer" aria-live="off">25:00</div>
+                    <div class="timer-controls" aria-label="Timer controls">
+                        <button id="timer-start" class="timer-button timer-button-primary" type="button">Start</button>
+                        <button id="timer-pause" class="timer-button" type="button" disabled>Pause</button>
+                        <button id="timer-reset" class="timer-button" type="button">Reset</button>
+                    </div>
+                    <p class="timer-status" id="timer-status" aria-live="polite">Ready when you are.</p>
+
+                    <div class="preset-heading">
+                        <h3>Choose a study rhythm</h3>
+                        <p>Select a preset to set the work-session timer.</p>
+                    </div>
+                    <div class="preset-grid" role="group" aria-label="Study and break presets">
+                        <button class="preset-button" type="button" data-work="15" data-break="3" data-name="Power Session">
+                            <span class="preset-time">15m / 3m</span>
+                            <strong>Power Session</strong>
+                            <span>Quick review / flashcards</span>
+                        </button>
+                        <button class="preset-button is-active" type="button" data-work="25" data-break="5" data-name="Pomodoro Technique" aria-pressed="true">
+                            <span class="preset-time">25m / 5m</span>
+                            <strong>Pomodoro Technique</strong>
+                            <span>Procrastination buster</span>
+                        </button>
+                        <button class="preset-button" type="button" data-work="45" data-break="15" data-name="School Block">
+                            <span class="preset-time">45m / 15m</span>
+                            <strong>School Block</strong>
+                            <span>Standard class rhythm</span>
+                        </button>
+                        <button class="preset-button" type="button" data-work="50" data-break="10" data-name="Deep Focus">
+                            <span class="preset-time">50m / 10m</span>
+                            <strong>Deep Focus</strong>
+                            <span>Essays &amp; complex problems</span>
+                        </button>
+                        <button class="preset-button" type="button" data-work="52" data-break="17" data-name="Peak Productivity">
+                            <span class="preset-time">52m / 17m</span>
+                            <strong>Peak Productivity</strong>
+                            <span>Based on Draugiem Group study</span>
+                        </button>
+                        <button class="preset-button" type="button" data-work="90" data-break="20" data-name="Ultradian Cycle">
+                            <span class="preset-time">90m / 20m</span>
+                            <strong>Ultradian Cycle</strong>
+                            <span>Advanced deep-work blocks</span>
+                        </button>
+                    </div>
+                    <p class="timer-note">The timer counts down the work session. Use the paired break length as a reminder to step away and recharge.</p>
+                </section>
+
+                <section class="main-card study-ratios-card" aria-labelledby="study-ratios-heading">
+                    <div class="eyebrow">FIND YOUR RHYTHM</div>
+                    <h2 id="study-ratios-heading">Which study session should I choose?</h2>
+                    <div class="ratio-guide-grid">
+                        <article class="ratio-guide">
+                            <h3>50 Minutes Study / 10 Minutes Break</h3>
+                            <p><strong>Best for:</strong> Deep focus, essay writing, and complex problem-solving.</p>
+                            <p><strong>Why it works:</strong> A focused block of about 45–50 minutes gives you time to settle into demanding work. A 10-minute break offers a chance to reset before the next block.</p>
+                        </article>
+                        <article class="ratio-guide">
+                            <h3>25 Minutes Study / 5 Minutes Break</h3>
+                            <p><strong>Best for:</strong> Beating procrastination, quick review sessions, and heavy memorization.</p>
+                            <p><strong>Why it works:</strong> Short work intervals can make it easier to get started and sustain attention. After four sessions, take a longer 15–30 minute break.</p>
+                        </article>
+                        <article class="ratio-guide">
+                            <h3>15 Minutes Study / 3 Minutes Break</h3>
+                            <p><strong>Best for:</strong> Flashcards, quick review, or starting a task that feels overwhelming.</p>
+                            <p><strong>Why it works:</strong> A short, clearly bounded session lowers the barrier to beginning and makes review easy to fit between other activities.</p>
+                        </article>
+                        <article class="ratio-guide">
+                            <h3>45 Minutes Study / 15 Minutes Break</h3>
+                            <p><strong>Best for:</strong> Homework sessions, textbook reading, and a class-like study block.</p>
+                            <p><strong>Why it works:</strong> A moderate work period leaves enough time to make progress, while a full 15-minute pause creates room to move, hydrate, or reset.</p>
+                        </article>
+                        <article class="ratio-guide">
+                            <h3>52 Minutes Study / 17 Minutes Break</h3>
+                            <p><strong>Best for:</strong> A structured focus block when you have a longer study window.</p>
+                            <p><strong>Why it works:</strong> This work-and-rest ratio is inspired by a Draugiem Group workplace productivity study. Treat it as one option to try; the best rhythm can vary from person to person.</p>
+                        </article>
+                        <article class="ratio-guide">
+                            <h3>90 Minutes Study / 20 Minutes Break</h3>
+                            <p><strong>Best for:</strong> Advanced deep-work blocks when you are rested and already comfortable sustaining focus.</p>
+                            <p><strong>Why it works:</strong> Some people prefer a longer uninterrupted block followed by a substantial pause. If your focus fades sooner, choose a shorter preset instead.</p>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="main-card weekly-schedule-card" aria-labelledby="weekly-schedule-heading">
+                    <div class="schedule-section-header">
+                        <div>
+                            <div class="eyebrow">YOUR WEEK AT A GLANCE</div>
+                            <h2 id="weekly-schedule-heading">Weekly Schedule</h2>
+                        </div>
+                        <p>Sample blocks you can adjust to fit your week.</p>
+                    </div>
+                    <div class="weekly-grid-scroll" tabindex="0" aria-label="Weekly schedule, scroll horizontally to see all days">
+                        <div class="weekly-grid">
+                            <div class="weekly-day" data-day-index="1">
+                                <h3>Monday</h3>
+                                <div class="schedule-block schedule-school"><span>8:00 AM – 3:00 PM</span><strong>School</strong></div>
+                                <div class="schedule-block schedule-homework"><span>4:00 PM – 5:00 PM</span><strong>Homework</strong></div>
+                                <div class="schedule-block schedule-rest"><span>5:00 PM – 5:30 PM</span><strong>Rest / Break</strong></div>
+                            </div>
+                            <div class="weekly-day" data-day-index="2">
+                                <h3>Tuesday</h3>
+                                <div class="schedule-block schedule-school"><span>8:00 AM – 3:00 PM</span><strong>School</strong></div>
+                                <div class="schedule-block schedule-homework"><span>4:00 PM – 5:15 PM</span><strong>Homework</strong></div>
+                                <div class="schedule-block schedule-exam"><span>5:30 PM – 6:00 PM</span><strong>Exam Prep</strong></div>
+                            </div>
+                            <div class="weekly-day" data-day-index="3">
+                                <h3>Wednesday</h3>
+                                <div class="schedule-block schedule-school"><span>8:00 AM – 3:00 PM</span><strong>School</strong></div>
+                                <div class="schedule-block schedule-rest"><span>3:30 PM – 4:00 PM</span><strong>Rest / Break</strong></div>
+                                <div class="schedule-block schedule-homework"><span>4:00 PM – 5:00 PM</span><strong>Homework</strong></div>
+                            </div>
+                            <div class="weekly-day" data-day-index="4">
+                                <h3>Thursday</h3>
+                                <div class="schedule-block schedule-school"><span>8:00 AM – 3:00 PM</span><strong>School</strong></div>
+                                <div class="schedule-block schedule-homework"><span>4:00 PM – 5:00 PM</span><strong>Homework</strong></div>
+                                <div class="schedule-block schedule-exam"><span>5:15 PM – 6:00 PM</span><strong>Exam Prep</strong></div>
+                            </div>
+                            <div class="weekly-day" data-day-index="5">
+                                <h3>Friday</h3>
+                                <div class="schedule-block schedule-school"><span>8:00 AM – 3:00 PM</span><strong>School</strong></div>
+                                <div class="schedule-block schedule-rest"><span>4:00 PM – 5:00 PM</span><strong>Rest / Break</strong></div>
+                            </div>
+                            <div class="weekly-day" data-day-index="6">
+                                <h3>Saturday</h3>
+                                <div class="schedule-block schedule-exam"><span>10:00 AM – 11:00 AM</span><strong>Exam Prep</strong></div>
+                                <div class="schedule-block schedule-homework"><span>11:15 AM – 12:00 PM</span><strong>Homework</strong></div>
+                                <div class="schedule-block schedule-rest"><span>Afternoon</span><strong>Rest / Break</strong></div>
+                            </div>
+                            <div class="weekly-day" data-day-index="0">
+                                <h3>Sunday</h3>
+                                <div class="schedule-block schedule-rest"><span>Morning</span><strong>Rest / Break</strong></div>
+                                <div class="schedule-block schedule-homework"><span>4:00 PM – 4:45 PM</span><strong>Homework</strong></div>
+                                <div class="schedule-block schedule-exam"><span>5:00 PM – 5:30 PM</span><strong>Plan / Exam Prep</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="main-card planner-card" aria-labelledby="planner-heading">
+                    <div class="eyebrow">MAKE IT YOURS</div>
+                    <h2 id="planner-heading">Add an Event or To-Do</h2>
+                    <p class="planner-intro">Add school events, assignments, study sessions, or personal reminders. Your list is saved in this browser.</p>
+                    <form id="planner-form" class="planner-form">
+                        <label>
+                            <span>What do you need to do?</span>
+                            <input id="planner-title" name="title" type="text" maxlength="120" required placeholder="e.g. Finish biology lab report">
+                        </label>
+                        <label>
+                            <span>Type</span>
+                            <select id="planner-type" name="type">
+                                <option value="to-do">To-do</option>
+                                <option value="event">Event</option>
+                                <option value="homework">Homework</option>
+                                <option value="exam">Exam prep</option>
+                                <option value="rest">Rest / Break</option>
+                            </select>
+                        </label>
+                        <label>
+                            <span>Date</span>
+                            <input id="planner-date" name="date" type="date" required>
+                        </label>
+                        <label>
+                            <span>Time (optional)</span>
+                            <input id="planner-time" name="time" type="time">
+                        </label>
+                        <button class="timer-button timer-button-primary planner-submit" type="submit">Add to my plan</button>
+                    </form>
+                    <p id="planner-status" class="planner-status" aria-live="polite"></p>
+                    <div id="planner-list" class="planner-list" aria-live="polite"></div>
+                </section>
+
+                <section class="main-card deadline-section" aria-labelledby="deadlines-heading">
+                    <div class="eyebrow">PLAN AHEAD</div>
+                    <h2 id="deadlines-heading">Upcoming Deadlines</h2>
+                    <div class="deadline-grid">
+                        <article class="deadline-card">
+                            <span class="deadline-tag">3 Days Left</span>
+                            <h3>AP Bio Exam</h3>
+                            <p>Review cell processes and practice key concepts.</p>
+                        </article>
+                        <article class="deadline-card">
+                            <span class="deadline-tag">5 Days Left</span>
+                            <h3>History Essay</h3>
+                            <p>Finish your draft, revise, and check your sources.</p>
+                        </article>
+                        <article class="deadline-card">
+                            <span class="deadline-tag">1 Week Left</span>
+                            <h3>Algebra Unit Test</h3>
+                            <p>Practice equations and note questions to review.</p>
+                        </article>
+                    </div>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <nav class="mobile-navigation" aria-label="Mobile navigation">
+        <a href="{{ url_for('home') }}" class="mobile-link">
+            <span>▦</span><small>Home</small>
+        </a>
+        <a href="{{ url_for('resources') }}" class="mobile-link">
+            <span>📚</span><small>Resources</small>
+        </a>
+        <a href="{{ url_for('focus') }}" class="mobile-link">
+            <span>◷</span><small>Focus</small>
+        </a>
+        <a href="{{ url_for('time_management') }}" class="mobile-link active" aria-current="page">
+            <span>✓</span><small>Schedule</small>
+        </a>
+        <a href="{{ url_for('support') }}" class="mobile-link">
+            <span>♡</span><small>Support</small>
+        </a>
+        <a href="{{ url_for('ai_help') }}" class="mobile-link">
+            <span>♪</span><small>AI Help</small>
+        </a>
+    </nav>
+
+    <script>
+        (() => {
+            const timerReadout = document.getElementById("timer-readout");
+            const timerLabel = document.getElementById("timer-session-label");
+            const timerStatus = document.getElementById("timer-status");
+            const startButton = document.getElementById("timer-start");
+            const pauseButton = document.getElementById("timer-pause");
+            const resetButton = document.getElementById("timer-reset");
+            const presetButtons = Array.from(document.querySelectorAll(".preset-button"));
+            const plannerForm = document.getElementById("planner-form");
+            const plannerTitle = document.getElementById("planner-title");
+            const plannerType = document.getElementById("planner-type");
+            const plannerDate = document.getElementById("planner-date");
+            const plannerTime = document.getElementById("planner-time");
+            const plannerStatus = document.getElementById("planner-status");
+            const plannerList = document.getElementById("planner-list");
+            const eventStorageKey = "studytool_time_management_events_v1";
+
+            let selectedPreset = { work: 25, rest: 5, name: "Pomodoro Technique" };
+            let remainingSeconds = selectedPreset.work * 60;
+            let timerInterval;
+            let storageAvailable = true;
+
+            function formatTime(totalSeconds) {
+                const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
+                const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+                return `${minutes}:${seconds}`;
+            }
+
+            function renderTimer() {
+                timerReadout.textContent = formatTime(remainingSeconds);
+            }
+
+            function stopTimer() {
+                window.clearInterval(timerInterval);
+                timerInterval = undefined;
+                startButton.disabled = false;
+                pauseButton.disabled = true;
+            }
+
+            function startTimer() {
+                if (timerInterval || remainingSeconds <= 0) {
+                    return;
+                }
+                timerStatus.textContent = `${selectedPreset.name} in progress.`;
+                startButton.disabled = true;
+                pauseButton.disabled = false;
+                timerInterval = window.setInterval(() => {
+                    remainingSeconds -= 1;
+                    renderTimer();
+                    if (remainingSeconds <= 0) {
+                        remainingSeconds = 0;
+                        renderTimer();
+                        stopTimer();
+                        timerStatus.textContent = "Session complete. Take your planned break!";
+                    }
+                }, 1000);
+            }
+
+            function pauseTimer() {
+                if (!timerInterval) {
+                    return;
+                }
+                stopTimer();
+                timerStatus.textContent = "Timer paused.";
+            }
+
+            function resetTimer() {
+                stopTimer();
+                remainingSeconds = selectedPreset.work * 60;
+                renderTimer();
+                timerStatus.textContent = "Timer reset. Ready when you are.";
+            }
+
+            presetButtons.forEach((button) => {
+                button.addEventListener("click", () => {
+                    presetButtons.forEach((preset) => {
+                        preset.classList.remove("is-active");
+                        preset.setAttribute("aria-pressed", "false");
+                    });
+                    button.classList.add("is-active");
+                    button.setAttribute("aria-pressed", "true");
+                    selectedPreset = {
+                        work: Number(button.dataset.work),
+                        rest: Number(button.dataset.break),
+                        name: button.dataset.name
+                    };
+                    timerLabel.textContent = `${selectedPreset.name} · Work session (${selectedPreset.work} min work / ${selectedPreset.rest} min break)`;
+                    resetTimer();
+                });
+            });
+
+            startButton.addEventListener("click", startTimer);
+            pauseButton.addEventListener("click", pauseTimer);
+            resetButton.addEventListener("click", resetTimer);
+            renderTimer();
+
+            function loadEvents() {
+                try {
+                    const savedEvents = window.localStorage.getItem(eventStorageKey);
+                    if (!savedEvents) {
+                        return [];
+                    }
+                    const parsedEvents = JSON.parse(savedEvents);
+                    if (!Array.isArray(parsedEvents)) {
+                        throw new Error("Saved planner data must be a list.");
+                    }
+                    return parsedEvents.filter((event) =>
+                        event
+                        && typeof event.id === "string"
+                        && typeof event.title === "string"
+                        && typeof event.date === "string"
+                        && typeof event.type === "string"
+                        && typeof event.done === "boolean"
+                        && (!event.time || typeof event.time === "string")
+                    );
+                } catch (error) {
+                    storageAvailable = false;
+                    plannerStatus.textContent = "Saved items could not be loaded. New items will only be available until you leave this page.";
+                    console.warn("Planner items could not be loaded from browser storage.", error);
+                    return [];
+                }
+            }
+
+            let events = loadEvents();
+
+            function saveEvents() {
+                if (!storageAvailable) {
+                    return false;
+                }
+                try {
+                    window.localStorage.setItem(eventStorageKey, JSON.stringify(events));
+                    return true;
+                } catch (error) {
+                    storageAvailable = false;
+                    plannerStatus.textContent = "Your changes could not be saved in this browser. Please check browser storage settings.";
+                    console.warn("Planner items could not be saved to browser storage.", error);
+                    return false;
+                }
+            }
+
+            function formatEventDate(dateString) {
+                const date = new Date(`${dateString}T12:00:00`);
+                return date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+            }
+
+            function renderEvents() {
+                plannerList.replaceChildren();
+                if (events.length === 0) {
+                    const emptyMessage = document.createElement("p");
+                    emptyMessage.className = "planner-empty";
+                    emptyMessage.textContent = "Your added events and to-dos will appear here.";
+                    plannerList.append(emptyMessage);
+                    return;
+                }
+
+                events.sort((left, right) => {
+                    const leftDate = `${left.date}T${left.time || "23:59"}`;
+                    const rightDate = `${right.date}T${right.time || "23:59"}`;
+                    return leftDate.localeCompare(rightDate);
+                });
+
+                events.forEach((event) => {
+                    const item = document.createElement("article");
+                    item.className = `planner-item${event.done ? " is-done" : ""}`;
+
+                    const details = document.createElement("div");
+                    details.className = "planner-item-details";
+                    const title = document.createElement("h3");
+                    title.textContent = event.title;
+                    const metadata = document.createElement("p");
+                    metadata.textContent = `${event.type} · ${formatEventDate(event.date)}${event.time ? ` · ${event.time}` : ""}`;
+                    details.append(title, metadata);
+
+                    const actions = document.createElement("div");
+                    actions.className = "planner-item-actions";
+                    const doneButton = document.createElement("button");
+                    doneButton.type = "button";
+                    doneButton.className = "planner-action";
+                    doneButton.textContent = event.done ? "Undo" : "Done";
+                    doneButton.setAttribute("aria-label", `${event.done ? "Mark incomplete" : "Mark complete"}: ${event.title}`);
+                    doneButton.addEventListener("click", () => {
+                        event.done = !event.done;
+                        saveEvents();
+                        renderEvents();
+                    });
+
+                    const deleteButton = document.createElement("button");
+                    deleteButton.type = "button";
+                    deleteButton.className = "planner-action planner-delete";
+                    deleteButton.textContent = "Remove";
+                    deleteButton.setAttribute("aria-label", `Remove: ${event.title}`);
+                    deleteButton.addEventListener("click", () => {
+                        events = events.filter((savedEvent) => savedEvent.id !== event.id);
+                        saveEvents();
+                        renderEvents();
+                        renderScheduleEvents();
+                    });
+
+                    actions.append(doneButton, deleteButton);
+                    item.append(details, actions);
+                    plannerList.append(item);
+                });
+            }
+
+            function renderScheduleEvents() {
+                document.querySelectorAll(".weekly-day").forEach((dayColumn) => {
+                    dayColumn.querySelectorAll(".user-schedule-block").forEach((block) => block.remove());
+                    const dayIndex = Number(dayColumn.dataset.dayIndex);
+                    const dayEvents = events.filter((event) => {
+                        const eventDate = new Date(`${event.date}T12:00:00`);
+                        return eventDate.getDay() === dayIndex;
+                    });
+
+                    dayEvents.forEach((event) => {
+                        const block = document.createElement("div");
+                        block.className = `schedule-block user-schedule-block schedule-${event.type}`;
+                        const time = document.createElement("span");
+                        time.textContent = event.time || "All day";
+                        const title = document.createElement("strong");
+                        title.textContent = event.title;
+                        block.append(time, title);
+                        dayColumn.append(block);
+                    });
+                });
+            }
+
+            plannerForm.addEventListener("submit", (submitEvent) => {
+                submitEvent.preventDefault();
+                if (!plannerForm.reportValidity()) {
+                    return;
+                }
+
+                const title = plannerTitle.value.trim();
+                if (!title) {
+                    plannerTitle.setCustomValidity("Enter a name for this event or to-do.");
+                    plannerTitle.reportValidity();
+                    return;
+                }
+                plannerTitle.setCustomValidity("");
+
+                events.push({
+                    id: window.crypto.randomUUID(),
+                    title,
+                    type: plannerType.value,
+                    date: plannerDate.value,
+                    time: plannerTime.value,
+                    done: false
+                });
+
+                const saved = saveEvents();
+                plannerStatus.textContent = saved
+                    ? "Added to your plan and saved in this browser."
+                    : "Added for this visit, but could not be saved in this browser.";
+                plannerForm.reset();
+                renderEvents();
+                renderScheduleEvents();
+            });
+
+            plannerTitle.addEventListener("input", () => plannerTitle.setCustomValidity(""));
+            renderEvents();
+            renderScheduleEvents();
+        })();
+    </script>
+</body>
+</html>
