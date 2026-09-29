@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appearance - StudyTool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='appearance.js') }}" defer></script>
+</head>
+<body>
+    <div class="appearance-page">
+        <header class="appearance-header">
+            <a class="appearance-back" href="{{ url_for('home') }}">← Back to dashboard</a>
+            <div>
+                <div class="eyebrow">MAKE IT YOURS</div>
+                <h1>Appearance</h1>
+                <p>Preview the dashboard in a color theme, then apply the one you like.</p>
+            </div>
+        </header>
+
+        <section class="appearance-controls" aria-labelledby="theme-options-heading">
+            <div class="appearance-controls-heading">
+                <h2 id="theme-options-heading">Choose a color theme</h2>
+                <p id="appearance-status" aria-live="polite">Select a theme to preview your dashboard.</p>
+            </div>
+            <div class="theme-options">
+                <button class="theme-option" type="button" data-theme-choice="lavender" aria-pressed="false">
+                    <span class="theme-swatches theme-swatches-lavender" aria-hidden="true"><i></i><i></i><i></i></span>
+                    Lavender
+                </button>
+                <button class="theme-option" type="button" data-theme-choice="ocean" aria-pressed="false">
+                    <span class="theme-swatches theme-swatches-ocean" aria-hidden="true"><i></i><i></i><i></i></span>
+                    Ocean
+                </button>
+                <button class="theme-option" type="button" data-theme-choice="forest" aria-pressed="false">
+                    <span class="theme-swatches theme-swatches-forest" aria-hidden="true"><i></i><i></i><i></i></span>
+                    Forest
+                </button>
+                <button class="theme-option" type="button" data-theme-choice="sunset" aria-pressed="false">
+                    <span class="theme-swatches theme-swatches-sunset" aria-hidden="true"><i></i><i></i><i></i></span>
+                    Sunset
+                </button>
+                <button class="theme-option" type="button" data-theme-choice="dark" aria-pressed="false">
+                    <span class="theme-swatches theme-swatches-dark" aria-hidden="true"><i></i><i></i><i></i></span>
+                    Dark
+                </button>
+            </div>
+            <button id="apply-theme" class="timer-button timer-button-primary" type="button">Apply this theme</button>
+        </section>
+
+        <section class="appearance-preview-section" aria-labelledby="preview-heading">
+            <div class="appearance-preview-heading">
+                <h2 id="preview-heading">Dashboard preview</h2>
+                <span id="preview-theme-label">Lavender</span>
+            </div>
+            <iframe id="dashboard-preview" class="dashboard-preview" src="{{ url_for('home') }}" title="Live dashboard appearance preview"></iframe>
+        </section>
+    </div>
+</body>
+</html>

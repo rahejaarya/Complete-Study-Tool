@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Complete Study Tool</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
 </head>
 
 <body>
@@ -91,11 +92,10 @@
 
                 </div>
 
-                <div class="top-actions">
-                    <button>＋</button>
-                    <button>ϟ</button>
-                    <button>♧</button>
-                </div>
+                <a class="appearance-button" href="{{ url_for('appearance') }}" target="_blank" rel="noopener">
+                    <span aria-hidden="true">🎨</span>
+                    Appearance
+                </a>
 
             </header>
 

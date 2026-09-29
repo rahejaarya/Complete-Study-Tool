@@ -15,6 +15,10 @@ def load_resources():
 def home():
     return render_template("index.html")
 
+@app.route("/appearance")
+def appearance():
+    return render_template("appearance.html")
+
 @app.route("/resources")
 def resources():
     query = request.args.get('query', '').strip()
