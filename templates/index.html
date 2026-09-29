@@ -298,15 +298,13 @@
 
 
                     <!-- Motivational Quote Slideshow -->
-                    <section class="main-card motivation-card" aria-labelledby="quote-heading">
-                        <div class="eyebrow">A LITTLE ENCOURAGEMENT</div>
-                        <h2 id="quote-heading">A thought for you</h2>
+                    <section class="main-card motivation-card" aria-label="Motivational quote slideshow">
                         <blockquote class="quote-slide" id="quote-slide" aria-live="polite" aria-atomic="true">
-                            <p id="quote-text">Small steps still move you forward.</p>
-                            <cite id="quote-author">Original</cite>
+                            <p id="quote-text">Your time is limited, so don't waste it living someone else's life.</p>
+                            <cite id="quote-author">Steve Jobs · Entrepreneur</cite>
                         </blockquote>
                         <div class="quote-controls">
-                            <span class="quote-progress" id="quote-progress">1 of 100</span>
+                            <span class="quote-progress" id="quote-progress">1 of 30</span>
                             <button class="quote-toggle" id="quote-toggle" type="button" aria-pressed="false">
                                 Pause
                             </button>
@@ -398,109 +396,39 @@
     <script>
         (() => {
             const quotes = [
-                { text: "Small steps still move you forward.", author: "Original" },
-                { text: "You don’t have to know everything to begin.", author: "Original" },
-                { text: "One focused minute is a start worth making.", author: "Original" },
-                { text: "Progress grows from the effort you repeat.", author: "Original" },
-                { text: "A tough subject can become familiar with practice.", author: "Original" },
-                { text: "Your best today is enough to build on tomorrow.", author: "Original" },
-                { text: "Every question you ask helps you learn.", author: "Original" },
-                { text: "Mistakes are part of figuring things out.", author: "Original" },
-                { text: "You can take a break and still be committed.", author: "Original" },
-                { text: "Start where you are; work with what you have.", author: "Original" },
-                { text: "Fifteen minutes of focus can open the door.", author: "Original" },
-                { text: "Learning takes time, and you’re allowed to take yours.", author: "Original" },
-                { text: "Your next step matters more than a perfect plan.", author: "Original" },
-                { text: "You’ve learned hard things before; you can learn this, too.", author: "Original" },
-                { text: "A rough draft is progress in disguise.", author: "Original" },
-                { text: "Keep going at a pace you can sustain.", author: "Original" },
-                { text: "You are more than a grade or a test score.", author: "Original" },
-                { text: "Rest helps your effort last longer.", author: "Original" },
-                { text: "Each time you try, you give yourself another chance.", author: "Original" },
-                { text: "You don’t need to feel ready to take one small step.", author: "Original" },
-                { text: "Your curiosity is a strength.", author: "Original" },
-                { text: "A challenging day does not define your ability.", author: "Original" },
-                { text: "Focus on the next page, not the whole book.", author: "Original" },
-                { text: "Asking for help is a smart way to move forward.", author: "Original" },
-                { text: "You’re building skills, even when progress feels slow.", author: "Original" },
-                { text: "A little practice today can make tomorrow easier.", author: "Original" },
-                { text: "You can change your approach without giving up.", author: "Original" },
-                { text: "Learning is not a race; keep your own pace.", author: "Original" },
-                { text: "The work you do quietly still counts.", author: "Original" },
-                { text: "Take a breath, then choose one next step.", author: "Original" },
-                { text: "You deserve patience from yourself, too.", author: "Original" },
-                { text: "It’s okay to try, pause, and try again.", author: "Original" },
-                { text: "Every new skill starts with not knowing yet.", author: "Original" },
-                { text: "You can make progress without making it perfect.", author: "Original" },
-                { text: "Your effort is valuable, even when the result takes time.", author: "Original" },
-                { text: "One finished task can make room for the next.", author: "Original" },
-                { text: "You are allowed to learn in your own way.", author: "Original" },
-                { text: "A plan can be simple: begin, focus, pause.", author: "Original" },
-                { text: "You don’t have to solve everything in one sitting.", author: "Original" },
-                { text: "Showing up for yourself is a meaningful achievement.", author: "Original" },
-                { text: "Your voice and ideas belong in the room.", author: "Original" },
-                { text: "You can be proud of trying something difficult.", author: "Original" },
-                { text: "Even a slow day can include a small win.", author: "Original" },
-                { text: "It’s brave to ask someone to explain it another way.", author: "Original" },
-                { text: "You can make a fresh start at any point in the day.", author: "Original" },
-                { text: "Your future is shaped by many small choices.", author: "Original" },
-                { text: "Keep the parts that work; adjust the parts that don’t.", author: "Original" },
-                { text: "You are learning, not falling behind at being yourself.", author: "Original" },
-                { text: "A little progress is still real progress.", author: "Original" },
-                { text: "You can take things one problem at a time.", author: "Original" },
-                { text: "Your worth does not depend on being productive.", author: "Original" },
-                { text: "Make room for the things that help you feel like you.", author: "Original" },
-                { text: "You can say no and still be a kind person.", author: "Original" },
-                { text: "Rest is part of taking care of your goals.", author: "Original" },
-                { text: "You don’t have to compare your chapter one to someone else’s chapter ten.", author: "Original" },
-                { text: "Your feelings deserve care, not judgment.", author: "Original" },
-                { text: "It’s okay to reach out when something feels heavy.", author: "Original" },
-                { text: "You can be a work in progress and still be wonderful.", author: "Original" },
-                { text: "The way forward can begin with one honest conversation.", author: "Original" },
-                { text: "You deserve friends who respect your boundaries.", author: "Original" },
-                { text: "You can change your mind as you learn more about yourself.", author: "Original" },
-                { text: "Today is one part of your story, not the whole story.", author: "Original" },
-                { text: "Being kind to yourself is a strength.", author: "Original" },
-                { text: "You don’t have to have everything figured out right now.", author: "Original" },
-                { text: "Your small joys matter.", author: "Original" },
-                { text: "It’s okay to take up space and share your ideas.", author: "Original" },
-                { text: "A hard moment can pass without defining you.", author: "Original" },
-                { text: "You can make choices that feel right for you.", author: "Original" },
-                { text: "There is strength in starting over gently.", author: "Original" },
-                { text: "You deserve time to rest, play, and grow.", author: "Original" },
-                { text: "Progress can look like asking for help.", author: "Original" },
-                { text: "You can be proud of how far you’ve come.", author: "Original" },
-                { text: "Your pace is allowed to be different from everyone else’s.", author: "Original" },
-                { text: "One kind choice toward yourself can change your day.", author: "Original" },
-                { text: "You are still growing into all the things you can be.", author: "Original" },
-                { text: "You don’t have to carry every worry alone.", author: "Original" },
-                { text: "It’s okay if your path looks different from your friends’.", author: "Original" },
-                { text: "Take the day one moment at a time.", author: "Original" },
-                { text: "You can learn from yesterday without living there.", author: "Original" },
-                { text: "There is no single right way to become yourself.", author: "Original" },
-                { text: "You bring something unique to the people around you.", author: "Original" },
-                { text: "Good things can grow from an imperfect beginning.", author: "Original" },
-                { text: "Your effort matters even when no one else sees it.", author: "Original" },
-                { text: "You can be both nervous and capable.", author: "Original" },
-                { text: "Taking care of yourself is a productive choice.", author: "Original" },
-                { text: "You deserve encouragement, including from yourself.", author: "Original" },
-                { text: "Small acts of courage count.", author: "Original" },
-                { text: "You can make a new plan when the old one stops working.", author: "Original" },
-                { text: "Your ideas are worth exploring.", author: "Original" },
-                { text: "It’s okay to celebrate the little wins.", author: "Original" },
-                { text: "You can keep learning without being hard on yourself.", author: "Original" },
-                { text: "A pause can help you return with more energy.", author: "Original" },
-                { text: "You have permission to grow at your own pace.", author: "Original" },
-                { text: "The next chapter doesn’t have to look like the last.", author: "Original" },
-                { text: "You can be proud of the person you’re becoming.", author: "Original" },
-                { text: "It’s okay to ask someone to sit with you through a hard day.", author: "Original" },
-                { text: "There are many ways to make a meaningful life.", author: "Original" },
-                { text: "You don’t need to be perfect to make a difference.", author: "Original" },
-                { text: "Keep choosing the next kind, helpful step.", author: "Original" },
-                { text: "You are becoming—not behind.", author: "Original" }
+                { text: "Your time is limited, so don't waste it living someone else's life.", author: "Steve Jobs · Entrepreneur" },
+                { text: "I've failed over and over and over again in my life. And that is why I succeed.", author: "Michael Jordan · Basketball player" },
+                { text: "A champion is defined by how they recover when they fall.", author: "Serena Williams · Tennis champion" },
+                { text: "You miss 100% of the shots you don't take.", author: "Wayne Gretzky · Hockey player" },
+                { text: "He who is not courageous enough to take risks will accomplish nothing in life.", author: "Muhammad Ali · Boxer" },
+                { text: "A life is not important except in the impact it has on other lives.", author: "Jackie Robinson · Baseball player" },
+                { text: "Champions keep playing until they get it right.", author: "Billie Jean King · Tennis champion" },
+                { text: "The biggest adventure you can take is to live the life of your dreams.", author: "Oprah Winfrey · Media entrepreneur" },
+                { text: "Done is better than perfect.", author: "Sheryl Sandberg · Business leader" },
+                { text: "Well done is better than well said.", author: "Benjamin Franklin · Inventor and statesman" },
+                { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt · Writer and diplomat" },
+                { text: "Alone we can do so little; together we can do so much.", author: "Helen Keller · Author and advocate" },
+                { text: "Nothing will work unless you do.", author: "Maya Angelou · Poet and teacher" },
+                { text: "One child, one teacher, one book, one pen can change the world.", author: "Malala Yousafzai · Education activist" },
+                { text: "Kids don't learn from people they don't like.", author: "Rita Pierson · Teacher" },
+                { text: "Do not let what you cannot do interfere with what you can do.", author: "John Wooden · Teacher and coach" },
+                { text: "It was like a new world opened to me.", author: "Marie Curie · Physicist and chemist" },
+                { text: "You must not fool yourself—and you are the easiest person to fool.", author: "Richard Feynman · Physicist and teacher" },
+                { text: "Like what you do, and then you will do your best.", author: "Katherine Johnson · Mathematician" },
+                { text: "Somewhere, something incredible is waiting to be known.", author: "Carl Sagan · Astronomer and educator" },
+                { text: "That's one small step for a man, one giant leap for mankind.", author: "Neil Armstrong · Astronaut" },
+                { text: "That brain of mine is something more than merely mortal.", author: "Ada Lovelace · Mathematician" },
+                { text: "However difficult life may seem, there is always something you can do and succeed at.", author: "Stephen Hawking · Physicist" },
+                { text: "Education is the most powerful weapon which you can use to change the world.", author: "Nelson Mandela · Teacher and leader" },
+                { text: "If there is no struggle, there is no progress.", author: "Frederick Douglass · Writer and abolitionist" },
+                { text: "The credit belongs to the man who is actually in the arena.", author: "Theodore Roosevelt · President and writer" },
+                { text: "What you do makes a difference.", author: "Jane Goodall · Primatologist" },
+                { text: "Anyone who does anything to help a child is a hero to me.", author: "Fred Rogers · Educator and TV host" },
+                { text: "The only place success comes before work is in the dictionary.", author: "Vince Lombardi · Football coach" },
+                { text: "The most difficult thing is the decision to act; the rest is tenacity.", author: "Amelia Earhart · Aviator" }
             ];
 
-            const storageKey = "studytool_motivational_quotes_v1";
+            const storageKey = "studytool_motivational_quotes_v2";
             const quoteText = document.getElementById("quote-text");
             const quoteAuthor = document.getElementById("quote-author");
             const quoteSlide = document.getElementById("quote-slide");
