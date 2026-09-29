@@ -17,15 +17,16 @@ def home():
 
 @app.route("/resources")
 def resources():
-    query = request.args.get('query', '').strip().lower()
+    query = request.args.get('query', '').strip()
     all_resources = load_resources()
     
     if query:
+        search_term = query.lower()
         filtered_resources = [
             item for item in all_resources
-            if query in item.get('title', '').lower() 
-            or query in item.get('subject', '').lower() 
-            or query in item.get('description', '').lower()
+            if search_term in item.get('title', '').lower() 
+            or search_term in item.get('subject', '').lower() 
+            or search_term in item.get('description', '').lower()
         ]
     else:
         filtered_resources = all_resources
@@ -40,17 +41,17 @@ def focus():
 def schedule():
     return render_template("schedule.html")
 
+@app.route("/time-management")
+def time_management():
+    return render_template("timeManagement.html")
+
 @app.route("/support")
 def support():
     return render_template("support.html")
-# can u add a new route for the time management page? gtg cya
+
 @app.route("/ai")
 def ai_help():
     return render_template("ai.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-@app.route('/focus')
-def focus():
-    return render_template('focus.html')
