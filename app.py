@@ -42,7 +42,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
-            google_sub TEXT UNIQUE
+            google_sub TEXT
         )
         """
     )
@@ -52,6 +52,9 @@ def init_db():
     }
     if "google_sub" not in user_columns:
         conn.execute("ALTER TABLE users ADD COLUMN google_sub TEXT")
+    conn.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_sub ON users (google_sub)"
+    )
 
     existing_user = conn.execute(
         "SELECT COUNT(*) AS count FROM users WHERE username = ?",
@@ -194,10 +197,11 @@ def google_callback():
     conn.commit()
     conn.close()
 
+    next_url = safe_next_url(session.pop("login_next", None))
     session.clear()
     session["user_id"] = user["id"]
     session["username"] = user["username"]
-    return redirect(session.pop("login_next", url_for("home")))
+    return redirect(next_url)
 
 @app.route("/api/ai", methods=["POST"])
 @login_required

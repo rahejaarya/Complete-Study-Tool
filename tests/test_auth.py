@@ -22,6 +22,20 @@ class AuthTests(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.headers.get('Location'), '/')
 
+    def test_google_login_requires_client_credentials(self):
+        client_id = app.config.get('GOOGLE_CLIENT_ID')
+        client_secret = app.config.get('GOOGLE_CLIENT_SECRET')
+        app.config['GOOGLE_CLIENT_ID'] = None
+        app.config['GOOGLE_CLIENT_SECRET'] = None
+        try:
+            response = self.client.get('/auth/google')
+        finally:
+            app.config['GOOGLE_CLIENT_ID'] = client_id
+            app.config['GOOGLE_CLIENT_SECRET'] = client_secret
+
+        self.assertEqual(response.status_code, 503)
+        self.assertIn(b'Google sign-in is not configured', response.data)
+
 
 if __name__ == '__main__':
     unittest.main()
