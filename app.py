@@ -1,10 +1,13 @@
 import json
 import os
+import secrets
 import sqlite3
 from functools import wraps
-from static.ai import ask_ai
+from urllib.parse import urlparse
 
 from flask import Flask, redirect, render_template, request, session, url_for, jsonify
+from authlib.integrations.base_client.errors import OAuthError
+from authlib.integrations.flask_client import OAuth
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from static.ai import ask_ai
@@ -12,6 +15,17 @@ from static.ai import ask_ai
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "studytool-dev-secret-key")
 app.config["DATABASE"] = os.path.join(app.root_path, "studytool.db")
+app.config["GOOGLE_CLIENT_ID"] = os.environ.get("GOOGLE_CLIENT_ID")
+app.config["GOOGLE_CLIENT_SECRET"] = os.environ.get("GOOGLE_CLIENT_SECRET")
+
+oauth = OAuth(app)
+google = oauth.register(
+    name="google",
+    client_id=app.config["GOOGLE_CLIENT_ID"],
+    client_secret=app.config["GOOGLE_CLIENT_SECRET"],
+    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+    client_kwargs={"scope": "openid email profile"},
+)
 
 
 def get_db():
@@ -27,10 +41,17 @@ def init_db():
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL
+            password_hash TEXT NOT NULL,
+            google_sub TEXT UNIQUE
         )
         """
     )
+
+    user_columns = {
+        row["name"] for row in conn.execute("PRAGMA table_info(users)").fetchall()
+    }
+    if "google_sub" not in user_columns:
+        conn.execute("ALTER TABLE users ADD COLUMN google_sub TEXT")
 
     existing_user = conn.execute(
         "SELECT COUNT(*) AS count FROM users WHERE username = ?",
@@ -55,6 +76,16 @@ def login_required(view):
         return view(*args, **kwargs)
 
     return wrapped_view
+
+
+def safe_next_url(target):
+    if not target:
+        return url_for("home")
+
+    parsed = urlparse(target)
+    if parsed.scheme or parsed.netloc or not target.startswith("/"):
+        return url_for("home")
+    return target
 
 
 def load_resources():
@@ -83,12 +114,90 @@ def login():
         if user and check_password_hash(user["password_hash"], password):
             session["user_id"] = user["id"]
             session["username"] = user["username"]
-            next_url = request.args.get("next") or url_for("home")
+            next_url = safe_next_url(request.args.get("next"))
             return redirect(next_url)
 
         error = "Invalid username or password."
 
-    return render_template("login.html", error=error)
+    return render_template(
+        "login.html",
+        error=error,
+        google_login_enabled=bool(
+            app.config.get("GOOGLE_CLIENT_ID") and app.config.get("GOOGLE_CLIENT_SECRET")
+        ),
+    )
+
+
+@app.route("/auth/google")
+def google_login():
+    if not app.config.get("GOOGLE_CLIENT_ID") or not app.config.get("GOOGLE_CLIENT_SECRET"):
+        return render_template(
+            "login.html",
+            error="Google sign-in is not configured on this server.",
+            google_login_enabled=False,
+        ), 503
+
+    session["login_next"] = safe_next_url(request.args.get("next"))
+    callback_url = url_for("google_callback", _external=True)
+    return google.authorize_redirect(callback_url)
+
+
+@app.route("/auth/google/callback")
+def google_callback():
+    if not app.config.get("GOOGLE_CLIENT_ID") or not app.config.get("GOOGLE_CLIENT_SECRET"):
+        return redirect(url_for("login"))
+
+    try:
+        token = google.authorize_access_token()
+    except OAuthError:
+        return render_template(
+            "login.html", error="Google sign-in could not be completed."
+        ), 400
+
+    profile = token.get("userinfo", {})
+    email = profile.get("email", "").strip().lower()
+    google_sub = profile.get("sub")
+    if not email or not google_sub or not profile.get("email_verified"):
+        return render_template(
+            "login.html", error="Google did not provide a verified email address."
+        ), 400
+
+    conn = get_db()
+    user = conn.execute(
+        "SELECT * FROM users WHERE google_sub = ?", (google_sub,)
+    ).fetchone()
+    if user is None:
+        user = conn.execute(
+            "SELECT * FROM users WHERE username = ?", (email,)
+        ).fetchone()
+
+        if user and user["google_sub"]:
+            conn.close()
+            return render_template(
+                "login.html", error="This account is linked to a different Google account."
+            ), 403
+
+        if user:
+            conn.execute(
+                "UPDATE users SET google_sub = ? WHERE id = ?",
+                (google_sub, user["id"]),
+            )
+        else:
+            cursor = conn.execute(
+                "INSERT INTO users (username, password_hash, google_sub) VALUES (?, ?, ?)",
+                (email, generate_password_hash(secrets.token_urlsafe(32)), google_sub),
+            )
+            user = conn.execute(
+                "SELECT * FROM users WHERE id = ?", (cursor.lastrowid,)
+            ).fetchone()
+
+    conn.commit()
+    conn.close()
+
+    session.clear()
+    session["user_id"] = user["id"]
+    session["username"] = user["username"]
+    return redirect(session.pop("login_next", url_for("home")))
 
 @app.route("/api/ai", methods=["POST"])
 @login_required

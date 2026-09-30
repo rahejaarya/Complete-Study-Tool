@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Support - StudyTool</title>
-    <script src="{{ url_for('static', filename='theme.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
 </head>
 
 <body>
@@ -60,6 +60,10 @@
 
         <!-- Main Content -->
         <main class="main-content">
+
+            <a href="{{ url_for('home') }}" class="back-link">
+                &larr; Go back to main page
+            </a>
 
             <header class="topbar">
                 <button class="mobile-menu">☰</button>

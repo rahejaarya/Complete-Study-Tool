@@ -363,6 +363,34 @@ body {
     padding: 35px 55px 70px;
 }
 
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    margin: 0 0 22px;
+    padding: 10px 18px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: #5267df;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.4;
+    text-decoration: none;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.back-link:hover {
+    background: #4055c8;
+    transform: translateY(-1px);
+}
+
+.back-link:focus-visible {
+    outline: 3px solid #9aa8ff;
+    outline-offset: 3px;
+}
+
 
 /* ================================
    TOP BAR
