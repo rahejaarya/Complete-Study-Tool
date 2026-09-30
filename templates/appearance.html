@@ -9,53 +9,165 @@
     <script src="{{ url_for('static', filename='appearance.js') }}" defer></script>
 </head>
 <body>
-    <div class="appearance-page">
+    <main class="appearance-page">
         <header class="appearance-header">
             <a class="appearance-back" href="{{ url_for('home') }}">← Back to dashboard</a>
             <div>
                 <div class="eyebrow">MAKE IT YOURS</div>
                 <h1>Appearance</h1>
-                <p>Preview the dashboard in a color theme, then apply the one you like.</p>
+                <p>Choose a light or dark mode, then pick a color to preview.</p>
             </div>
         </header>
 
-        <section class="appearance-controls" aria-labelledby="theme-options-heading">
-            <div class="appearance-controls-heading">
-                <h2 id="theme-options-heading">Choose a color theme</h2>
-                <p id="appearance-status" aria-live="polite">Select a theme to preview your dashboard.</p>
+        <p id="appearance-status" class="appearance-status" aria-live="polite">Select a theme to preview it, then apply your choice.</p>
+
+        <section class="appearance-mode" aria-labelledby="light-themes-heading">
+            <header class="appearance-mode-header">
+                <div>
+                    <h2 id="light-themes-heading">Light mode</h2>
+                    <p>Bright backgrounds with soft color accents.</p>
+                </div>
+                <span aria-hidden="true">☀</span>
+            </header>
+            <div class="theme-card-grid">
+                <button class="theme-card" type="button" data-theme-choice="light-lavender" aria-pressed="false">
+                    <span class="theme-card-preview" data-theme="light-lavender" aria-hidden="true">
+                        <span class="mini-dashboard-top"><i></i><i></i></span>
+                        <span class="mini-dashboard-content">
+                            <i class="mini-dashboard-sidebar"></i>
+                            <i class="mini-dashboard-main">
+                                <i class="mini-dashboard-banner"></i>
+                                <i class="mini-dashboard-tiles"><i></i><i></i><i></i></i>
+                                <i class="mini-dashboard-bottom"><i></i><i></i></i>
+                            </i>
+                        </span>
+                    </span>
+                    <span class="theme-card-name">Lavender</span>
+                    <span class="theme-card-mode">Light</span>
+                </button>
+                <button class="theme-card" type="button" data-theme-choice="light-blue" aria-pressed="false">
+                    <span class="theme-card-preview" data-theme="light-blue" aria-hidden="true">
+                        <span class="mini-dashboard-top"><i></i><i></i></span>
+                        <span class="mini-dashboard-content">
+                            <i class="mini-dashboard-sidebar"></i>
+                            <i class="mini-dashboard-main">
+                                <i class="mini-dashboard-banner"></i>
+                                <i class="mini-dashboard-tiles"><i></i><i></i><i></i></i>
+                                <i class="mini-dashboard-bottom"><i></i><i></i></i>
+                            </i>
+                        </i>
+                    </span>
+                    <span class="theme-card-name">Light Blue</span>
+                    <span class="theme-card-mode">Light</span>
+                </button>
+                <button class="theme-card" type="button" data-theme-choice="light-green" aria-pressed="false">
+                    <span class="theme-card-preview" data-theme="light-green" aria-hidden="true">
+                        <span class="mini-dashboard-top"><i></i><i></i></span>
+                        <span class="mini-dashboard-content">
+                            <i class="mini-dashboard-sidebar"></i>
+                            <i class="mini-dashboard-main">
+                                <i class="mini-dashboard-banner"></i>
+                                <i class="mini-dashboard-tiles"><i></i><i></i><i></i></i>
+                                <i class="mini-dashboard-bottom"><i></i><i></i></i>
+                            </i>
+                        </i>
+                    </span>
+                    <span class="theme-card-name">Light Green</span>
+                    <span class="theme-card-mode">Light</span>
+                </button>
+                <button class="theme-card" type="button" data-theme-choice="light-sunset" aria-pressed="false">
+                    <span class="theme-card-preview" data-theme="light-sunset" aria-hidden="true">
+                        <span class="mini-dashboard-top"><i></i><i></i></span>
+                        <span class="mini-dashboard-content">
+                            <i class="mini-dashboard-sidebar"></i>
+                            <i class="mini-dashboard-main">
+                                <i class="mini-dashboard-banner"></i>
+                                <i class="mini-dashboard-tiles"><i></i><i></i><i></i></i>
+                                <i class="mini-dashboard-bottom"><i></i><i></i></i>
+                            </i>
+                        </i>
+                    </span>
+                    <span class="theme-card-name">Light Sunset</span>
+                    <span class="theme-card-mode">Light</span>
+                </button>
             </div>
-            <div class="theme-options">
-                <button class="theme-option" type="button" data-theme-choice="lavender" aria-pressed="false">
-                    <span class="theme-swatches theme-swatches-lavender" aria-hidden="true"><i></i><i></i><i></i></span>
-                    Lavender
-                </button>
-                <button class="theme-option" type="button" data-theme-choice="ocean" aria-pressed="false">
-                    <span class="theme-swatches theme-swatches-ocean" aria-hidden="true"><i></i><i></i><i></i></span>
-                    Ocean
-                </button>
-                <button class="theme-option" type="button" data-theme-choice="forest" aria-pressed="false">
-                    <span class="theme-swatches theme-swatches-forest" aria-hidden="true"><i></i><i></i><i></i></span>
-                    Forest
-                </button>
-                <button class="theme-option" type="button" data-theme-choice="sunset" aria-pressed="false">
-                    <span class="theme-swatches theme-swatches-sunset" aria-hidden="true"><i></i><i></i><i></i></span>
-                    Sunset
-                </button>
-                <button class="theme-option" type="button" data-theme-choice="dark" aria-pressed="false">
-                    <span class="theme-swatches theme-swatches-dark" aria-hidden="true"><i></i><i></i><i></i></span>
-                    Dark
-                </button>
-            </div>
-            <button id="apply-theme" class="timer-button timer-button-primary" type="button">Apply this theme</button>
         </section>
 
-        <section class="appearance-preview-section" aria-labelledby="preview-heading">
-            <div class="appearance-preview-heading">
-                <h2 id="preview-heading">Dashboard preview</h2>
-                <span id="preview-theme-label">Lavender</span>
+        <section class="appearance-mode" aria-labelledby="dark-themes-heading">
+            <header class="appearance-mode-header">
+                <div>
+                    <h2 id="dark-themes-heading">Dark mode</h2>
+                    <p>Dark backgrounds with coordinated color accents.</p>
+                </div>
+                <span aria-hidden="true">☾</span>
+            </header>
+            <div class="theme-card-grid">
+                <button class="theme-card" type="button" data-theme-choice="dark-purple" aria-pressed="false">
+                    <span class="theme-card-preview" data-theme="dark-purple" aria-hidden="true">
+                        <span class="mini-dashboard-top"><i></i><i></i></span>
+                        <span class="mini-dashboard-content">
+                            <i class="mini-dashboard-sidebar"></i>
+                            <i class="mini-dashboard-main">
+                                <i class="mini-dashboard-banner"></i>
+                                <i class="mini-dashboard-tiles"><i></i><i></i><i></i></i>
+                                <i class="mini-dashboard-bottom"><i></i><i></i></i>
+                            </i>
+                        </i>
+                    </span>
+                    <span class="theme-card-name">Dark Purple</span>
+                    <span class="theme-card-mode">Dark</span>
+                </button>
+                <button class="theme-card" type="button" data-theme-choice="dark-blue" aria-pressed="false">
+                    <span class="theme-card-preview" data-theme="dark-blue" aria-hidden="true">
+                        <span class="mini-dashboard-top"><i></i><i></i></span>
+                        <span class="mini-dashboard-content">
+                            <i class="mini-dashboard-sidebar"></i>
+                            <i class="mini-dashboard-main">
+                                <i class="mini-dashboard-banner"></i>
+                                <i class="mini-dashboard-tiles"><i></i><i></i><i></i></i>
+                                <i class="mini-dashboard-bottom"><i></i><i></i></i>
+                            </i>
+                        </i>
+                    </span>
+                    <span class="theme-card-name">Dark Blue</span>
+                    <span class="theme-card-mode">Dark</span>
+                </button>
+                <button class="theme-card" type="button" data-theme-choice="dark-green" aria-pressed="false">
+                    <span class="theme-card-preview" data-theme="dark-green" aria-hidden="true">
+                        <span class="mini-dashboard-top"><i></i><i></i></span>
+                        <span class="mini-dashboard-content">
+                            <i class="mini-dashboard-sidebar"></i>
+                            <i class="mini-dashboard-main">
+                                <i class="mini-dashboard-banner"></i>
+                                <i class="mini-dashboard-tiles"><i></i><i></i><i></i></i>
+                                <i class="mini-dashboard-bottom"><i></i><i></i></i>
+                            </i>
+                        </i>
+                    </span>
+                    <span class="theme-card-name">Dark Green</span>
+                    <span class="theme-card-mode">Dark</span>
+                </button>
+                <button class="theme-card" type="button" data-theme-choice="dark-sunset" aria-pressed="false">
+                    <span class="theme-card-preview" data-theme="dark-sunset" aria-hidden="true">
+                        <span class="mini-dashboard-top"><i></i><i></i></span>
+                        <span class="mini-dashboard-content">
+                            <i class="mini-dashboard-sidebar"></i>
+                            <i class="mini-dashboard-main">
+                                <i class="mini-dashboard-banner"></i>
+                                <i class="mini-dashboard-tiles"><i></i><i></i><i></i></i>
+                                <i class="mini-dashboard-bottom"><i></i><i></i></i>
+                            </i>
+                        </span>
+                    </span>
+                    <span class="theme-card-name">Dark Sunset</span>
+                    <span class="theme-card-mode">Dark</span>
+                </button>
             </div>
-            <iframe id="dashboard-preview" class="dashboard-preview" src="{{ url_for('home') }}" title="Live dashboard appearance preview"></iframe>
         </section>
-    </div>
+
+        <div class="appearance-apply-row">
+            <button id="apply-theme" class="timer-button timer-button-primary" type="button">Apply selected theme</button>
+        </div>
+    </main>
 </body>
 </html>

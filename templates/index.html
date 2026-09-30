@@ -92,10 +92,16 @@
 
                 </div>
 
-                <a class="appearance-button" href="{{ url_for('appearance') }}" target="_blank" rel="noopener">
-                    <span aria-hidden="true">🎨</span>
-                    Appearance
-                </a>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <a class="appearance-button" href="{{ url_for('appearance') }}" target="_blank" rel="noopener">
+                        <span aria-hidden="true">🎨</span>
+                        Appearance
+                    </a>
+                    <a class="appearance-button" href="{{ url_for('logout') }}">
+                        <span aria-hidden="true">↩</span>
+                        Logout
+                    </a>
+                </div>
 
             </header>
 

@@ -1,45 +1,32 @@
 (() => {
     const storageKey = "studytool_color_theme_v1";
-    const themes = ["lavender", "ocean", "forest", "sunset", "dark"];
-    let selectedTheme = "lavender";
+    const legacyThemes = {
+        lavender: "light-lavender",
+        ocean: "light-blue",
+        forest: "light-green",
+        sunset: "light-sunset",
+        dark: "dark-purple"
+    };
+    const themes = [
+        "light-lavender",
+        "light-blue",
+        "light-green",
+        "light-sunset",
+        "dark-purple",
+        "dark-blue",
+        "dark-green",
+        "dark-sunset"
+    ];
+    let selectedTheme = "light-lavender";
 
     try {
         const savedTheme = window.localStorage.getItem(storageKey);
-        if (savedTheme && themes.includes(savedTheme)) {
-            selectedTheme = savedTheme;
+        if (savedTheme) {
+            selectedTheme = themes.includes(savedTheme) ? savedTheme : legacyThemes[savedTheme] || selectedTheme;
         }
     } catch (error) {
         console.warn("Saved color theme could not be loaded from browser storage.", error);
     }
 
     document.documentElement.dataset.theme = selectedTheme;
-
-    function initializeThemePicker() {
-        document.querySelectorAll(".theme-select").forEach((select) => {
-            select.value = selectedTheme;
-            select.addEventListener("change", () => {
-                if (!themes.includes(select.value)) {
-                    return;
-                }
-
-                selectedTheme = select.value;
-                document.documentElement.dataset.theme = selectedTheme;
-                document.querySelectorAll(".theme-select").forEach((picker) => {
-                    picker.value = selectedTheme;
-                });
-
-                try {
-                    window.localStorage.setItem(storageKey, selectedTheme);
-                } catch (error) {
-                    console.warn("Color theme could not be saved to browser storage.", error);
-                }
-            });
-        });
-    }
-
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initializeThemePicker, { once: true });
-    } else {
-        initializeThemePicker();
-    }
 })();
