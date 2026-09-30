@@ -32,7 +32,7 @@
                     Study Resources
                 </a>
 
-                <a href="#" class="nav-link">
+                <a href="{{ url_for('focus') }}" class="nav-link">
                     <span class="nav-icon">◷</span>
                     Focus Mode
                 </a>
@@ -56,12 +56,12 @@
 
             <div class="sidebar-bottom">
 
-                <a href="#" class="nav-link">
+                <a href="{{ url_for('settings') }}" class="nav-link">
                     <span class="nav-icon">⚙</span>
                     Settings
                 </a>
 
-                <a href="#" class="nav-link">
+                <a href="{{ url_for('support') }}" class="nav-link">
                     <span class="nav-icon">?</span>
                     Help
                 </a>
@@ -263,7 +263,7 @@
             <small>Resources</small>
         </a>
 
-        <a href="#" class="mobile-link">
+        <a href="{{ url_for('focus') }}" class="mobile-link">
             <span>◷</span>
             <small>Focus</small>
         </a>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - StudyTool</title>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="appearance-page">
+        <header class="appearance-header">
+            <a class="appearance-back" href="{{ url_for('home') }}">← Back to dashboard</a>
+            <div>
+                <div class="eyebrow">YOUR ACCOUNT</div>
+                <h1>Settings</h1>
+                <p>Manage your account and app preferences.</p>
+            </div>
+        </header>
+
+        <section class="appearance-mode" aria-labelledby="account-settings-heading">
+            <header class="appearance-mode-header">
+                <div>
+                    <h2 id="account-settings-heading">Account</h2>
+                    <p>Signed in as {{ session.get("username", "Student") }}.</p>
+                </div>
+            </header>
+            <a class="timer-button" href="{{ url_for('logout') }}">Log out</a>
+        </section>
+
+        <section class="appearance-mode" aria-labelledby="appearance-settings-heading">
+            <header class="appearance-mode-header">
+                <div>
+                    <h2 id="appearance-settings-heading">Appearance</h2>
+                    <p>Change the color theme used throughout StudyTool.</p>
+                </div>
+            </header>
+            <a class="timer-button timer-button-primary" href="{{ url_for('appearance') }}">Open appearance settings</a>
+        </section>
+    </main>
+</body>
+</html>

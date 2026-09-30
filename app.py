@@ -249,6 +249,12 @@ def appearance():
     return render_template("appearance.html")
 
 
+@app.route("/settings")
+@login_required
+def settings():
+    return render_template("settings.html")
+
+
 @app.route("/resources")
 @login_required
 def resources():
@@ -278,7 +284,7 @@ def focus():
 @app.route("/schedule")
 @login_required
 def schedule():
-    return render_template("schedule.html")
+    return redirect(url_for("time_management"))
 
 
 @app.route("/time-management")
