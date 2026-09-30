@@ -2,9 +2,12 @@ import json
 import os
 import sqlite3
 from functools import wraps
+from static.ai import ask_ai
 
-from flask import Flask, redirect, render_template, request, session, url_for
+from flask import Flask, redirect, render_template, request, session, url_for, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
+
+from static.ai import ask_ai
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "studytool-dev-secret-key")
@@ -86,6 +89,33 @@ def login():
         error = "Invalid username or password."
 
     return render_template("login.html", error=error)
+
+@app.route("/api/ai", methods=["POST"])
+@login_required
+def ai_chat():
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "No data received."}), 400
+
+    message = data.get("message", "").strip()
+
+    if not message:
+        return jsonify({"error": "Message cannot be empty."}), 400
+
+    try:
+        answer = ask_ai(message)
+
+        return jsonify({
+            "response": answer
+        })
+
+    except Exception as e:
+        print(f"AI error: {e}")
+
+        return jsonify({
+            "error": "The AI encountered an error."
+        }), 500
 
 
 @app.route("/logout")

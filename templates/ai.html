@@ -122,12 +122,18 @@
                         <span class="search-icon">♪</span>
 
                         <input 
+                            id="ai-input"
                             type="text" 
-                            placeholder="Explain quantum mechanics simply or summarize my notes..." 
+                            placeholder="Ask me anything..."
                             style="border:none; background:transparent; width:100%; outline:none; font-size:14px; color:var(--text);"
                         >
+                        
+                        <button id="ai-send" type="button">
+                            Send
+                        </button>
 
                     </div>
+
 
                 </div>
 
@@ -275,4 +281,63 @@
     </nav>
 
 </body>
+<script>
+const aiInput = document.getElementById("ai-input");
+const aiSend = document.getElementById("ai-send");
+
+async function sendMessage() {
+    const message = aiInput.value.trim();
+
+    if (!message) {
+        return;
+    }
+
+    aiSend.disabled = true;
+    aiSend.textContent = "Thinking...";
+
+    try {
+        const response = await fetch("/api/ai", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: message
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Something went wrong.");
+        }
+
+        console.log("AI:", data.response);
+
+        alert(data.response);
+
+        aiInput.value = "";
+
+    } catch (error) {
+        console.error(error);
+        alert("AI Error: " + error.message);
+
+    } finally {
+        aiSend.disabled = false;
+        aiSend.textContent = "Send";
+    }
+}
+
+aiSend.addEventListener("click", sendMessage);
+
+aiInput.addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        sendMessage();
+    }
+});
+</script>
+
+</body>
+</html>
+
 </html>
