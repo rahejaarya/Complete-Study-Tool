@@ -111,9 +111,7 @@
             <button type="submit">Log In</button>
         </form>
 
-        {% if google_login_enabled %}
-            <a class="google-button" href="{{ url_for('google_login', next=request.args.get('next', '')) }}">Continue with Google</a>
-        {% endif %}
+        <a class="google-button" href="{{ url_for('google_login', next=request.args.get('next', '')) }}">Continue with Google</a>
 
         <p class="demo">Demo credentials: <strong>admin</strong> / <strong>admin123</strong></p>
     </div>
