@@ -558,6 +558,26 @@ body {
     font-size: 14px;
 }
 
+.study-resource-link {
+    margin-top: 24px;
+    color: var(--text);
+    text-decoration: none;
+}
+
+.study-resource-link .feature-title {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.study-resource-link .feature-description {
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
 
 /* SEARCH */
 
@@ -672,6 +692,10 @@ body {
 
 .resources-icon {
     background: var(--blue-light);
+}
+
+.ai-icon {
+    background: var(--purple-light);
 }
 
 

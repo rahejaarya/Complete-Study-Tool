@@ -122,6 +122,15 @@
                         Find resources and tools to help you study.
                     </p>
 
+                    <a href="{{ url_for('resources') }}" class="feature-card study-resource-link">
+                        <span class="feature-icon resources-icon" aria-hidden="true">📚</span>
+                        <span class="feature-content">
+                            <span class="feature-title">Study Resources</span>
+                            <span class="feature-description">Find free notes, videos and study materials.</span>
+                        </span>
+                        <span class="card-arrow" aria-hidden="true">→</span>
+                    </a>
+
                 </div>
 
 
@@ -133,20 +142,20 @@
 
                 <div class="feature-grid">
 
-                    <!-- Resources (Clickable) -->
-                    <a href="{{ url_for('resources') }}" style="text-decoration: none; color: inherit; display: block;">
+                    <!-- AI Study Help -->
+                    <a href="{{ url_for('ai_help') }}" style="text-decoration: none; color: inherit; display: block;">
                         <div class="feature-card">
 
-                            <div class="feature-icon resources-icon">
-                                📚
+                            <div class="feature-icon ai-icon">
+                                ♪
                             </div>
 
                             <div class="feature-content">
 
-                                <h3>Study Resources</h3>
+                                <h3>AI Study Help</h3>
 
                                 <p>
-                                    Find free notes, videos and study materials.
+                                    Get help with homework, summaries, and revision.
                                 </p>
 
                             </div>
