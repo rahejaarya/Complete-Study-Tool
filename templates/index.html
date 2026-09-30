@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Complete Study Tool</title>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
 </head>
 
 <body>
@@ -93,7 +93,7 @@
                 </div>
 
                 <div style="display: flex; gap: 12px; align-items: center;">
-                    <a class="appearance-button" href="{{ url_for('appearance') }}" target="_blank" rel="noopener">
+                    <a class="appearance-button" href="{{ url_for('appearance') }}">
                         <span aria-hidden="true">🎨</span>
                         Appearance
                     </a>
@@ -564,7 +564,8 @@
                 { text: "The important achievement of Apollo was demonstrating that humanity is not forever chained to this planet.", author: "— Neil Armstrong" },
                 { text: "Science is a way of thinking much more than it is a body of knowledge.", author: "— Carl Sagan" },
                 { text: "The universe is under no obligation to make sense to you.", author: "— Neil deGrasse Tyson" },
-                { text: "The best way to learn is to do.", author: "— Richard Branson" }
+                { text: "The best way to learn is to do.", author: "— Richard Branson" },
+                { text: "“Victorious warriors win first and then go to war, while defeated warriors go to war first and then seek to win", author:"- Sun Tzu, The Art of War" }
             ];
 
             const storageKey = "studytool_motivational_quotes_v4";
