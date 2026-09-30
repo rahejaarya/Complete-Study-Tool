@@ -12,10 +12,20 @@
         "light-blue",
         "light-green",
         "light-sunset",
+        "light-coral",
+        "light-cobalt",
+        "light-emerald",
+        "light-orchid",
+        "light-citrus",
         "dark-purple",
         "dark-blue",
         "dark-green",
-        "dark-sunset"
+        "dark-sunset",
+        "dark-neon",
+        "dark-arctic",
+        "dark-fuchsia",
+        "dark-ember",
+        "dark-jade"
     ];
     let selectedTheme = "light-lavender";
 

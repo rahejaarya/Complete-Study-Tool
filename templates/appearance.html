@@ -90,6 +90,29 @@
                     <span class="theme-card-name">Light Sunset</span>
                     <span class="theme-card-mode">Light</span>
                 </button>
+                {% for theme_id, theme_name in [
+                    ("light-coral", "Coral"),
+                    ("light-cobalt", "Cobalt"),
+                    ("light-emerald", "Emerald"),
+                    ("light-orchid", "Orchid"),
+                    ("light-citrus", "Citrus")
+                ] %}
+                <button class="theme-card" type="button" data-theme-choice="{{ theme_id }}" aria-pressed="false">
+                    <span class="theme-card-preview" data-theme="{{ theme_id }}" aria-hidden="true">
+                        <span class="mini-dashboard-top"><i></i><i></i></span>
+                        <span class="mini-dashboard-content">
+                            <i class="mini-dashboard-sidebar"></i>
+                            <i class="mini-dashboard-main">
+                                <i class="mini-dashboard-banner"></i>
+                                <i class="mini-dashboard-tiles"><i></i><i></i><i></i></i>
+                                <i class="mini-dashboard-bottom"><i></i><i></i></i>
+                            </i>
+                        </span>
+                    </span>
+                    <span class="theme-card-name">{{ theme_name }}</span>
+                    <span class="theme-card-mode">Light</span>
+                </button>
+                {% endfor %}
             </div>
         </section>
 
@@ -162,6 +185,29 @@
                     <span class="theme-card-name">Dark Sunset</span>
                     <span class="theme-card-mode">Dark</span>
                 </button>
+                {% for theme_id, theme_name in [
+                    ("dark-neon", "Neon"),
+                    ("dark-arctic", "Arctic"),
+                    ("dark-fuchsia", "Fuchsia"),
+                    ("dark-ember", "Ember"),
+                    ("dark-jade", "Jade")
+                ] %}
+                <button class="theme-card" type="button" data-theme-choice="{{ theme_id }}" aria-pressed="false">
+                    <span class="theme-card-preview" data-theme="{{ theme_id }}" aria-hidden="true">
+                        <span class="mini-dashboard-top"><i></i><i></i></span>
+                        <span class="mini-dashboard-content">
+                            <i class="mini-dashboard-sidebar"></i>
+                            <i class="mini-dashboard-main">
+                                <i class="mini-dashboard-banner"></i>
+                                <i class="mini-dashboard-tiles"><i></i><i></i><i></i></i>
+                                <i class="mini-dashboard-bottom"><i></i><i></i></i>
+                            </i>
+                        </span>
+                    </span>
+                    <span class="theme-card-name">{{ theme_name }}</span>
+                    <span class="theme-card-mode">Dark</span>
+                </button>
+                {% endfor %}
             </div>
         </section>
 

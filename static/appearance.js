@@ -5,10 +5,20 @@
         "light-blue": "Light Blue",
         "light-green": "Light Green",
         "light-sunset": "Light Sunset",
+        "light-coral": "Light Coral",
+        "light-cobalt": "Light Cobalt",
+        "light-emerald": "Light Emerald",
+        "light-orchid": "Light Orchid",
+        "light-citrus": "Light Citrus",
         "dark-purple": "Dark Purple",
         "dark-blue": "Dark Blue",
         "dark-green": "Dark Green",
-        "dark-sunset": "Dark Sunset"
+        "dark-sunset": "Dark Sunset",
+        "dark-neon": "Dark Neon",
+        "dark-arctic": "Dark Arctic",
+        "dark-fuchsia": "Dark Fuchsia",
+        "dark-ember": "Dark Ember",
+        "dark-jade": "Dark Jade"
     };
     const themeCards = Array.from(document.querySelectorAll("[data-theme-choice]"));
     const status = document.getElementById("appearance-status");
