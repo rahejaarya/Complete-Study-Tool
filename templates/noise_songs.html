@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noise & Songs - StudyTool</title>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='noise.js') }}" defer></script>
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-mark">✦</div>
+                <span>StudyTool</span>
+            </div>
+            <nav class="navigation">
+                <a href="{{ url_for('home') }}" class="nav-link"><span class="nav-icon">▦</span>Dashboard</a>
+                <a href="{{ url_for('resources') }}" class="nav-link"><span class="nav-icon">⌕</span>Study Resources</a>
+                <a href="{{ url_for('focus') }}" class="nav-link"><span class="nav-icon">◷</span>Focus Mode</a>
+                <a href="{{ url_for('noise_songs') }}" class="nav-link active"><span class="nav-icon">♫</span>Noise &amp; Songs</a>
+                <a href="{{ url_for('time_management') }}" class="nav-link"><span class="nav-icon">✓</span>Time Management</a>
+                <a href="{{ url_for('support') }}" class="nav-link"><span class="nav-icon">♡</span>Student Support</a>
+                <a href="{{ url_for('ai_help') }}" class="nav-link"><span class="nav-icon">♪</span>AI Study Help</a>
+            </nav>
+            <div class="sidebar-bottom">
+                <a href="{{ url_for('settings') }}" class="nav-link"><span class="nav-icon">⚙</span>Settings</a>
+                <a href="{{ url_for('support') }}" class="nav-link"><span class="nav-icon">?</span>Help</a>
+            </div>
+        </aside>
+
+        <main class="main-content noise-page">
+            <a href="{{ url_for('home') }}" class="back-link">&larr; Go back to main page</a>
+            <header class="topbar">
+                <button class="mobile-menu" type="button">☰</button>
+                <div class="welcome">
+                    <div class="welcome-icon">♫</div>
+                    <div>
+                        <h1>Noise &amp; Songs</h1>
+                        <p>Shape a soundscape that helps your attention settle in.</p>
+                    </div>
+                </div>
+            </header>
+
+            <section class="sound-hero">
+                <div>
+                    <div class="eyebrow">SOUND STUDIO</div>
+                    <h2>What are you working on?</h2>
+                    <p>Choose an activity and get a starting mix. Keep it soft, layer sounds together, and make the space yours.</p>
+                </div>
+                <div class="sound-hero-orbit" aria-hidden="true"><span></span><span></span><span></span></div>
+            </section>
+
+            <section class="noise-section" aria-labelledby="activity-heading">
+                <div class="noise-section-heading">
+                    <div>
+                        <div class="eyebrow">START WITH A TASK</div>
+                        <h2 id="activity-heading">Find your focus sound</h2>
+                    </div>
+                    <span id="selected-activity-label" class="sound-status">Learning something new</span>
+                </div>
+                <div class="activity-grid" role="list">
+                    <button class="activity-chip active" type="button" data-activity="learning">Learning something new</button>
+                    <button class="activity-chip" type="button" data-activity="reviewing">Reviewing &amp; revising</button>
+                    <button class="activity-chip" type="button" data-activity="coding">Coding &amp; programming</button>
+                    <button class="activity-chip" type="button" data-activity="writing">Writing &amp; typing</button>
+                    <button class="activity-chip" type="button" data-activity="reading">Reading</button>
+                    <button class="activity-chip" type="button" data-activity="problem-solving">Problem solving</button>
+                    <button class="activity-chip" type="button" data-activity="homework">Homework</button>
+                    <button class="activity-chip" type="button" data-activity="creative">Creative work</button>
+                    <button class="activity-chip" type="button" data-activity="memorization">Memorization</button>
+                    <button class="activity-chip" type="button" data-activity="break">Taking a study break</button>
+                </div>
+                <div class="recommendation-panel">
+                    <div class="recommendation-icon">✦</div>
+                    <div>
+                        <p class="recommendation-kicker">RECOMMENDED FOR YOU</p>
+                        <p id="recommendation-copy">Brown Noise, Classical, Ambient</p>
+                    </div>
+                    <button id="load-recommendations" class="text-button" type="button">Load mix</button>
+                </div>
+            </section>
+
+            <section class="noise-section" aria-labelledby="sound-heading">
+                <div class="noise-section-heading">
+                    <div>
+                        <div class="eyebrow">BUILD YOUR MIX</div>
+                        <h2 id="sound-heading">Sound library</h2>
+                    </div>
+                    <button id="stop-all-sounds" class="sound-stop-button" type="button">Stop all</button>
+                </div>
+                <div class="sound-library">
+                    <article class="sound-card" data-sound="brown">
+                        <div class="sound-card-top"><span class="sound-art brown-art">≈</span><span class="sound-type">NOISE</span></div>
+                        <h3>Brown Noise</h3><p>Low, warm, and steady for deep work.</p>
+                        <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                    </article>
+                    <article class="sound-card" data-sound="pink">
+                        <div class="sound-card-top"><span class="sound-art pink-art">∿</span><span class="sound-type">NOISE</span></div>
+                        <h3>Pink Noise</h3><p>Softer static for reading and review.</p>
+                        <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                    </article>
+                    <article class="sound-card" data-sound="rain">
+                        <div class="sound-card-top"><span class="sound-art rain-art">☂</span><span class="sound-type">NATURE</span></div>
+                        <h3>Rain</h3><p>Gentle texture for writing or a break.</p>
+                        <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                    </article>
+                    <article class="sound-card" data-sound="ocean">
+                        <div class="sound-card-top"><span class="sound-art ocean-art">◒</span><span class="sound-type">NATURE</span></div>
+                        <h3>Ocean Waves</h3><p>A slow, spacious rhythm for sustained focus.</p>
+                        <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                    </article>
+                    <article class="sound-card" data-sound="lofi">
+                        <div class="sound-card-top"><span class="sound-art lofi-art">▰</span><span class="sound-type">SONG LOOP</span></div>
+                        <h3>Lo-Fi Glow</h3><p>A mellow chord loop for homework and code.</p>
+                        <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                    </article>
+                    <article class="sound-card" data-sound="piano">
+                        <div class="sound-card-top"><span class="sound-art piano-art">♬</span><span class="sound-type">SONG LOOP</span></div>
+                        <h3>Calm Piano</h3><p>Simple notes for memorization or a reset.</p>
+                        <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                    </article>
+                </div>
+                <div class="sound-mixer-bar">
+                    <label for="master-volume">Master volume</label>
+                    <input id="master-volume" type="range" min="0" max="100" value="35">
+                    <span id="volume-value">35%</span>
+                    <span id="audio-status" class="audio-status" aria-live="polite">Ready when you are.</span>
+                </div>
+            </section>
+
+            <section class="noise-section quick-guide" aria-labelledby="guide-heading">
+                <div class="noise-section-heading"><div><div class="eyebrow">QUICK GUIDE</div><h2 id="guide-heading">Match the mood to the work</h2></div></div>
+                <div class="guide-list">
+                    <div><strong>Learning</strong><span>Brown Noise · Classical · Ambient</span></div>
+                    <div><strong>Reviewing</strong><span>Pink Noise · White Noise · Lo-Fi</span></div>
+                    <div><strong>Coding</strong><span>Brown Noise · Lo-Fi · Ambient</span></div>
+                    <div><strong>Writing</strong><span>Rain · Piano · Classical</span></div>
+                    <div><strong>Reading</strong><span>Rain · Ocean Waves · Ambient</span></div>
+                    <div><strong>Problem solving</strong><span>White Noise · Brown Noise · Instrumental</span></div>
+                    <div><strong>Homework</strong><span>Lo-Fi · Brown Noise · Rain</span></div>
+                    <div><strong>Creative work</strong><span>Ambient · Lo-Fi · Nature Sounds</span></div>
+                    <div><strong>Memorization</strong><span>Pink Noise · White Noise · Ambient</span></div>
+                    <div><strong>Study break</strong><span>Rain · Ocean Waves · Nature Sounds</span></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <nav class="mobile-navigation">
+        <a href="{{ url_for('home') }}" class="mobile-link"><span>▦</span><small>Home</small></a>
+        <a href="{{ url_for('focus') }}" class="mobile-link"><span>◷</span><small>Focus</small></a>
+        <a href="{{ url_for('noise_songs') }}" class="mobile-link active"><span>♫</span><small>Sounds</small></a>
+        <a href="{{ url_for('time_management') }}" class="mobile-link"><span>✓</span><small>Schedule</small></a>
+        <a href="{{ url_for('support') }}" class="mobile-link"><span>♡</span><small>Support</small></a>
+    </nav>
+</body>
+</html>

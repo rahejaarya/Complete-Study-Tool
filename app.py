@@ -317,6 +317,12 @@ def focus():
     return render_template("focus.html")
 
 
+@app.route("/noise-songs")
+@login_required
+def noise_songs():
+    return render_template("noise_songs.html")
+
+
 @app.route("/schedule")
 @login_required
 def schedule():

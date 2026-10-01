@@ -38,6 +38,11 @@
                     Focus Mode
                 </a>
 
+                <a href="{{ url_for('noise_songs') }}" class="nav-link">
+                    <span class="nav-icon">♫</span>
+                    Noise &amp; Songs
+                </a>
+
                 <a href="{{ url_for('time_management') }}" class="nav-link">
                     <span class="nav-icon">✓</span>
                     Time Management
@@ -119,6 +124,7 @@
                             <h3>White Noise</h3>
                             <p>Best used for masking disruptive background sounds—such as traffic or barking dogs—to help people fall asleep faster and improve focus in noisy environments.</p>
                             <p>A steady, uniform sound that combines all audible frequencies at equal intensity, similar to the static of an untuned radio or a whirring fan.</p>
+                            <button class="text-button" id="white-noise-toggle" type="button" aria-pressed="false">Play white noise</button>
                         </div>
                     </div>
 
@@ -155,6 +161,11 @@
             <small>Focus</small>
         </a>
 
+        <a href="{{ url_for('noise_songs') }}" class="mobile-link">
+            <span>♫</span>
+            <small>Sounds</small>
+        </a>
+
         <a href="{{ url_for('time_management') }}" class="mobile-link">
             <span>✓</span>
             <small>Schedule</small>
@@ -165,6 +176,52 @@
             <small>Support</small>
         </a>
     </nav>
+
+    <script>
+        const whiteNoiseButton = document.getElementById("white-noise-toggle");
+        let audioContext;
+        let noiseSource;
+
+        whiteNoiseButton.addEventListener("click", async () => {
+            if (noiseSource) {
+                noiseSource.stop();
+                noiseSource.disconnect();
+                noiseSource = null;
+                whiteNoiseButton.textContent = "Play white noise";
+                whiteNoiseButton.setAttribute("aria-pressed", "false");
+                return;
+            }
+
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextClass) {
+                whiteNoiseButton.textContent = "White noise unavailable";
+                whiteNoiseButton.disabled = true;
+                return;
+            }
+
+            audioContext ??= new AudioContextClass();
+            await audioContext.resume();
+
+            const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 2, audioContext.sampleRate);
+            const samples = buffer.getChannelData(0);
+            for (let index = 0; index < samples.length; index++) {
+                samples[index] = Math.random() * 2 - 1;
+            }
+
+            noiseSource = audioContext.createBufferSource();
+            noiseSource.buffer = buffer;
+            noiseSource.loop = true;
+
+            const volume = audioContext.createGain();
+            volume.gain.value = 0.12;
+            noiseSource.connect(volume);
+            volume.connect(audioContext.destination);
+            noiseSource.start();
+
+            whiteNoiseButton.textContent = "Stop white noise";
+            whiteNoiseButton.setAttribute("aria-pressed", "true");
+        });
+    </script>
 
 </body>
 </html>

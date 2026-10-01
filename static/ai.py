@@ -13,10 +13,12 @@ def ask_ai(user_input):
                     "content": user_input
                 }
             ],
-            think=False
+            think=False,
+            stream=True
         )
 
-        return response["message"]["content"]
+        for chunk in response:
+            yield chunk["message"]["content"]
 
     except Exception as e:
         return f"Error: {e}"
@@ -33,6 +35,10 @@ if __name__ == "__main__":
             print("Goodbye!")
             break
 
-        answer = ask_ai(user_input)
+        print("\nAI: ", end="", flush=True)
+        
+        for chunk in ask_ai(user_input):
+            print(chunk, end="", flush=True)
 
-        print(f"\nAI: {answer}\n")
+        print("\n")
+
