@@ -1,26 +1,22 @@
 (() => {
     const storageKey = "studytool_color_theme_v1";
     const themeNames = {
-        "light-lavender": "Light Lavender",
-        "light-blue": "Light Blue",
-        "light-green": "Light Green",
-        "light-sunset": "Light Sunset",
-        "light-coral": "Light Coral",
-        "light-cobalt": "Light Cobalt",
-        "light-emerald": "Light Emerald",
-        "light-orchid": "Light Orchid",
-        "light-citrus": "Light Citrus",
-        "light-slate": "Light Slate",
-        "dark-purple": "Dark Purple",
-        "dark-blue": "Dark Blue",
-        "dark-green": "Dark Green",
-        "dark-sunset": "Dark Sunset",
-        "dark-neon": "Dark Neon",
-        "dark-arctic": "Dark Arctic",
-        "dark-fuchsia": "Dark Fuchsia",
-        "dark-ember": "Dark Ember",
-        "dark-jade": "Dark Jade",
-        "dark-mocha": "Dark Mocha"
+        "light-lavender": "Lavender",
+        "light-blue": "Blue",
+        "light-coral": "Coral",
+        "light-cobalt": "Cobalt",
+        "light-emerald": "Emerald",
+        "light-orchid": "Orchid",
+        "light-citrus": "Citrus",
+        "light-slate": "Slate",
+        "dark-purple": "Purple",
+        "dark-blue": "Blue",
+        "dark-green": "Green",
+        "dark-citrus": "Citrus",
+        "dark-neon": "Neon",
+        "dark-ember": "Ember",
+        "dark-jade": "Jade",
+        "dark-mocha": "Mocha"
     };
     const themeCards = Array.from(document.querySelectorAll("[data-theme-choice]"));
     const status = document.getElementById("appearance-status");

@@ -3,15 +3,11 @@
     const legacyThemes = {
         lavender: "light-lavender",
         ocean: "light-blue",
-        forest: "light-green",
-        sunset: "light-sunset",
         dark: "dark-purple"
     };
     const themes = [
         "light-lavender",
         "light-blue",
-        "light-green",
-        "light-sunset",
         "light-coral",
         "light-cobalt",
         "light-emerald",
@@ -21,10 +17,8 @@
         "dark-purple",
         "dark-blue",
         "dark-green",
-        "dark-sunset",
+        "dark-citrus",
         "dark-neon",
-        "dark-arctic",
-        "dark-fuchsia",
         "dark-ember",
         "dark-jade",
         "dark-mocha"

@@ -116,36 +116,68 @@
                     <p>
                         Type your prompt below to get instant study help.
                     </p>
+                    
+                    <div style="
+                        width: 100%;
+                        max-width: 850px;
+                        margin: 0 auto 30px auto;
+                    ">
 
-                    <div class="search-box">
+                        <div style="
+                            text-align: center;
+                            margin-bottom: 18px;
+                        ">
+                            <div class="eyebrow">
+                                AI ASSISTANT
+                            </div>
 
-                        <span class="search-icon">♪</span>
+                            <h2>Ask a question or request notes summary</h2>
 
-                        <input 
-                            id="ai-input"
-                            type="text" 
-                            placeholder="Ask me anything..."
-                            style="border:none; background:transparent; width:100%; outline:none; font-size:14px; color:var(--text);"
-                        >
+                            <p>
+                                Type your prompt below to get instant study help.
+                            </p>
+                        </div>
 
-                        <button id="ai-send" type="button">
-                            Send
-                        </button>
+
+                        <!-- Chat messages -->
+                        <div id="chat-messages" style="
+                            display: none;
+                            flex-direction: column;
+                            gap: 12px;
+                            margin-bottom: 18px;
+                            text-align: left;
+                        "></div>
+
+
+                        <!-- Input -->
+                        <div class="search-box" style="
+                            width: 100%;
+                            margin: 0 auto;
+                        ">
+
+                            <span class="search-icon">♪</span>
+
+                            <input 
+                                id="ai-input"
+                                type="text" 
+                                placeholder="Ask me anything..."
+                                style="
+                                    border: none;
+                                    background: transparent;
+                                    width: 100%;
+                                    outline: none;
+                                    font-size: 14px;
+                                    color: var(--text);
+                                "
+                            >
+
+                            <button id="ai-send" type="button">
+                                Send
+                            </button>
+
+                        </div>
 
                     </div>
-
-                    <!-- AI chat responses appear here -->
-                    <div id="chat-messages" style="
-                        display:none;
-                        flex-direction:column;
-                        gap:12px;
-                        margin-top:20px;
-                    "></div>
-
-
-
-                </div>
-
 
                 <!-- Quick Start AI Tools -->
                 <div class="section-heading">
@@ -290,7 +322,9 @@
     </nav>
 
 </body>
+
 <script>
+
 const aiInput = document.getElementById("ai-input");
 const aiSend = document.getElementById("ai-send");
 
@@ -299,24 +333,105 @@ const featureGrid = document.querySelector(".feature-grid");
 const sectionHeading = document.querySelector(".section-heading");
 
 
+/*
+ * Convert basic Markdown from the AI into
+ * safe HTML for display.
+ */
+function formatAIResponse(text) {
+
+    // Escape HTML first for security
+    text = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+
+    // Headings
+    text = text.replace(
+        /^### (.+)$/gm,
+        "<h4>$1</h4>"
+    );
+
+    text = text.replace(
+        /^## (.+)$/gm,
+        "<h3>$1</h3>"
+    );
+
+    text = text.replace(
+        /^# (.+)$/gm,
+        "<h2>$1</h2>"
+    );
+
+
+    // Bold
+    text = text.replace(
+        /\*\*(.+?)\*\*/g,
+        "<strong>$1</strong>"
+    );
+
+
+    // Italic
+    text = text.replace(
+        /(?<!\*)\*([^*]+?)\*(?!\*)/g,
+        "<em>$1</em>"
+    );
+
+
+    // Inline code
+    text = text.replace(
+        /`([^`]+)`/g,
+        "<code>$1</code>"
+    );
+
+
+    // Bullet points
+    text = text.replace(
+        /^[-•] (.+)$/gm,
+        "<li>$1</li>"
+    );
+
+
+    // Turn groups of <li> elements into lists
+    text = text.replace(
+        /(<li>.*?<\/li>(?:\s*<li>.*?<\/li>)*)/gs,
+        "<ul>$1</ul>"
+    );
+
+
+    // Line breaks
+    text = text.replace(
+        /\n/g,
+        "<br>"
+    );
+
+
+    return text;
+}
+
+
 function addMessage(message, sender) {
 
     const messageDiv = document.createElement("div");
 
     messageDiv.style.display = "flex";
+
     messageDiv.style.justifyContent =
-        sender === "user" ? "flex-end" : "flex-start";
+        sender === "user"
+            ? "flex-end"
+            : "flex-start";
+
 
     const bubble = document.createElement("div");
-
-    bubble.textContent = message;
 
     bubble.style.maxWidth = "75%";
     bubble.style.padding = "12px 16px";
     bubble.style.borderRadius = "14px";
     bubble.style.fontSize = "14px";
-    bubble.style.lineHeight = "1.5";
-    bubble.style.whiteSpace = "pre-wrap";
+    bubble.style.lineHeight = "1.6";
+    bubble.style.whiteSpace = "normal";
+
 
     if (sender === "user") {
 
@@ -324,20 +439,30 @@ function addMessage(message, sender) {
         bubble.style.color = "white";
         bubble.style.borderBottomRightRadius = "4px";
 
+        // User messages stay plain text
+        bubble.textContent = message;
+
     } else {
 
         bubble.style.background = "#252638";
         bubble.style.color = "var(--text)";
         bubble.style.borderBottomLeftRadius = "4px";
 
+        // AI messages support formatting
+        bubble.innerHTML = formatAIResponse(message);
+
     }
 
+
     messageDiv.appendChild(bubble);
+
     chatMessages.appendChild(messageDiv);
 
     chatMessages.style.display = "flex";
 
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    chatMessages.scrollTop =
+        chatMessages.scrollHeight;
+
 
     return bubble;
 }
@@ -352,12 +477,12 @@ async function sendMessage() {
     }
 
 
-    // Hide the AI feature cards after the first message
+    // Hide the four feature cards
     featureGrid.style.display = "none";
     sectionHeading.style.display = "none";
 
 
-    // Show user's message
+    // Display user message
     addMessage(message, "user");
 
 
@@ -365,16 +490,14 @@ async function sendMessage() {
     aiInput.value = "";
 
 
-    // Disable button while thinking
+    // Disable send button
     aiSend.disabled = true;
     aiSend.textContent = "Thinking...";
 
 
     // Show temporary thinking message
-    const thinkingBubble = addMessage(
-        "Thinking...",
-        "ai"
-    );
+    const thinkingBubble =
+        addMessage("Thinking...", "ai");
 
 
     try {
@@ -398,14 +521,17 @@ async function sendMessage() {
 
 
         if (!response.ok) {
+
             throw new Error(
                 data.error || "Something went wrong."
             );
+
         }
 
 
-        // Replace "Thinking..." with AI response
-        thinkingBubble.textContent = data.response;
+        // Replace Thinking... with formatted AI response
+        thinkingBubble.innerHTML =
+            formatAIResponse(data.response);
 
 
     } catch (error) {
@@ -418,28 +544,37 @@ async function sendMessage() {
     } finally {
 
         aiSend.disabled = false;
+
         aiSend.textContent = "Send";
 
         aiInput.focus();
 
     }
+
 }
 
 
-aiSend.addEventListener("click", sendMessage);
+aiSend.addEventListener(
+    "click",
+    sendMessage
+);
 
 
-aiInput.addEventListener("keydown", function(event) {
+aiInput.addEventListener(
+    "keydown",
+    function(event) {
 
-    if (event.key === "Enter") {
+        if (event.key === "Enter") {
 
-        event.preventDefault();
+            event.preventDefault();
 
-        sendMessage();
+            sendMessage();
+
+        }
 
     }
+);
 
-});
 </script>
 
 
