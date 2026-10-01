@@ -39,6 +39,30 @@ def ask_ai(user_input, web_context=""):
     except Exception as e:
         return f"Error: {e}"
 
+def search_web(query):
+    try:
+        results = DDGS().text(
+            query,
+            region="us-en",
+            safesearch="moderate",
+            max_results=5
+        )
+
+        cleaned = []
+
+        for result in results:
+            cleaned.append({
+                "title": result.get("title", ""),
+                "url": result.get("href", ""),
+                "description": result.get("body", "")
+            })
+
+        return cleaned
+
+    except Exception as e:
+        print(f"Web search error: {e}")
+        return []
+
 
 if __name__ == "__main__":
     print("Local AI started.")
