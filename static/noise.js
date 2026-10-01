@@ -3,16 +3,16 @@
         learning: { label: "Learning something new", sounds: ["brown", "piano", "ocean"] },
         reviewing: { label: "Reviewing & revising", sounds: ["pink", "lofi", "brown"] },
         coding: { label: "Coding & programming", sounds: ["brown", "lofi", "ocean"] },
-        writing: { label: "Writing & typing", sounds: ["rain", "piano", "lofi"] },
-        reading: { label: "Reading", sounds: ["rain", "ocean", "pink"] },
+        writing: { label: "Writing & typing", sounds: ["852hz", "piano", "lofi"] },
+        reading: { label: "Reading", sounds: ["852hz", "ocean", "pink"] },
         "problem-solving": { label: "Problem solving", sounds: ["brown", "piano", "pink"] },
-        homework: { label: "Homework", sounds: ["lofi", "brown", "rain"] },
+        homework: { label: "Homework", sounds: ["lofi", "brown", "852hz"] },
         creative: { label: "Creative work", sounds: ["ocean", "lofi", "piano"] },
         memorization: { label: "Memorization", sounds: ["pink", "brown", "ocean"] },
-        break: { label: "Taking a study break", sounds: ["rain", "ocean", "piano"] }
+        break: { label: "Taking a study break", sounds: ["852hz", "ocean", "piano"] }
     };
     const soundLabels = {
-        brown: "Brown Noise", pink: "Pink Noise", rain: "Rain", ocean: "Ocean Waves", lofi: "Lo-Fi Glow", piano: "Calm Piano"
+        brown: "Brown Noise", pink: "Pink Noise", "852hz": "852 Hz", ocean: "Ocean Waves", lofi: "Lo-Fi Glow", piano: "Calm Piano"
     };
     const cards = Array.from(document.querySelectorAll("[data-sound]"));
     const activityButtons = Array.from(document.querySelectorAll("[data-activity]"));
@@ -22,7 +22,6 @@
     const volumeInput = document.getElementById("master-volume");
     const volumeValue = document.getElementById("volume-value");
     const oceanAudio = document.getElementById("ocean-waves-audio");
-    const rainAudio = document.getElementById("rain-audio");
     let audioContext;
     let masterGain;
     const activeSounds = new Map();
@@ -49,11 +48,9 @@
             if (color === "brown") {
                 lastSample = (lastSample + 0.025 * randomSample) / 1.025;
                 samples[index] = lastSample * 3.5;
-            } else if (color === "pink") {
+            } else {
                 lastSample = 0.98 * lastSample + 0.02 * randomSample;
                 samples[index] = randomSample * 0.7 + lastSample * 0.3;
-            } else {
-                samples[index] = randomSample;
             }
         }
         return buffer;
@@ -61,13 +58,13 @@
 
     function createNoiseSound(context, kind) {
         const source = context.createBufferSource();
-        source.buffer = createNoiseBuffer(context, kind === "rain" ? "pink" : kind);
+        source.buffer = createNoiseBuffer(context, kind);
         source.loop = true;
         const filter = context.createBiquadFilter();
         filter.type = kind === "brown" ? "lowpass" : "highpass";
-        filter.frequency.value = kind === "brown" ? 900 : kind === "rain" ? 1200 : 500;
+        filter.frequency.value = kind === "brown" ? 900 : 500;
         const gain = context.createGain();
-        gain.gain.value = kind === "rain" ? 0.11 : 0.08;
+        gain.gain.value = 0.08;
         source.connect(filter).connect(gain).connect(masterGain);
         source.start();
         return { stop: () => source.stop(), gain };
@@ -97,6 +94,23 @@
         return { stop: () => window.clearInterval(interval), gain };
     }
 
+    function createToneSound(context, frequency) {
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.value = frequency;
+        gain.gain.value = 0.08;
+        oscillator.connect(gain).connect(masterGain);
+        oscillator.start();
+        return {
+            stop: () => {
+                oscillator.stop();
+                oscillator.disconnect();
+                gain.disconnect();
+            }
+        };
+    }
+
     async function toggleSound(soundId) {
         if (activeSounds.has(soundId)) {
             activeSounds.get(soundId).stop();
@@ -121,28 +135,17 @@
                 },
                 setVolume: (value) => { oceanAudio.volume = value; }
             };
-        } else if (soundId === "rain") {
-            rainAudio.volume = Number(volumeInput.value) / 100;
-            try {
-                await rainAudio.play();
-            } catch {
-                audioStatus.textContent = "Rain could not load. Check your internet connection.";
-                return;
-            }
-            sound = {
-                stop: () => {
-                    rainAudio.pause();
-                    rainAudio.currentTime = 0;
-                },
-                setVolume: (value) => { rainAudio.volume = value; }
-            };
         } else {
             const context = getAudioContext();
             if (!context) return;
             await context.resume();
-            sound = ["brown", "pink"].includes(soundId)
-                ? createNoiseSound(context, soundId)
-                : createMusicSound(context, soundId);
+            if (soundId === "852hz") {
+                sound = createToneSound(context, 852);
+            } else {
+                sound = ["brown", "pink"].includes(soundId)
+                    ? createNoiseSound(context, soundId)
+                    : createMusicSound(context, soundId);
+            }
         }
         activeSounds.set(soundId, sound);
         updateCard(soundId, true);
@@ -196,6 +199,5 @@
         volumeValue.textContent = `${value}%`;
         if (masterGain) masterGain.gain.value = value / 100;
         activeSounds.get("ocean")?.setVolume?.(value / 100);
-        activeSounds.get("rain")?.setVolume?.(value / 100);
     });
 })();
