@@ -21,6 +21,8 @@
     const audioStatus = document.getElementById("audio-status");
     const volumeInput = document.getElementById("master-volume");
     const volumeValue = document.getElementById("volume-value");
+    const oceanAudio = document.getElementById("ocean-waves-audio");
+    const rainAudio = document.getElementById("rain-audio");
     let audioContext;
     let masterGain;
     const activeSounds = new Map();
@@ -103,12 +105,45 @@
             audioStatus.textContent = `${soundLabels[soundId]} stopped.`;
             return;
         }
-        const context = getAudioContext();
-        if (!context) return;
-        await context.resume();
-        const sound = ["brown", "pink", "rain", "ocean"].includes(soundId)
-            ? createNoiseSound(context, soundId === "ocean" ? "pink" : soundId)
-            : createMusicSound(context, soundId);
+        let sound;
+        if (soundId === "ocean") {
+            oceanAudio.volume = Number(volumeInput.value) / 100;
+            try {
+                await oceanAudio.play();
+            } catch {
+                audioStatus.textContent = "Ocean Waves could not load. Check your internet connection.";
+                return;
+            }
+            sound = {
+                stop: () => {
+                    oceanAudio.pause();
+                    oceanAudio.currentTime = 0;
+                },
+                setVolume: (value) => { oceanAudio.volume = value; }
+            };
+        } else if (soundId === "rain") {
+            rainAudio.volume = Number(volumeInput.value) / 100;
+            try {
+                await rainAudio.play();
+            } catch {
+                audioStatus.textContent = "Rain could not load. Check your internet connection.";
+                return;
+            }
+            sound = {
+                stop: () => {
+                    rainAudio.pause();
+                    rainAudio.currentTime = 0;
+                },
+                setVolume: (value) => { rainAudio.volume = value; }
+            };
+        } else {
+            const context = getAudioContext();
+            if (!context) return;
+            await context.resume();
+            sound = ["brown", "pink"].includes(soundId)
+                ? createNoiseSound(context, soundId)
+                : createMusicSound(context, soundId);
+        }
         activeSounds.set(soundId, sound);
         updateCard(soundId, true);
         audioStatus.textContent = `${soundLabels[soundId]} is playing.`;
@@ -160,5 +195,7 @@
         const value = Number(volumeInput.value);
         volumeValue.textContent = `${value}%`;
         if (masterGain) masterGain.gain.value = value / 100;
+        activeSounds.get("ocean")?.setVolume?.(value / 100);
+        activeSounds.get("rain")?.setVolume?.(value / 100);
     });
 })();

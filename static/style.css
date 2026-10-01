@@ -1393,6 +1393,70 @@ body {
     padding: 28px;
 }
 
+.study-ratios-card {
+    display: block;
+}
+
+.study-ratios-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.study-ratios-summary::-webkit-details-marker {
+    display: none;
+}
+
+.study-ratios-summary::after {
+    content: "+";
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 32px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    color: var(--purple);
+    font-size: 20px;
+    line-height: 1;
+}
+
+.study-ratios-card[open] .study-ratios-summary::after {
+    content: "−";
+}
+
+.study-ratios-summary h2 {
+    margin-top: 5px;
+    font-size: 24px;
+}
+
+.study-ratios-summary p {
+    margin-top: 7px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.study-ratios-toggle {
+    margin-left: auto;
+    color: var(--purple);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.study-ratios-card[open] .study-ratios-toggle {
+    font-size: 0;
+}
+
+.study-ratios-card[open] .study-ratios-toggle::after {
+    content: "Hide guide";
+    font-size: 12px;
+}
+
 .timer-card {
     text-align: center;
 }
@@ -1604,7 +1668,6 @@ body {
     font-size: 12px;
 }
 
-.study-ratios-card > h2,
 .deadline-section > h2 {
     margin-bottom: 18px;
 }

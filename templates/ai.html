@@ -454,6 +454,81 @@ function addMessage(message, sender) {
     return bubble;
 }
 
+function addResourceCard(resource) {
+
+    const card = document.createElement("a");
+
+    card.href = resource.url;
+    card.target = "_blank";
+    card.rel = "noopener noreferrer";
+
+    card.style.display = "flex";
+    card.style.gap = "14px";
+    card.style.marginTop = "14px";
+    card.style.padding = "12px";
+    card.style.borderRadius = "12px";
+    card.style.background = "#1d1e2b";
+    card.style.border = "1px solid rgba(255,255,255,0.08)";
+    card.style.textDecoration = "none";
+    card.style.color = "inherit";
+    card.style.maxWidth = "650px";
+
+    const image = document.createElement("img");
+
+    image.src = resource.image || "/static/default-resource.png";
+    image.alt = "";
+
+    image.style.width = "110px";
+    image.style.height = "75px";
+    image.style.objectFit = "cover";
+    image.style.borderRadius = "8px";
+    image.style.flexShrink = "0";
+
+    const content = document.createElement("div");
+
+    content.style.display = "flex";
+    content.style.flexDirection = "column";
+    content.style.justifyContent = "center";
+    content.style.minWidth = "0";
+
+    const type = document.createElement("div");
+
+    type.textContent = resource.type || "Resource";
+
+    type.style.fontSize = "11px";
+    type.style.color = "#a78bfa";
+    type.style.fontWeight = "600";
+    type.style.marginBottom = "3px";
+
+    const title = document.createElement("div");
+
+    title.textContent = resource.title;
+
+    title.style.fontSize = "14px";
+    title.style.fontWeight = "600";
+    title.style.color = "var(--text)";
+
+    const description = document.createElement("div");
+
+    description.textContent = resource.description;
+
+    description.style.fontSize = "12px";
+    description.style.color = "#a0a1b2";
+    description.style.marginTop = "4px";
+
+    content.appendChild(type);
+    content.appendChild(title);
+    content.appendChild(description);
+
+    card.appendChild(image);
+    card.appendChild(content);
+
+    chatMessages.appendChild(card);
+
+    chatMessages.scrollTop =
+        chatMessages.scrollHeight;
+}
+
 
 async function sendMessage() {
 
@@ -513,21 +588,54 @@ async function sendMessage() {
 
         let fullResponse = "";
 
+        let buffer = "";
+
         while (true) {
+
             const { value, done } = await reader.read();
 
             if (done) break;
 
-            const chunk = decoder.decode(value, { stream: true });
+            buffer += decoder.decode(value, { stream: true });
 
-            fullResponse += chunk;
+            const lines = buffer.split("\n");
 
-            thinkingBubble.innerHTML =
-                formatAIResponse(fullResponse);
+            buffer = lines.pop();
 
-            chatMessages.scrollTop =
-                chatMessages.scrollHeight;
+            for (const line of lines) {
+
+                if (!line.trim()) {
+                    continue;
+                }
+
+                const event = JSON.parse(line);
+
+                if (event.type === "token") {
+
+                    fullResponse += event.content;
+
+                    thinkingBubble.innerHTML =
+                        formatAIResponse(fullResponse);
+
+                }
+
+                else if (event.type === "resource") {
+
+                    addResourceCard(event.resource);
+
+                }
+
+                else if (event.type === "done") {
+
+                    console.log("AI response complete.");
+
+                }
+
+                chatMessages.scrollTop =
+                    chatMessages.scrollHeight;
+            }
         }
+
 
 
 

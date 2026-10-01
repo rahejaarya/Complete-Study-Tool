@@ -102,12 +102,12 @@
                     </article>
                     <article class="sound-card" data-sound="rain">
                         <div class="sound-card-top"><span class="sound-art rain-art">☂</span><span class="sound-type">NATURE</span></div>
-                        <h3>Rain</h3><p>Gentle texture for writing or a break.</p>
+                        <h3>Rain</h3><p>A recording of gentle rainfall.</p>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
                     <article class="sound-card" data-sound="ocean">
                         <div class="sound-card-top"><span class="sound-art ocean-art">◒</span><span class="sound-type">NATURE</span></div>
-                        <h3>Ocean Waves</h3><p>A slow, spacious rhythm for sustained focus.</p>
+                        <h3>Ocean Waves</h3><p>A recording of real ocean waves.</p>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
                     <article class="sound-card" data-sound="lofi">
@@ -153,5 +153,7 @@
         <a href="{{ url_for('time_management') }}" class="mobile-link"><span>✓</span><small>Schedule</small></a>
         <a href="{{ url_for('support') }}" class="mobile-link"><span>♡</span><small>Support</small></a>
     </nav>
+    <audio id="ocean-waves-audio" src="https://cdn.freesound.org/previews/456/456899_9518146-hq.mp3" preload="none" loop hidden></audio>
+    <audio id="rain-audio" src="https://cdn.freesound.org/previews/551/551989_10485775-hq.mp3" preload="none" loop hidden></audio>
 </body>
 </html>

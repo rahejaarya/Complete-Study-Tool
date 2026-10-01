@@ -9,7 +9,7 @@ import requests
 from flask import Flask, Response, redirect, render_template, request, session, url_for, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from static.ai import ask_ai
+from static.ai import ask_ai, find_resource, search_web
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "studytool-dev-secret-key")
@@ -235,9 +235,43 @@ def ai_chat():
         return jsonify({"error": "Message cannot be empty."}), 400
 
     try:
+
+        web_results = search_web(message)
+
+        resource = find_resource(message)
+
+        web_context = "\n\n".join(
+            f"Title: {item['title']}\n"
+            f"URL: {item['url']}\n"
+            f"Description: {item['description']}"
+            for item in web_results
+        )
+
+        def generate():
+
+            import json
+
+            # Send the resource first.
+            if resource:
+                yield json.dumps({
+                    "type": "resource",
+                    "resource": resource
+                }) + "\n"
+
+            # Then stream the AI response.
+            for chunk in ask_ai(message, web_context):
+                yield json.dumps({
+                    "type": "token",
+                    "content": chunk
+                }) + "\n"
+
+            yield json.dumps({
+                "type": "done"
+            }) + "\n"
+
         return Response(
-            ask_ai(message),
-            mimetype="text/plain"
+            generate(),
+            mimetype="application/x-ndjson"
         )
 
     except Exception as e:
