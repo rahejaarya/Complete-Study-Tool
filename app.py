@@ -12,6 +12,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from static.ai import ask_ai, find_resource, search_web
 
 app = Flask(__name__)
+app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "studytool-dev-secret-key")
 app.config["DATABASE"] = os.path.join(app.root_path, "studytool.db")
 app.config["GOOGLE_CLIENT_ID"] = os.environ.get("GOOGLE_CLIENT_ID")
