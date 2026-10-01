@@ -102,6 +102,42 @@ def login():
 
     return render_template("login.html", error=error)
 
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    error = None
+
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        password_confirmation = request.form.get("password_confirmation", "")
+
+        if not 3 <= len(username) <= 32 or not username.replace("_", "").replace("-", "").isalnum():
+            error = "Username must be 3-32 letters, numbers, underscores, or hyphens."
+        elif not 8 <= len(password) <= 128:
+            error = "Password must be between 8 and 128 characters."
+        elif password != password_confirmation:
+            error = "Passwords do not match."
+        else:
+            conn = get_db()
+            try:
+                cursor = conn.execute(
+                    "INSERT INTO users (username, password_hash) VALUES (?, ?)",
+                    (username, generate_password_hash(password)),
+                )
+                conn.commit()
+                session.clear()
+                session["user_id"] = cursor.lastrowid
+                session["username"] = username
+                return redirect(safe_next_url(request.args.get("next")))
+            except sqlite3.IntegrityError:
+                conn.rollback()
+                error = "That username is already taken."
+            finally:
+                conn.close()
+
+    return render_template("signup.html", error=error)
+
 @app.route("/api/ai", methods=["POST"])
 @login_required
 def ai_chat():

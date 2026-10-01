@@ -14,6 +14,11 @@ class AuthTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotIn(b'Google', response.data)
 
+    def test_signup_page_loads(self):
+        response = self.client.get('/signup')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Confirm password', response.data)
+
     def test_google_login_route_is_removed(self):
         response = self.client.get('/auth/google')
         self.assertEqual(response.status_code, 404)
@@ -26,6 +31,33 @@ class AuthTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.headers.get('Location'), '/')
+
+    def test_signup_creates_account_and_starts_session(self):
+        response = self.client.post(
+            '/signup',
+            data={
+                'username': 'study_signup_test',
+                'password': 'strong-password-123',
+                'password_confirmation': 'strong-password-123',
+            },
+            follow_redirects=False,
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.headers.get('Location'), '/')
+        with self.client.session_transaction() as user_session:
+            self.assertEqual(user_session['username'], 'study_signup_test')
+
+    def test_signup_rejects_duplicate_username(self):
+        response = self.client.post(
+            '/signup',
+            data={
+                'username': 'admin',
+                'password': 'strong-password-123',
+                'password_confirmation': 'strong-password-123',
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'already taken', response.data)
 
     def test_protected_page_requires_username_password_session(self):
         response = self.client.get('/')

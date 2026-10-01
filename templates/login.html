@@ -73,6 +73,14 @@
             color: #4b5563;
             font-size: 0.95rem;
         }
+        .account-link {
+            display: block;
+            margin-top: 14px;
+            color: #4338ca;
+            text-align: center;
+            text-decoration: none;
+        }
+        .account-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -98,6 +106,7 @@
             <button type="submit">Log In</button>
         </form>
 
+        <a class="account-link" href="{{ url_for('signup', next=request.args.get('next', '')) }}">Create an account</a>
         <p class="demo">Demo credentials: <strong>admin</strong> / <strong>admin123</strong></p>
     </div>
 </body>
