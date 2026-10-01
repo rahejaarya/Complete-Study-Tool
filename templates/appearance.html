@@ -25,11 +25,10 @@
             <header class="appearance-mode-header">
                 <div>
                     <h2 id="light-themes-heading">Light mode</h2>
-                    <p>Choose a softer palette or a brighter, more colorful one.</p>
+                    <p>Choose a light color theme.</p>
                 </div>
                 <span aria-hidden="true">☀</span>
             </header>
-            <h3 class="theme-group-heading">Subtle</h3>
             <div class="theme-card-grid">
                 <button class="theme-card" type="button" data-theme-choice="light-lavender" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="light-lavender" aria-hidden="true">
@@ -44,7 +43,6 @@
                         </span>
                     </span>
                     <span class="theme-card-name">Lavender</span>
-                    <span class="theme-card-mode">Light · Subtle</span>
                 </button>
                 <button class="theme-card" type="button" data-theme-choice="light-blue" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="light-blue" aria-hidden="true">
@@ -59,7 +57,6 @@
                         </span>
                     </span>
                     <span class="theme-card-name">Light Blue</span>
-                    <span class="theme-card-mode">Light · Subtle</span>
                 </button>
                 <button class="theme-card" type="button" data-theme-choice="light-green" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="light-green" aria-hidden="true">
@@ -74,7 +71,6 @@
                         </span>
                     </span>
                     <span class="theme-card-name">Light Green</span>
-                    <span class="theme-card-mode">Light · Subtle</span>
                 </button>
                 <button class="theme-card" type="button" data-theme-choice="light-sunset" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="light-sunset" aria-hidden="true">
@@ -89,7 +85,6 @@
                         </span>
                     </span>
                     <span class="theme-card-name">Light Sunset</span>
-                    <span class="theme-card-mode">Light · Subtle</span>
                 </button>
                 <button class="theme-card" type="button" data-theme-choice="light-slate" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="light-slate" aria-hidden="true">
@@ -104,11 +99,7 @@
                         </span>
                     </span>
                     <span class="theme-card-name">Slate</span>
-                    <span class="theme-card-mode">Light · Subtle</span>
                 </button>
-            </div>
-            <h3 class="theme-group-heading">Bold</h3>
-            <div class="theme-card-grid">
                 {% for theme_id, theme_name in [
                     ("light-coral", "Coral"),
                     ("light-cobalt", "Cobalt"),
@@ -129,7 +120,6 @@
                         </span>
                     </span>
                     <span class="theme-card-name">{{ theme_name }}</span>
-                    <span class="theme-card-mode">Light · Bold</span>
                 </button>
                 {% endfor %}
             </div>
@@ -139,11 +129,10 @@
             <header class="appearance-mode-header">
                 <div>
                     <h2 id="dark-themes-heading">Dark mode</h2>
-                    <p>Choose a softer palette or a brighter, more colorful one.</p>
+                    <p>Choose a dark color theme.</p>
                 </div>
                 <span aria-hidden="true">☾</span>
             </header>
-            <h3 class="theme-group-heading">Subtle</h3>
             <div class="theme-card-grid">
                 <button class="theme-card" type="button" data-theme-choice="dark-purple" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="dark-purple" aria-hidden="true">
@@ -158,7 +147,6 @@
                         </span>
                     </span>
                     <span class="theme-card-name">Dark Purple</span>
-                    <span class="theme-card-mode">Dark · Subtle</span>
                 </button>
                 <button class="theme-card" type="button" data-theme-choice="dark-blue" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="dark-blue" aria-hidden="true">
@@ -173,7 +161,6 @@
                         </span>
                     </span>
                     <span class="theme-card-name">Dark Blue</span>
-                    <span class="theme-card-mode">Dark · Subtle</span>
                 </button>
                 <button class="theme-card" type="button" data-theme-choice="dark-green" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="dark-green" aria-hidden="true">
@@ -188,7 +175,6 @@
                         </span>
                     </span>
                     <span class="theme-card-name">Dark Green</span>
-                    <span class="theme-card-mode">Dark · Subtle</span>
                 </button>
                 <button class="theme-card" type="button" data-theme-choice="dark-sunset" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="dark-sunset" aria-hidden="true">
@@ -203,7 +189,6 @@
                         </span>
                     </span>
                     <span class="theme-card-name">Dark Sunset</span>
-                    <span class="theme-card-mode">Dark · Subtle</span>
                 </button>
                 <button class="theme-card" type="button" data-theme-choice="dark-mocha" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="dark-mocha" aria-hidden="true">
@@ -218,11 +203,7 @@
                         </span>
                     </span>
                     <span class="theme-card-name">Mocha</span>
-                    <span class="theme-card-mode">Dark · Subtle</span>
                 </button>
-            </div>
-            <h3 class="theme-group-heading">Bold</h3>
-            <div class="theme-card-grid">
                 {% for theme_id, theme_name in [
                     ("dark-neon", "Neon"),
                     ("dark-arctic", "Arctic"),
@@ -243,7 +224,6 @@
                         </span>
                     </span>
                     <span class="theme-card-name">{{ theme_name }}</span>
-                    <span class="theme-card-mode">Dark · Bold</span>
                 </button>
                 {% endfor %}
             </div>

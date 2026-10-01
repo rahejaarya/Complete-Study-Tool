@@ -370,17 +370,7 @@
                 const chip = document.createElement('a');
                 chip.href = `/resources?query=${encodeURIComponent(term)}`;
                 chip.textContent = term;
-                chip.style.cssText = `
-                    background: var(--card-bg, #ffffff);
-                    border: 1px solid var(--border-color, #e0e0e0);
-                    padding: 6px 14px;
-                    border-radius: 20px;
-                    font-size: 13px;
-                    text-decoration: none;
-                    color: var(--text, #333333);
-                    cursor: pointer;
-                    display: inline-block;
-                `;
+                chip.className = "recent-search-chip";
                 recentSearchesContainer.appendChild(chip);
             });
         }

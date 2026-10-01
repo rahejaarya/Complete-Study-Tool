@@ -1,13 +1,11 @@
 import json
 import os
-import secrets
 import sqlite3
 from functools import wraps
 from urllib.parse import urlparse
 
+import requests
 from flask import Flask, redirect, render_template, request, session, url_for, jsonify
-from authlib.integrations.base_client.errors import OAuthError
-from authlib.integrations.flask_client import OAuth
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from static.ai import ask_ai
@@ -17,15 +15,12 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "studytool-dev-secret-ke
 app.config["DATABASE"] = os.path.join(app.root_path, "studytool.db")
 app.config["GOOGLE_CLIENT_ID"] = os.environ.get("GOOGLE_CLIENT_ID")
 app.config["GOOGLE_CLIENT_SECRET"] = os.environ.get("GOOGLE_CLIENT_SECRET")
-
-oauth = OAuth(app)
-google = oauth.register(
-    name="google",
-    client_id=app.config["GOOGLE_CLIENT_ID"],
-    client_secret=app.config["GOOGLE_CLIENT_SECRET"],
-    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    client_kwargs={"scope": "openid email profile"},
-)
+app.config["BETTER_AUTH_URL"] = os.environ.get(
+    "BETTER_AUTH_URL", "http://localhost:3001"
+).rstrip("/")
+app.config["BETTER_AUTH_INTERNAL_URL"] = os.environ.get(
+    "BETTER_AUTH_INTERNAL_URL", app.config["BETTER_AUTH_URL"]
+).rstrip("/")
 
 
 def get_db():
@@ -74,11 +69,54 @@ def init_db():
 def login_required(view):
     @wraps(view)
     def wrapped_view(*args, **kwargs):
-        if "user_id" not in session:
+        if "user_id" in session:
+            return view(*args, **kwargs)
+
+        auth_session, set_cookies = get_better_auth_session()
+        if not auth_session:
             return redirect(url_for("login", next=request.path))
-        return view(*args, **kwargs)
+
+        response = app.make_response(view(*args, **kwargs))
+        for cookie in set_cookies:
+            response.headers.add("Set-Cookie", cookie)
+        return response
 
     return wrapped_view
+
+
+def response_set_cookies(response):
+    raw_headers = getattr(response.raw, "headers", None)
+    if raw_headers is not None and hasattr(raw_headers, "getlist"):
+        return raw_headers.getlist("Set-Cookie")
+    cookie = response.headers.get("Set-Cookie")
+    return [cookie] if cookie else []
+
+
+def get_better_auth_session():
+    cookie_header = request.headers.get("Cookie")
+    if not cookie_header:
+        return None, []
+
+    try:
+        response = requests.get(
+            f"{app.config['BETTER_AUTH_INTERNAL_URL']}/api/auth/get-session",
+            headers={
+                "Cookie": cookie_header,
+                "Origin": request.host_url.rstrip("/"),
+            },
+            timeout=3,
+        )
+    except requests.RequestException:
+        return None, []
+
+    try:
+        payload = response.json() if response.status_code == 200 else None
+    except ValueError:
+        payload = None
+
+    if not isinstance(payload, dict) or not payload.get("user"):
+        return None, []
+    return payload, response_set_cookies(response)
 
 
 def safe_next_url(target):
@@ -140,68 +178,47 @@ def google_login():
             google_login_enabled=False,
         ), 503
 
-    session["login_next"] = safe_next_url(request.args.get("next"))
-    callback_url = url_for("google_callback", _external=True)
-    return google.authorize_redirect(callback_url)
-
-
-@app.route("/auth/google/callback")
-def google_callback():
-    if not app.config.get("GOOGLE_CLIENT_ID") or not app.config.get("GOOGLE_CLIENT_SECRET"):
-        return redirect(url_for("login"))
-
     try:
-        token = google.authorize_access_token()
-    except OAuthError:
+        response = requests.post(
+            f"{app.config['BETTER_AUTH_INTERNAL_URL']}/api/auth/sign-in/social",
+            json={
+                "provider": "google",
+                "callbackURL": (
+                    f"{request.host_url.rstrip('/')}{safe_next_url(request.args.get('next'))}"
+                ),
+            },
+            headers={
+                "Accept": "application/json",
+                "Origin": request.host_url.rstrip("/"),
+            },
+            timeout=5,
+            allow_redirects=False,
+        )
+    except requests.RequestException:
         return render_template(
-            "login.html", error="Google sign-in could not be completed."
-        ), 400
+            "login.html",
+            error="Google sign-in service is unavailable.",
+            google_login_enabled=True,
+        ), 503
 
-    profile = token.get("userinfo", {})
-    email = profile.get("email", "").strip().lower()
-    google_sub = profile.get("sub")
-    if not email or not google_sub or not profile.get("email_verified"):
+    redirect_url = response.headers.get("Location")
+    if not redirect_url and response.ok:
+        try:
+            redirect_url = response.json().get("url")
+        except (ValueError, AttributeError):
+            redirect_url = None
+
+    if not redirect_url:
         return render_template(
-            "login.html", error="Google did not provide a verified email address."
-        ), 400
+            "login.html",
+            error="Google sign-in could not be started.",
+            google_login_enabled=True,
+        ), 502
 
-    conn = get_db()
-    user = conn.execute(
-        "SELECT * FROM users WHERE google_sub = ?", (google_sub,)
-    ).fetchone()
-    if user is None:
-        user = conn.execute(
-            "SELECT * FROM users WHERE username = ?", (email,)
-        ).fetchone()
-
-        if user and user["google_sub"]:
-            conn.close()
-            return render_template(
-                "login.html", error="This account is linked to a different Google account."
-            ), 403
-
-        if user:
-            conn.execute(
-                "UPDATE users SET google_sub = ? WHERE id = ?",
-                (google_sub, user["id"]),
-            )
-        else:
-            cursor = conn.execute(
-                "INSERT INTO users (username, password_hash, google_sub) VALUES (?, ?, ?)",
-                (email, generate_password_hash(secrets.token_urlsafe(32)), google_sub),
-            )
-            user = conn.execute(
-                "SELECT * FROM users WHERE id = ?", (cursor.lastrowid,)
-            ).fetchone()
-
-    conn.commit()
-    conn.close()
-
-    next_url = safe_next_url(session.pop("login_next", None))
-    session.clear()
-    session["user_id"] = user["id"]
-    session["username"] = user["username"]
-    return redirect(next_url)
+    result = redirect(redirect_url)
+    for cookie in response_set_cookies(response):
+        result.headers.add("Set-Cookie", cookie)
+    return result
 
 @app.route("/api/ai", methods=["POST"])
 @login_required
@@ -233,8 +250,27 @@ def ai_chat():
 
 @app.route("/logout")
 def logout():
+    cookies = []
+    cookie_header = request.headers.get("Cookie")
+    if cookie_header:
+        try:
+            response = requests.post(
+                f"{app.config['BETTER_AUTH_INTERNAL_URL']}/api/auth/sign-out",
+                headers={
+                    "Cookie": cookie_header,
+                    "Origin": request.host_url.rstrip("/"),
+                },
+                timeout=3,
+            )
+            cookies = response_set_cookies(response)
+        except requests.RequestException:
+            pass
+
     session.clear()
-    return redirect(url_for("login"))
+    result = redirect(url_for("login"))
+    for cookie in cookies:
+        result.headers.add("Set-Cookie", cookie)
+    return result
 
 
 @app.route("/")
