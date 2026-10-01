@@ -884,6 +884,12 @@ body {
 }
 
 
+.sound-icon {
+    background: var(--yellow-light);
+    color: var(--accent-strong);
+}
+
+
 .time-icon {
     background: var(--green-light);
 }

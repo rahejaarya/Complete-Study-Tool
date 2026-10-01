@@ -129,11 +129,12 @@
                     </div>
 
                     <div class="feature-card">
-                        <div class="feature-icon time-icon">✓</div>
+                        <div class="feature-icon time-icon">852</div>
 
                         <div class="feature-content">
-                            <h3>Make steady progress</h3>
-                            <p>Small, consistent study sessions add up over time.</p>
+                            <h3>852 Hz Tone</h3>
+                            <p>A steady, continuous 852 Hz tone.</p>
+                            <button class="text-button" id="tone-toggle" type="button" aria-pressed="false">Play 852 Hz</button>
                         </div>
                     </div>
 
@@ -179,8 +180,11 @@
 
     <script>
         const whiteNoiseButton = document.getElementById("white-noise-toggle");
+        const toneButton = document.getElementById("tone-toggle");
         let audioContext;
         let noiseSource;
+        let toneOscillator;
+        let toneGain;
 
         whiteNoiseButton.addEventListener("click", async () => {
             if (noiseSource) {
@@ -220,6 +224,41 @@
 
             whiteNoiseButton.textContent = "Stop white noise";
             whiteNoiseButton.setAttribute("aria-pressed", "true");
+        });
+
+        toneButton.addEventListener("click", async () => {
+            if (toneOscillator) {
+                toneOscillator.stop();
+                toneOscillator.disconnect();
+                toneGain.disconnect();
+                toneOscillator = null;
+                toneGain = null;
+                toneButton.textContent = "Play 852 Hz";
+                toneButton.setAttribute("aria-pressed", "false");
+                return;
+            }
+
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextClass) {
+                toneButton.textContent = "Tone unavailable";
+                toneButton.disabled = true;
+                return;
+            }
+
+            audioContext ??= new AudioContextClass();
+            await audioContext.resume();
+
+            toneOscillator = audioContext.createOscillator();
+            toneGain = audioContext.createGain();
+            toneOscillator.type = "sine";
+            toneOscillator.frequency.value = 852;
+            toneGain.gain.value = 0.03;
+            toneOscillator.connect(toneGain);
+            toneGain.connect(audioContext.destination);
+            toneOscillator.start();
+
+            toneButton.textContent = "Stop 852 Hz";
+            toneButton.setAttribute("aria-pressed", "true");
         });
     </script>
 

@@ -5,7 +5,7 @@ from functools import wraps
 from urllib.parse import urlparse
 
 import requests
-from flask import Flask, redirect, render_template, request, session, url_for, jsonify
+from flask import Flask, Response, Resredirect, render_template, request, session, url_for, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from static.ai import ask_ai
