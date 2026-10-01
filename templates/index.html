@@ -314,8 +314,8 @@
                     <!-- Motivational Quote Slideshow -->
                     <section class="main-card motivation-card" aria-label="Motivational quote slideshow">
                         <blockquote class="quote-slide" id="quote-slide" aria-live="polite" aria-atomic="true">
-                            <p id="quote-text">Your time is limited, so don't waste it living someone else's life.</p>
-                            <cite id="quote-author">— Steve Jobs · Entrepreneur</cite>
+                            <p id="quote-text">What's the C in CTE?</p>
+                            <cite id="quote-author">— Benjamin Johnson</cite>
                         </blockquote>
                         <div class="quote-controls">
                             <button class="quote-toggle" id="quote-toggle" type="button" aria-pressed="false">
@@ -409,6 +409,7 @@
     <script>
         (() => {
             const quotes = [
+                { text: "What's the C in CTE?", author: "— Benjamin Johnson" },
                 { text: "Your time is limited, so don't waste it living someone else's life.", author: "— Steve Jobs · Entrepreneur" },
                 { text: "I've failed over and over and over again in my life. And that is why I succeed.", author: "— Michael Jordan · Basketball player" },
                 { text: "A champion is defined by how they recover when they fall.", author: "— Serena Williams · Tennis champion" },
@@ -574,8 +575,7 @@
                 { text: "Science is a way of thinking much more than it is a body of knowledge.", author: "— Carl Sagan" },
                 { text: "The universe is under no obligation to make sense to you.", author: "— Neil deGrasse Tyson" },
                 { text: "The best way to learn is to do.", author: "— Richard Branson" },
-                { text: "“Victorious warriors win first and then go to war, while defeated warriors go to war first and then seek to win", author:"- Sun Tzu, The Art of War" },
-                { text: "What's the C in CTE?", author: "— Benjamin Johnson" }
+                { text: "“Victorious warriors win first and then go to war, while defeated warriors go to war first and then seek to win", author:"- Sun Tzu, The Art of War" }
             ];
 
             const storageKey = "studytool_motivational_quotes_v4";
@@ -587,12 +587,12 @@
             let changeTimer;
 
             function shuffleQuotes() {
-                const order = quotes.map((_, index) => index);
+                const order = quotes.slice(1).map((_, index) => index + 1);
                 for (let index = order.length - 1; index > 0; index -= 1) {
                     const swapIndex = Math.floor(Math.random() * (index + 1));
                     [order[index], order[swapIndex]] = [order[swapIndex], order[index]];
                 }
-                return order;
+                return [0, ...order];
             }
 
             function isValidState(state) {
@@ -612,7 +612,8 @@
                     if (savedState) {
                         const parsedState = JSON.parse(savedState);
                         if (isValidState(parsedState)) {
-                            return parsedState;
+                            const remainingQuotes = parsedState.order.filter((quoteIndex) => quoteIndex !== 0);
+                            return { order: [0, ...remainingQuotes], index: 0 };
                         }
                     }
                 } catch (error) {
@@ -650,8 +651,8 @@
 
                 if (state.index === state.order.length) {
                     state.order = shuffleQuotes();
-                    if (state.order[0] === previousQuoteIndex) {
-                        [state.order[0], state.order[1]] = [state.order[1], state.order[0]];
+                    if (state.order[1] === previousQuoteIndex) {
+                        [state.order[1], state.order[2]] = [state.order[2], state.order[1]];
                     }
                     state.index = 0;
                 }

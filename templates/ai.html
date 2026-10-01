@@ -590,6 +590,8 @@ async function sendMessage() {
 
         let buffer = "";
 
+        let pendingResource = null;
+
         while (true) {
 
             const { value, done } = await reader.read();
@@ -621,7 +623,7 @@ async function sendMessage() {
 
                 else if (event.type === "resource") {
 
-                    addResourceCard(event.resource);
+                    pendingResource = event.resource;
 
                 }
 
@@ -629,7 +631,16 @@ async function sendMessage() {
 
                     console.log("AI response complete.");
 
+                    if (pendingResource) {
+
+                        addResourceCard(pendingResource);
+
+                        pendingResource = null;
+
+                    }
+
                 }
+
 
                 chatMessages.scrollTop =
                     chatMessages.scrollHeight;

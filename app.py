@@ -2,10 +2,8 @@ import json
 import os
 import sqlite3
 from functools import wraps
-from urllib.parse import urlparse
 from ddgs import DDGS
 
-import requests
 from flask import Flask, Response, redirect, render_template, request, session, url_for, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -15,14 +13,6 @@ app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "studytool-dev-secret-key")
 app.config["DATABASE"] = os.path.join(app.root_path, "studytool.db")
-app.config["GOOGLE_CLIENT_ID"] = os.environ.get("GOOGLE_CLIENT_ID")
-app.config["GOOGLE_CLIENT_SECRET"] = os.environ.get("GOOGLE_CLIENT_SECRET")
-app.config["BETTER_AUTH_URL"] = os.environ.get(
-    "BETTER_AUTH_URL", "http://localhost:3001"
-).rstrip("/")
-app.config["BETTER_AUTH_INTERNAL_URL"] = os.environ.get(
-    "BETTER_AUTH_INTERNAL_URL", app.config["BETTER_AUTH_URL"]
-).rstrip("/")
 
 
 def get_db():
@@ -38,19 +28,9 @@ def init_db():
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            google_sub TEXT
+            password_hash TEXT NOT NULL
         )
         """
-    )
-
-    user_columns = {
-        row["name"] for row in conn.execute("PRAGMA table_info(users)").fetchall()
-    }
-    if "google_sub" not in user_columns:
-        conn.execute("ALTER TABLE users ADD COLUMN google_sub TEXT")
-    conn.execute(
-        "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_sub ON users (google_sub)"
     )
 
     existing_user = conn.execute(
@@ -73,62 +53,9 @@ def login_required(view):
     def wrapped_view(*args, **kwargs):
         if "user_id" in session:
             return view(*args, **kwargs)
-
-        auth_session, set_cookies = get_better_auth_session()
-        if not auth_session:
-            return redirect(url_for("login", next=request.path))
-
-        response = app.make_response(view(*args, **kwargs))
-        for cookie in set_cookies:
-            response.headers.add("Set-Cookie", cookie)
-        return response
+        return redirect(url_for("login", next=request.path))
 
     return wrapped_view
-
-
-def response_set_cookies(response):
-    raw_headers = getattr(response.raw, "headers", None)
-    if raw_headers is not None and hasattr(raw_headers, "getlist"):
-        return raw_headers.getlist("Set-Cookie")
-    cookie = response.headers.get("Set-Cookie")
-    return [cookie] if cookie else []
-
-
-def get_better_auth_session():
-    cookie_header = request.headers.get("Cookie")
-    if not cookie_header:
-        return None, []
-
-    try:
-        response = requests.get(
-            f"{app.config['BETTER_AUTH_INTERNAL_URL']}/api/auth/get-session",
-            headers={
-                "Cookie": cookie_header,
-                "Origin": request.host_url.rstrip("/"),
-            },
-            timeout=3,
-        )
-    except requests.RequestException:
-        return None, []
-
-    try:
-        payload = response.json() if response.status_code == 200 else None
-    except ValueError:
-        payload = None
-
-    if not isinstance(payload, dict) or not payload.get("user"):
-        return None, []
-    return payload, response_set_cookies(response)
-
-
-def safe_next_url(target):
-    if not target:
-        return url_for("home")
-
-    parsed = urlparse(target)
-    if parsed.scheme or parsed.netloc or not target.startswith("/"):
-        return url_for("home")
-    return target
 
 
 def load_resources():
@@ -162,65 +89,7 @@ def login():
 
         error = "Invalid username or password."
 
-    return render_template(
-        "login.html",
-        error=error,
-        google_login_enabled=bool(
-            app.config.get("GOOGLE_CLIENT_ID") and app.config.get("GOOGLE_CLIENT_SECRET")
-        ),
-    )
-
-
-@app.route("/auth/google")
-def google_login():
-    if not app.config.get("GOOGLE_CLIENT_ID") or not app.config.get("GOOGLE_CLIENT_SECRET"):
-        return render_template(
-            "login.html",
-            error="Google sign-in is not configured on this server.",
-            google_login_enabled=False,
-        ), 503
-
-    try:
-        response = requests.post(
-            f"{app.config['BETTER_AUTH_INTERNAL_URL']}/api/auth/sign-in/social",
-            json={
-                "provider": "google",
-                "callbackURL": (
-                    f"{request.host_url.rstrip('/')}{safe_next_url(request.args.get('next'))}"
-                ),
-            },
-            headers={
-                "Accept": "application/json",
-                "Origin": request.host_url.rstrip("/"),
-            },
-            timeout=5,
-            allow_redirects=False,
-        )
-    except requests.RequestException:
-        return render_template(
-            "login.html",
-            error="Google sign-in service is unavailable.",
-            google_login_enabled=True,
-        ), 503
-
-    redirect_url = response.headers.get("Location")
-    if not redirect_url and response.ok:
-        try:
-            redirect_url = response.json().get("url")
-        except (ValueError, AttributeError):
-            redirect_url = None
-
-    if not redirect_url:
-        return render_template(
-            "login.html",
-            error="Google sign-in could not be started.",
-            google_login_enabled=True,
-        ), 502
-
-    result = redirect(redirect_url)
-    for cookie in response_set_cookies(response):
-        result.headers.add("Set-Cookie", cookie)
-    return result
+    return render_template("login.html", error=error)
 
 @app.route("/api/ai", methods=["POST"])
 @login_required
@@ -285,27 +154,8 @@ def ai_chat():
 
 @app.route("/logout")
 def logout():
-    cookies = []
-    cookie_header = request.headers.get("Cookie")
-    if cookie_header:
-        try:
-            response = requests.post(
-                f"{app.config['BETTER_AUTH_INTERNAL_URL']}/api/auth/sign-out",
-                headers={
-                    "Cookie": cookie_header,
-                    "Origin": request.host_url.rstrip("/"),
-                },
-                timeout=3,
-            )
-            cookies = response_set_cookies(response)
-        except requests.RequestException:
-            pass
-
     session.clear()
-    result = redirect(url_for("login"))
-    for cookie in cookies:
-        result.headers.add("Set-Cookie", cookie)
-    return result
+    return redirect(url_for("login"))
 
 
 @app.route("/")
