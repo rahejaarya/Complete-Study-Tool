@@ -10,6 +10,7 @@
         "light-emerald": "Light Emerald",
         "light-orchid": "Light Orchid",
         "light-citrus": "Light Citrus",
+        "light-slate": "Light Slate",
         "dark-purple": "Dark Purple",
         "dark-blue": "Dark Blue",
         "dark-green": "Dark Green",
@@ -18,7 +19,8 @@
         "dark-arctic": "Dark Arctic",
         "dark-fuchsia": "Dark Fuchsia",
         "dark-ember": "Dark Ember",
-        "dark-jade": "Dark Jade"
+        "dark-jade": "Dark Jade",
+        "dark-mocha": "Dark Mocha"
     };
     const themeCards = Array.from(document.querySelectorAll("[data-theme-choice]"));
     const status = document.getElementById("appearance-status");

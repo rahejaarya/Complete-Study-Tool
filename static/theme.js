@@ -17,6 +17,7 @@
         "light-emerald",
         "light-orchid",
         "light-citrus",
+        "light-slate",
         "dark-purple",
         "dark-blue",
         "dark-green",
@@ -25,7 +26,8 @@
         "dark-arctic",
         "dark-fuchsia",
         "dark-ember",
-        "dark-jade"
+        "dark-jade",
+        "dark-mocha"
     ];
     let selectedTheme = "light-lavender";
 
