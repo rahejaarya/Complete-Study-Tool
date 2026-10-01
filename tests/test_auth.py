@@ -1,4 +1,5 @@
 import unittest
+import uuid
 
 from app import app, init_db
 
@@ -33,19 +34,28 @@ class AuthTests(unittest.TestCase):
         self.assertEqual(response.headers.get('Location'), '/')
 
     def test_signup_creates_account_and_starts_session(self):
+        username = f'study_signup_{uuid.uuid4().hex}'
         response = self.client.post(
             '/signup',
             data={
-                'username': 'study_signup_test',
-                'password': 'strong-password-123',
-                'password_confirmation': 'strong-password-123',
+                'username': username,
+                'password': 'abcd',
+                'password_confirmation': 'abcd',
             },
             follow_redirects=False,
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.headers.get('Location'), '/')
+
+        self.client.get('/logout')
+        response = self.client.post(
+            '/login',
+            data={'username': username, 'password': 'abcd'},
+            follow_redirects=False,
+        )
+        self.assertEqual(response.status_code, 302)
         with self.client.session_transaction() as user_session:
-            self.assertEqual(user_session['username'], 'study_signup_test')
+            self.assertEqual(user_session['username'], username)
 
     def test_signup_rejects_duplicate_username(self):
         response = self.client.post(
@@ -58,6 +68,18 @@ class AuthTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'already taken', response.data)
+
+    def test_signup_rejects_mismatched_passwords(self):
+        response = self.client.post(
+            '/signup',
+            data={
+                'username': 'new_student',
+                'password': 'strong-password-123',
+                'password_confirmation': 'different-password-456',
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Passwords do not match', response.data)
 
     def test_protected_page_requires_username_password_session(self):
         response = self.client.get('/')

@@ -13,16 +13,33 @@ def ask_ai(user_input, web_context=""):
                     "role": "system",
                     "content": """You are a helpful study assistant.
 
-            Keep answers relatively short by default. Usually answer in 2-5 short paragraphs or a small number of bullet points.
+Keep your answers SHORT and useful by default.
 
-            Explain things clearly and naturally without unnecessary detail.
+For normal questions:
+- Usually use 1-3 short paragraphs.
+- Aim for roughly 60-150 words.
+- Use a few bullet points when they make the answer easier to understand.
+- Give the user the important information without unnecessary background.
+- Do not repeat the question.
+- Do not add a long introduction or conclusion.
 
-            Only give a long, detailed explanation when the user asks for more detail, a deep explanation, notes, or a full lesson.
+For very simple messages such as "hi", "hello", "thanks", etc.:
+- Reply naturally in 1-2 sentences.
+- Do not provide a lesson or unnecessary information.
 
-            If web information is provided below, use it to improve accuracy and currentness. Do not mention the web search unless it is relevant to the answer.
+Only give a longer response if the user specifically asks for:
+- a detailed explanation
+- an in-depth explanation
+- a full lesson
+- comprehensive notes
+- step-by-step detail
+- more information
 
-            Web information:
-            """ + web_context
+If web information is provided below, use it when it is relevant.
+Do not mention the web search itself.
+
+Web information:
+""" + web_context
                 },
                 {
                     "role": "user",
@@ -38,7 +55,8 @@ def ask_ai(user_input, web_context=""):
             yield chunk["message"]["content"]
 
     except Exception as e:
-        return f"Error: {e}"
+        yield f"Error: {e}"
+
 
 def search_web(query):
     try:
@@ -64,49 +82,88 @@ def search_web(query):
         print(f"Web search error: {e}")
         return []
 
+
 def find_resource(query):
     try:
-        # Look for educational videos first.
+        query_clean = query.lower().strip()
+
+        # Don't recommend resources for casual conversation.
+        casual_messages = {
+            "hi",
+            "hello",
+            "hey",
+            "hiya",
+            "yo",
+            "sup",
+            "what's up",
+            "whats up",
+            "good morning",
+            "good afternoon",
+            "good evening",
+            "thanks",
+            "thank you",
+            "ok",
+            "okay",
+            "cool",
+            "nice",
+            "great"
+        }
+
+        if query_clean in casual_messages:
+            return None
+
+        # Search specifically for educational videos.
         videos = DDGS().videos(
-            query + " educational",
+            query + " explained educational",
             region="us-en",
             safesearch="moderate",
-            max_results=3
+            max_results=5
         )
 
         if videos:
-            video = videos[0]
+            for video in videos:
+                title = video.get("title", "").strip()
+                description = video.get("description", "").strip()
+                url = video.get("content", "").strip()
 
-            image = (
-                video.get("images", {}).get("medium")
-                or video.get("images", {}).get("small")
-                or ""
-            )
+                # Make sure the result actually has usable information.
+                if not title or not url:
+                    continue
 
-            return {
-                "type": "Video",
-                "title": video.get("title", "Educational Video"),
-                "description": video.get(
-                    "description",
-                    "A video resource to help you learn more about this topic."
-                )[:140],
-                "url": video.get("content", ""),
-                "image": image
-            }
+                image = (
+                    video.get("images", {}).get("medium")
+                    or video.get("images", {}).get("small")
+                    or ""
+                )
 
-        # Fall back to a normal article/page.
-        results = search_web(query + " explained educational")
+                return {
+                    "type": "Video",
+                    "title": title,
+                    "description": (
+                        description
+                        or "An educational video to help you learn more about this topic."
+                    )[:140],
+                    "url": url,
+                    "image": image
+                }
 
-        if results:
-            result = results[0]
+        # Fall back to an educational article.
+        results = search_web(
+            query + " explained educational"
+        )
 
-            return {
-                "type": "Article",
-                "title": result["title"],
-                "description": result["description"][:140],
-                "url": result["url"],
-                "image": ""
-            }
+        for result in results:
+            if result.get("title") and result.get("url"):
+                return {
+                    "type": "Article",
+                    "title": result["title"],
+                    "description": result.get(
+                        "description",
+                        "An educational resource to help you learn more about this topic."
+                    )[:140],
+                    "url": result["url"],
+                    "image": ""
+                }
 
     except Exception as e:
         print(f"Resource search error: {e}")
@@ -131,4 +188,3 @@ if __name__ == "__main__":
             print(chunk, end="", flush=True)
 
         print("\n")
-

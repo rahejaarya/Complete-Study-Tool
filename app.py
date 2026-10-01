@@ -114,8 +114,8 @@ def signup():
 
         if not 3 <= len(username) <= 32 or not username.replace("_", "").replace("-", "").isalnum():
             error = "Username must be 3-32 letters, numbers, underscores, or hyphens."
-        elif not 8 <= len(password) <= 128:
-            error = "Password must be between 8 and 128 characters."
+        elif not 4 <= len(password) <= 128:
+            error = "Password must be between 4 and 128 characters."
         elif password != password_confirmation:
             error = "Passwords do not match."
         else:
