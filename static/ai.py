@@ -1,4 +1,5 @@
 import ollama
+from ddgs import DDGS
 
 MODEL = "qwen3.5:2b"
 
@@ -62,6 +63,55 @@ def search_web(query):
     except Exception as e:
         print(f"Web search error: {e}")
         return []
+
+def find_resource(query):
+    try:
+        # Look for educational videos first.
+        videos = DDGS().videos(
+            query + " educational",
+            region="us-en",
+            safesearch="moderate",
+            max_results=3
+        )
+
+        if videos:
+            video = videos[0]
+
+            image = (
+                video.get("images", {}).get("medium")
+                or video.get("images", {}).get("small")
+                or ""
+            )
+
+            return {
+                "type": "Video",
+                "title": video.get("title", "Educational Video"),
+                "description": video.get(
+                    "description",
+                    "A video resource to help you learn more about this topic."
+                )[:140],
+                "url": video.get("content", ""),
+                "image": image
+            }
+
+        # Fall back to a normal article/page.
+        results = search_web(query + " explained educational")
+
+        if results:
+            result = results[0]
+
+            return {
+                "type": "Article",
+                "title": result["title"],
+                "description": result["description"][:140],
+                "url": result["url"],
+                "image": ""
+            }
+
+    except Exception as e:
+        print(f"Resource search error: {e}")
+
+    return None
 
 
 if __name__ == "__main__":

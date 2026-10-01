@@ -1,6 +1,8 @@
 {
   "name": "studytool-auth",
   "version": "1.0.0",
+  "description": "Authentication service for StudyTool",
+  "main": "auth.js",
   "homepage": "https://github.com/rahejaarya/Complete-Study-Tool#readme",
   "private": true,
   "type": "module",
@@ -16,27 +18,6 @@
     "better-auth": "^1.4.0",
     "better-sqlite3": "^12.0.0"
   },
-  "allowScripts": {
-    "better-sqlite3@12.11.1": true
-  }
-}
-  "version": "1.0.0",
-  "description": "",
-  "main": "auth.js",
-  "directories": {
-    "test": "tests"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/rahejaarya/Complete-Study-Tool.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/rahejaarya/Complete-Study-Tool/issues"
-  },
-  "homepage": "https://github.com/rahejaarya/Complete-Study-Tool#readme",
   "allowScripts": {
     "better-sqlite3@12.11.1": true
   }
