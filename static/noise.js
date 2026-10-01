@@ -25,6 +25,7 @@
     let audioContext;
     let masterGain;
     const activeSounds = new Map();
+    const soundVolumes = new Map(cards.map((card) => [card.dataset.sound, 1]));
 
     function getAudioContext() {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -64,15 +65,18 @@
         filter.type = kind === "brown" ? "lowpass" : "highpass";
         filter.frequency.value = kind === "brown" ? 900 : 500;
         const gain = context.createGain();
-        gain.gain.value = 0.08;
+        gain.gain.value = 0.08 * soundVolumes.get(kind);
         source.connect(filter).connect(gain).connect(masterGain);
         source.start();
-        return { stop: () => source.stop(), gain };
+        return {
+            stop: () => source.stop(),
+            setVolume: (value) => { gain.gain.setTargetAtTime(0.08 * value, context.currentTime, 0.02); }
+        };
     }
 
     function createMusicSound(context, kind) {
         const gain = context.createGain();
-        gain.gain.value = 0.055;
+        gain.gain.value = 0.055 * soundVolumes.get(kind);
         gain.connect(masterGain);
         const notes = kind === "piano" ? [261.63, 329.63, 392, 329.63, 293.66, 349.23, 440, 349.23] : [146.83, 174.61, 220, 261.63, 220, 174.61];
         let noteIndex = 0;
@@ -91,7 +95,10 @@
         };
         playNote();
         const interval = window.setInterval(playNote, kind === "piano" ? 900 : 1200);
-        return { stop: () => window.clearInterval(interval), gain };
+        return {
+            stop: () => window.clearInterval(interval),
+            setVolume: (value) => { gain.gain.setTargetAtTime(0.055 * value, context.currentTime, 0.02); }
+        };
     }
 
     function createToneSound(context, frequency) {
@@ -99,7 +106,7 @@
         const gain = context.createGain();
         oscillator.type = "sine";
         oscillator.frequency.value = frequency;
-        gain.gain.value = 0.08;
+        gain.gain.value = 0.08 * soundVolumes.get("852hz");
         oscillator.connect(gain).connect(masterGain);
         oscillator.start();
         return {
@@ -107,7 +114,8 @@
                 oscillator.stop();
                 oscillator.disconnect();
                 gain.disconnect();
-            }
+            },
+            setVolume: (value) => { gain.gain.setTargetAtTime(0.08 * value, context.currentTime, 0.02); }
         };
     }
 
@@ -121,7 +129,7 @@
         }
         let sound;
         if (soundId === "ocean") {
-            oceanAudio.volume = Number(volumeInput.value) / 100;
+            oceanAudio.volume = soundVolumes.get(soundId) * Number(volumeInput.value) / 100;
             try {
                 await oceanAudio.play();
             } catch {
@@ -133,7 +141,7 @@
                     oceanAudio.pause();
                     oceanAudio.currentTime = 0;
                 },
-                setVolume: (value) => { oceanAudio.volume = value; }
+                setVolume: (soundVolume, masterVolume) => { oceanAudio.volume = soundVolume * masterVolume; }
             };
         } else {
             const context = getAudioContext();
@@ -171,6 +179,16 @@
 
     cards.forEach((card) => {
         card.querySelector(".sound-play").addEventListener("click", () => toggleSound(card.dataset.sound));
+        const soundId = card.dataset.sound;
+        const slider = card.querySelector(".sound-volume");
+        const valueLabel = card.querySelector(".sound-volume-value");
+        slider.addEventListener("input", () => {
+            const volume = Number(slider.value) / 100;
+            soundVolumes.set(soundId, volume);
+            valueLabel.value = `${slider.value}%`;
+            valueLabel.textContent = `${slider.value}%`;
+            activeSounds.get(soundId)?.setVolume?.(volume, Number(volumeInput.value) / 100);
+        });
     });
 
     activityButtons.forEach((button) => {
@@ -198,6 +216,8 @@
         const value = Number(volumeInput.value);
         volumeValue.textContent = `${value}%`;
         if (masterGain) masterGain.gain.value = value / 100;
-        activeSounds.get("ocean")?.setVolume?.(value / 100);
+        activeSounds.forEach((sound, soundId) => {
+            sound.setVolume?.(soundVolumes.get(soundId), value / 100);
+        });
     });
 })();

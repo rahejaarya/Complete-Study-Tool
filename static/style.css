@@ -2775,7 +2775,7 @@ body {
 }
 
 .sound-card {
-    min-height: 190px;
+    min-height: 230px;
     padding: 18px;
     display: flex;
     flex-direction: column;
@@ -2828,9 +2828,28 @@ body {
 }
 
 .sound-play {
-    margin-top: auto;
-    padding-top: 13px;
+    margin-top: 8px;
+    padding: 0;
     align-self: flex-start;
+}
+
+.sound-volume-control {
+    display: grid;
+    gap: 5px;
+    margin-top: auto;
+}
+
+.sound-volume-control label {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.sound-volume {
+    width: 100%;
+    margin: 0;
+    accent-color: var(--purple);
 }
 
 .sound-mixer-bar {

@@ -14,6 +14,10 @@ class AuthTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotIn(b'Google', response.data)
 
+    def test_google_login_route_is_removed(self):
+        response = self.client.get('/auth/google')
+        self.assertEqual(response.status_code, 404)
+
     def test_valid_login_redirects_home(self):
         response = self.client.post(
             '/login',

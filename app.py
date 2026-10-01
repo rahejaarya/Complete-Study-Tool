@@ -2,6 +2,7 @@ import json
 import os
 import sqlite3
 from functools import wraps
+from urllib.parse import urlparse
 from ddgs import DDGS
 
 from flask import Flask, Response, redirect, render_template, request, session, url_for, jsonify
@@ -56,6 +57,16 @@ def login_required(view):
         return redirect(url_for("login", next=request.path))
 
     return wrapped_view
+
+
+def safe_next_url(target):
+    if not target:
+        return url_for("home")
+
+    parsed = urlparse(target)
+    if parsed.scheme or parsed.netloc or not target.startswith("/"):
+        return url_for("home")
+    return target
 
 
 def load_resources():
