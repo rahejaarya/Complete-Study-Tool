@@ -216,18 +216,18 @@
     --muted: #a6a9bb;
     --border: #373a4a;
     --purple: #aa9df5;
-    --purple-light: #34304b;
-    --accent-strong: #8170df;
-    --nav-text: #c1c3d0;
-    --nav-hover: #2a2d3b;
+    --purple-light: #3d3155;
+    --accent-strong: #53c7e8;
+    --nav-text: #d2c8e8;
+    --nav-hover: #2d3044;
     --control-bg: #1d202c;
     --soft-surface: #292c39;
     --card-shadow: rgba(0, 0, 0, 0.16);
     --deadline-tag-color: #f5d997;
-    --blue-light: #29374b;
-    --green-light: #293b34;
-    --pink-light: #45313e;
-    --yellow-light: #453d2c;
+    --blue-light: #21465b;
+    --green-light: #294b3b;
+    --pink-light: #54304c;
+    --yellow-light: #55451f;
 }
 
 [data-theme="dark-blue"] {
@@ -237,19 +237,19 @@
     --text: #edf3fc;
     --muted: #a7b8ce;
     --border: #35445a;
-    --purple: #78b9f3;
-    --purple-light: #263c55;
-    --accent-strong: #4a91ce;
-    --nav-text: #c4d3e6;
-    --nav-hover: #29384d;
+    --purple: #70d6ed;
+    --purple-light: #204653;
+    --accent-strong: #f2ad4b;
+    --nav-text: #c8e8ed;
+    --nav-hover: #2c3946;
     --control-bg: #1b2637;
     --soft-surface: #263448;
     --card-shadow: rgba(0, 0, 0, 0.2);
     --deadline-tag-color: #f5d997;
-    --blue-light: #293d55;
-    --green-light: #293e3a;
-    --pink-light: #453440;
-    --yellow-light: #453d2c;
+    --blue-light: #234b63;
+    --green-light: #345039;
+    --pink-light: #57374b;
+    --yellow-light: #5a451d;
 }
 
 [data-theme="dark-green"] {
@@ -259,19 +259,19 @@
     --text: #edf5f0;
     --muted: #a7b9ae;
     --border: #35473e;
-    --purple: #7fca9a;
-    --purple-light: #263d31;
-    --accent-strong: #4b9b6a;
-    --nav-text: #c2d5c8;
-    --nav-hover: #293a31;
+    --purple: #79d7a0;
+    --purple-light: #254637;
+    --accent-strong: #d986c6;
+    --nav-text: #d0e6d7;
+    --nav-hover: #303b39;
     --control-bg: #1b2822;
     --soft-surface: #26362e;
     --card-shadow: rgba(0, 0, 0, 0.2);
     --deadline-tag-color: #f5d997;
-    --blue-light: #29394a;
-    --green-light: #294036;
-    --pink-light: #45343c;
-    --yellow-light: #453d2c;
+    --blue-light: #294b61;
+    --green-light: #2d533d;
+    --pink-light: #593752;
+    --yellow-light: #59471f;
 }
 
 [data-theme="dark-citrus"] {
