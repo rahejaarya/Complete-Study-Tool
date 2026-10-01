@@ -12,6 +12,27 @@
   },
   "dependencies": {
     "better-auth": "^1.4.0",
-    "better-sqlite3": "^12.0.0"
-  }
+    "better-sqlite3": "^12.0.0",
+    "dotenv": "^18.0.5",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "googleapis": "^182.0.0"
+  },
+  "version": "1.0.0",
+  "description": "",
+  "main": "auth.js",
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rahejaarya/Complete-Study-Tool.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rahejaarya/Complete-Study-Tool/issues"
+  },
+  "homepage": "https://github.com/rahejaarya/Complete-Study-Tool#readme"
 }
