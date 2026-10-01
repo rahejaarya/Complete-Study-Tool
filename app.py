@@ -5,7 +5,7 @@ from functools import wraps
 from urllib.parse import urlparse
 
 import requests
-from flask import Flask, Response, Resredirect, render_template, request, session, url_for, jsonify
+from flask import Flask, Response, redirect, render_template, request, session, url_for, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from static.ai import ask_ai
@@ -234,11 +234,10 @@ def ai_chat():
         return jsonify({"error": "Message cannot be empty."}), 400
 
     try:
-        answer = ask_ai(message)
-
-        return jsonify({
-            "response": answer
-        })
+        return Response(
+            ask_ai(message),
+            mimetype="text/plain"
+        )
 
     except Exception as e:
         print(f"AI error: {e}")
