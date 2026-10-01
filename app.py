@@ -147,6 +147,8 @@ def ai_chat():
         return jsonify({"error": "No data received."}), 400
 
     message = data.get("message", "").strip()
+    context = data.get("context", "").strip()
+
 
     if not message:
         return jsonify({"error": "Message cannot be empty."}), 400
@@ -176,7 +178,15 @@ def ai_chat():
                 }) + "\n"
 
             # Then stream the AI response.
-            for chunk in ask_ai(message, web_context):
+            combined_message = f"""
+            Previous conversation:
+            {context}
+
+            Current user message:
+            {message}
+            """
+
+            for chunk in ask_ai(combined_message, web_context):
                 yield json.dumps({
                     "type": "token",
                     "content": chunk

@@ -573,8 +573,10 @@ async function sendMessage() {
             },
 
             body: JSON.stringify({
-                message: message
+                message: message,
+                ontext: chatMessages.innerText
             })
+
 
         });
 
