@@ -21,8 +21,12 @@
     const audioStatus = document.getElementById("audio-status");
     const volumeInput = document.getElementById("master-volume");
     const volumeValue = document.getElementById("volume-value");
+    const oceanAudioPicker = document.getElementById("ocean-audio-pick");
+    const oceanAudioUpload = document.getElementById("ocean-audio-upload");
+    const oceanAudioName = document.getElementById("ocean-audio-name");
     let audioContext;
     let masterGain;
+    let oceanAudioUrl;
     const activeSounds = new Map();
 
     function getAudioContext() {
@@ -95,6 +99,20 @@
         return { stop: () => window.clearInterval(interval), gain };
     }
 
+    async function createUploadedOceanSound() {
+        const audio = new Audio(oceanAudioUrl);
+        audio.loop = true;
+        audio.volume = Number(volumeInput.value) / 100;
+        await audio.play();
+        return {
+            stop: () => {
+                audio.pause();
+                audio.currentTime = 0;
+            },
+            setVolume: (value) => { audio.volume = value; }
+        };
+    }
+
     async function toggleSound(soundId) {
         if (activeSounds.has(soundId)) {
             activeSounds.get(soundId).stop();
@@ -106,9 +124,11 @@
         const context = getAudioContext();
         if (!context) return;
         await context.resume();
-        const sound = ["brown", "pink", "rain", "ocean"].includes(soundId)
-            ? createNoiseSound(context, soundId === "ocean" ? "pink" : soundId)
-            : createMusicSound(context, soundId);
+        const sound = soundId === "ocean" && oceanAudioUrl
+            ? await createUploadedOceanSound()
+            : ["brown", "pink", "rain", "ocean"].includes(soundId)
+                ? createNoiseSound(context, soundId === "ocean" ? "pink" : soundId)
+                : createMusicSound(context, soundId);
         activeSounds.set(soundId, sound);
         updateCard(soundId, true);
         audioStatus.textContent = `${soundLabels[soundId]} is playing.`;
@@ -133,6 +153,23 @@
 
     cards.forEach((card) => {
         card.querySelector(".sound-play").addEventListener("click", () => toggleSound(card.dataset.sound));
+    });
+
+    oceanAudioPicker.addEventListener("click", () => oceanAudioUpload.click());
+    oceanAudioUpload.addEventListener("change", () => {
+        const [file] = oceanAudioUpload.files;
+        if (!file) return;
+
+        const activeOceanSound = activeSounds.get("ocean");
+        if (activeOceanSound) {
+            activeOceanSound.stop();
+            activeSounds.delete("ocean");
+            updateCard("ocean", false);
+        }
+        if (oceanAudioUrl) URL.revokeObjectURL(oceanAudioUrl);
+        oceanAudioUrl = URL.createObjectURL(file);
+        oceanAudioName.textContent = file.name;
+        audioStatus.textContent = "Your recording is ready for Ocean Waves.";
     });
 
     activityButtons.forEach((button) => {
@@ -160,5 +197,6 @@
         const value = Number(volumeInput.value);
         volumeValue.textContent = `${value}%`;
         if (masterGain) masterGain.gain.value = value / 100;
+        activeSounds.get("ocean")?.setVolume?.(value / 100);
     });
 })();

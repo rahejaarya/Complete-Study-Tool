@@ -3,16 +3,32 @@ import ollama
 MODEL = "qwen3.5:2b"
 
 
-def ask_ai(user_input):
+def ask_ai(user_input, web_context=""):
     try:
         response = ollama.chat(
             model=MODEL,
             messages=[
                 {
+                    "role": "system",
+                    "content": """You are a helpful study assistant.
+
+            Keep answers relatively short by default. Usually answer in 2-5 short paragraphs or a small number of bullet points.
+
+            Explain things clearly and naturally without unnecessary detail.
+
+            Only give a long, detailed explanation when the user asks for more detail, a deep explanation, notes, or a full lesson.
+
+            If web information is provided below, use it to improve accuracy and currentness. Do not mention the web search unless it is relevant to the answer.
+
+            Web information:
+            """ + web_context
+                },
+                {
                     "role": "user",
                     "content": user_input
                 }
             ],
+
             think=False,
             stream=True
         )
@@ -36,7 +52,7 @@ if __name__ == "__main__":
             break
 
         print("\nAI: ", end="", flush=True)
-        
+
         for chunk in ask_ai(user_input):
             print(chunk, end="", flush=True)
 

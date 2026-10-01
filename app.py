@@ -3,6 +3,7 @@ import os
 import sqlite3
 from functools import wraps
 from urllib.parse import urlparse
+from ddgs import DDGS
 
 import requests
 from flask import Flask, Response, redirect, render_template, request, session, url_for, jsonify

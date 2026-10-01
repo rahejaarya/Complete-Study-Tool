@@ -18,7 +18,6 @@
             <nav class="navigation">
                 <a href="{{ url_for('home') }}" class="nav-link"><span class="nav-icon">▦</span>Dashboard</a>
                 <a href="{{ url_for('resources') }}" class="nav-link"><span class="nav-icon">⌕</span>Study Resources</a>
-                <a href="{{ url_for('focus') }}" class="nav-link"><span class="nav-icon">◷</span>Focus Mode</a>
                 <a href="{{ url_for('noise_songs') }}" class="nav-link active"><span class="nav-icon">♫</span>Noise &amp; Songs</a>
                 <a href="{{ url_for('time_management') }}" class="nav-link"><span class="nav-icon">✓</span>Time Management</a>
                 <a href="{{ url_for('support') }}" class="nav-link"><span class="nav-icon">♡</span>Student Support</a>
@@ -108,8 +107,11 @@
                     </article>
                     <article class="sound-card" data-sound="ocean">
                         <div class="sound-card-top"><span class="sound-art ocean-art">◒</span><span class="sound-type">NATURE</span></div>
-                        <h3>Ocean Waves</h3><p>A slow, spacious rhythm for sustained focus.</p>
+                        <h3>Ocean Waves</h3><p>Use the generated waves or choose an ocean recording.</p>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                        <button class="text-button" id="ocean-audio-pick" type="button" aria-describedby="ocean-audio-name">Choose recording</button>
+                        <input id="ocean-audio-upload" type="file" accept="audio/*" hidden>
+                        <span id="ocean-audio-name" class="audio-status" aria-live="polite">Using generated waves</span>
                     </article>
                     <article class="sound-card" data-sound="lofi">
                         <div class="sound-card-top"><span class="sound-art lofi-art">▰</span><span class="sound-type">SONG LOOP</span></div>
@@ -150,7 +152,6 @@
 
     <nav class="mobile-navigation">
         <a href="{{ url_for('home') }}" class="mobile-link"><span>▦</span><small>Home</small></a>
-        <a href="{{ url_for('focus') }}" class="mobile-link"><span>◷</span><small>Focus</small></a>
         <a href="{{ url_for('noise_songs') }}" class="mobile-link active"><span>♫</span><small>Sounds</small></a>
         <a href="{{ url_for('time_management') }}" class="mobile-link"><span>✓</span><small>Schedule</small></a>
         <a href="{{ url_for('support') }}" class="mobile-link"><span>♡</span><small>Support</small></a>
