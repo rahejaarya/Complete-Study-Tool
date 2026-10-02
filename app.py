@@ -11,7 +11,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 try:
     from static.ai import ask_ai, find_resource, search_web  # type: ignore[reportMissingImports]
 except ModuleNotFoundError:  # pragma: no cover
-    from app.static.ai import ask_ai, find_resource, search_web
+    from app.static.ai import ask_ai, find_resource, search_web # type: ignore
 
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
