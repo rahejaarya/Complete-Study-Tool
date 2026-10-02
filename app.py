@@ -8,7 +8,10 @@ from ddgs import DDGS
 from flask import Flask, Response, redirect, render_template, request, session, url_for, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from static.ai import ask_ai, find_resource, search_web
+try:
+    from static.ai import ask_ai, find_resource, search_web  # type: ignore[reportMissingImports]
+except ModuleNotFoundError:  # pragma: no cover
+    from app.static.ai import ask_ai, find_resource, search_web
 
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
