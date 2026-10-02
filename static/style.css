@@ -2582,31 +2582,6 @@ body {
     margin-bottom: 24px;
 }
 
-.noise-page .noise-page-topbar {
-    max-width: none;
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: 16px;
-}
-
-.noise-page-topbar .back-link {
-    margin: 0;
-    justify-self: start;
-}
-
-.noise-page-topbar .welcome {
-    grid-column: 2;
-}
-
-.noise-page-topbar .welcome-icon {
-    font-size: 34px;
-}
-
-.noise-page-topbar .welcome h1 {
-    white-space: nowrap;
-}
-
 .sound-hero {
     min-height: 220px;
     margin-bottom: 28px;
@@ -2714,15 +2689,6 @@ body {
     font-weight: 700;
     letter-spacing: 1.2px;
     text-transform: uppercase;
-}
-
-.sound-status {
-    padding: 7px 10px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--control-bg);
-    letter-spacing: 0;
-    text-transform: none;
 }
 
 .activity-grid {
@@ -2962,34 +2928,6 @@ body {
 }
 
 @media (max-width: 700px) {
-    .noise-page .noise-page-topbar {
-        grid-template-columns: 1fr auto 1fr;
-        gap: 10px;
-    }
-    .noise-page-topbar .mobile-menu {
-        grid-column: 1;
-        grid-row: 1;
-        justify-self: start;
-    }
-    .noise-page-topbar .welcome {
-        grid-column: 2;
-        justify-self: center;
-    }
-    .noise-page-topbar .welcome-icon {
-        display: none;
-    }
-    .noise-page-topbar-spacer {
-        display: block;
-        grid-column: 3;
-        grid-row: 1;
-    }
-    .noise-page-topbar .welcome h1 {
-        font-size: 22px;
-    }
-    .noise-page-topbar .back-link {
-        grid-column: 1 / -1;
-        grid-row: 2;
-    }
     .sound-hero { min-height: 0; padding: 25px 22px; }
     .sound-hero-orbit { width: 82px; height: 82px; flex-basis: 82px; }
     .sound-hero-orbit::before { inset: 11px; }
@@ -3009,85 +2947,8 @@ body {
 }
 
 /* ================================
-   AI CHAT SIDEBAR
+   AI NAVIGATION + CHAT DROPDOWN
    ================================ */
-
-.chat-sidebar {
-    margin: 18px 10px 0;
-    padding-top: 14px;
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
-}
-
-.chat-sidebar-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 10px 9px;
-    color: var(--text);
-    font-size: 12px;
-    font-weight: 600;
-}
-
-#new-chat-button {
-    width: 26px;
-    height: 26px;
-    border: none;
-    border-radius: 7px;
-    background: rgba(124, 58, 237, 0.14);
-    color: #a78bfa;
-    font-size: 18px;
-    line-height: 1;
-    cursor: pointer;
-    transition: 0.2s ease;
-}
-
-#new-chat-button:hover {
-    background: rgba(124, 58, 237, 0.25);
-    color: #c4b5fd;
-}
-
-.chat-list {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.chat-item {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    padding: 8px 10px;
-    border: none;
-    border-radius: 8px;
-    background: transparent;
-    color: var(--text);
-    text-align: left;
-    font-size: 12px;
-    cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease;
-}
-
-.chat-item:hover {
-    background: rgba(124, 58, 237, 0.10);
-}
-
-.chat-item.active {
-    background: rgba(124, 58, 237, 0.16);
-    color: #c4b5fd;
-}
-
-.chat-item-icon {
-    width: 17px;
-    flex-shrink: 0;
-    opacity: 0.75;
-}
-
-.chat-item-title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
 
 .ai-nav-section {
     width: 100%;
@@ -3104,85 +2965,144 @@ body {
     min-width: 0;
 }
 
+
+/* Dropdown arrow */
+
 .ai-chats-toggle {
     width: 32px;
     height: 32px;
     margin-right: 8px;
+
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 32px;
-    border: 0;
+
+    border: none;
     border-radius: 8px;
+
     background: transparent;
-    color: var(--nav-text);
+    color: var(--text-muted, #a0a1b2);
+
     cursor: pointer;
-    font: inherit;
     font-size: 13px;
-    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
 }
 
-.ai-chats-toggle:hover,
-.ai-chats-toggle:focus-visible {
-    background: var(--nav-hover);
+.ai-chats-toggle:hover {
+    background: rgba(255, 255, 255, 0.06);
     color: var(--text);
 }
 
-.ai-chats-toggle:focus-visible {
-    outline: 2px solid var(--purple);
-    outline-offset: 2px;
-}
+
+/* Hidden by default */
 
 .ai-chat-dropdown {
     display: none;
+
     margin: 4px 8px 8px 42px;
 }
+
+
+/* Visible when opened */
 
 .ai-chat-dropdown.open {
     display: block;
 }
 
+
+/* Chats heading */
+
 .ai-chat-dropdown .chat-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
     padding: 8px 4px;
-    color: var(--nav-text);
+
+    color: var(--text-muted, #a0a1b2);
+    font-size: 12px;
+    font-weight: 600;
 }
+
+
+/* Plus button */
 
 .ai-chat-dropdown #new-chat-button {
     width: 24px;
     height: 24px;
-    padding: 0;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
+    padding: 0;
+
+    border: none;
     border-radius: 6px;
+
     background: transparent;
-    color: var(--nav-text);
+    color: var(--text-muted, #a0a1b2);
+
+    cursor: pointer;
     font-size: 17px;
 }
 
 .ai-chat-dropdown #new-chat-button:hover {
-    background: var(--nav-hover);
+    background: rgba(255, 255, 255, 0.07);
     color: var(--text);
 }
 
+
+/* Individual chats */
+
 .ai-chat-dropdown .chat-list {
+    display: flex;
+    flex-direction: column;
     gap: 3px;
 }
 
 .ai-chat-dropdown .chat-item {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
     gap: 8px;
+
     padding: 8px 7px;
+
+    border: none;
     border-radius: 7px;
-    color: var(--nav-text);
+
+    background: transparent;
+    color: var(--text-muted, #a0a1b2);
+
+    text-align: left;
+    cursor: pointer;
+
+    font-size: 12px;
 }
 
-.ai-chat-dropdown .chat-item:hover,
+.ai-chat-dropdown .chat-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+}
+
 .ai-chat-dropdown .chat-item.active {
-    background: var(--nav-hover);
+    background: rgba(124, 58, 237, 0.12);
     color: var(--text);
 }
 
 .ai-chat-dropdown .chat-item-icon {
-    flex: 0 0 auto;
+    flex-shrink: 0;
     font-size: 11px;
+}
+
+.ai-chat-dropdown .chat-item-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
