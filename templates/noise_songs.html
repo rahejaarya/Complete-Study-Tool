@@ -30,16 +30,16 @@
         </aside>
 
         <main class="main-content noise-page">
-            <a href="{{ url_for('home') }}" class="back-link">&larr; Go back to main page</a>
-            <header class="topbar">
+            <header class="topbar noise-page-topbar">
+                <a href="{{ url_for('home') }}" class="back-link">&larr; Go back to main page</a>
                 <button class="mobile-menu" type="button">☰</button>
                 <div class="welcome">
                     <div class="welcome-icon">♫</div>
                     <div>
                         <h1>Noise &amp; Songs</h1>
-                        <p>Shape a soundscape that helps your attention settle in.</p>
                     </div>
                 </div>
+                <span class="noise-page-topbar-spacer" aria-hidden="true"></span>
             </header>
 
             <section class="sound-hero">
@@ -57,25 +57,25 @@
                         <div class="eyebrow">START WITH A TASK</div>
                         <h2 id="activity-heading">Find your focus sound</h2>
                     </div>
-                    <span id="selected-activity-label" class="sound-status">Learning something new</span>
+                    <span id="selected-activity-label" class="sound-status" aria-live="polite">Selected: Learning something new</span>
                 </div>
                 <div class="activity-grid" role="list">
-                    <button class="activity-chip active" type="button" data-activity="learning">Learning something new</button>
-                    <button class="activity-chip" type="button" data-activity="reviewing">Reviewing &amp; revising</button>
-                    <button class="activity-chip" type="button" data-activity="coding">Coding &amp; programming</button>
-                    <button class="activity-chip" type="button" data-activity="writing">Writing &amp; typing</button>
-                    <button class="activity-chip" type="button" data-activity="reading">Reading</button>
-                    <button class="activity-chip" type="button" data-activity="problem-solving">Problem solving</button>
-                    <button class="activity-chip" type="button" data-activity="homework">Homework</button>
-                    <button class="activity-chip" type="button" data-activity="creative">Creative work</button>
-                    <button class="activity-chip" type="button" data-activity="memorization">Memorization</button>
-                    <button class="activity-chip" type="button" data-activity="break">Taking a study break</button>
+                    <button class="activity-chip active" type="button" data-activity="learning" aria-pressed="true">Learning something new</button>
+                    <button class="activity-chip" type="button" data-activity="reviewing" aria-pressed="false">Reviewing &amp; revising</button>
+                    <button class="activity-chip" type="button" data-activity="coding" aria-pressed="false">Coding &amp; programming</button>
+                    <button class="activity-chip" type="button" data-activity="writing" aria-pressed="false">Writing &amp; typing</button>
+                    <button class="activity-chip" type="button" data-activity="reading" aria-pressed="false">Reading</button>
+                    <button class="activity-chip" type="button" data-activity="problem-solving" aria-pressed="false">Problem solving</button>
+                    <button class="activity-chip" type="button" data-activity="homework" aria-pressed="false">Homework</button>
+                    <button class="activity-chip" type="button" data-activity="creative" aria-pressed="false">Creative work</button>
+                    <button class="activity-chip" type="button" data-activity="memorization" aria-pressed="false">Memorization</button>
+                    <button class="activity-chip" type="button" data-activity="break" aria-pressed="false">Taking a study break</button>
                 </div>
                 <div class="recommendation-panel">
                     <div class="recommendation-icon">✦</div>
                     <div>
                         <p class="recommendation-kicker">RECOMMENDED FOR YOU</p>
-                        <p id="recommendation-copy">Brown Noise, Classical, Ambient</p>
+                        <p id="recommendation-copy">Brown Noise, Calm Piano, Ocean Waves, Acoustic Guitar &amp; Piano, Soft Ambient Synth</p>
                     </div>
                     <button id="load-recommendations" class="text-button" type="button">Load mix</button>
                 </div>

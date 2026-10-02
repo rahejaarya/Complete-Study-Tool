@@ -46,7 +46,7 @@
                     <span class="nav-icon">♡</span>
                     Student Support
                 </a>
-####
+                
                 <div class="ai-nav-section">
 
                     <div class="ai-nav-row">
@@ -77,67 +77,30 @@
                             <span>Chats</span>
 
                             <button
-                            id="new-chat-button"
-                type="button"
-                title="New Chat"
-            >
-                +
-            </button>
+                                id="new-chat-button"
+                                type="button"
+                                title="New Chat"
+                            >
+                               +
+                            </button>
 
-        </div>
+                        </div>
 
 
-        <div class="chat-list">
+                        <div class="chat-list">
 
-            <button class="chat-item active">
-                <span class="chat-item-icon">💬</span>
-                <span class="chat-item-title">Biology Review</span>
-            </button>
+                            <button class="chat-item active">
+                                <span class="chat-item-icon">💬</span>
+                                <span class="chat-item-title">Biology Review</span>
+                            </button>
+                        </div>
 
-            <button class="chat-item">
-                <span class="chat-item-icon">💬</span>
-                <span class="chat-item-title">Math Homework</span>
-            </button>
+                    </div>
 
-            <button class="chat-item">
-                <span class="chat-item-icon">💬</span>
-                <span class="chat-item-title">Essay Help</span>
-            </button>
-
-            <button class="chat-item">
-                <span class="chat-item-icon">💬</span>
-                <span class="chat-item-title">Chemistry Questions</span>
-            </button>
-
-        </div>
-
-    </div>
-
-</div>
+                </div>
 
 
             </nav>
-
-            <!-- Chat History -->
-            <div class="chat-sidebar">
-
-                <div class="chat-sidebar-header">
-                    <span>Chats</span>
-
-                    <button
-                        id="new-chat-button"
-                        type="button"
-                        title="New Chat"
-                    >
-                        +
-                    </button>
-                </div>
-
-                <div id="chat-list" class="chat-list">
-                    <!-- Real chats will be loaded here -->
-                </div>
-
-            </div>
 
 
             <div class="sidebar-bottom">
@@ -752,6 +715,31 @@ aiInput.addEventListener(
 
     }
 );
+
+const aiChatsToggle =
+    document.getElementById("ai-chats-toggle");
+
+const aiChatDropdown =
+    document.getElementById("ai-chat-dropdown");
+
+
+aiChatsToggle.addEventListener("click", function () {
+
+    const isOpen =
+        aiChatDropdown.classList.toggle("open");
+
+    aiChatsToggle.setAttribute(
+        "aria-expanded",
+        isOpen
+    );
+
+    aiChatsToggle.textContent =
+        isOpen ? "▴" : "▾";
+
+    aiChatsToggle.title =
+        isOpen ? "Hide chats" : "Show chats";
+});
+
 
 </script>
 

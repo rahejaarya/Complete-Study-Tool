@@ -231,9 +231,13 @@
 
     function updateRecommendations(activityId) {
         const recommendation = recommendations[activityId];
-        selectedActivityLabel.textContent = recommendation.label;
+        selectedActivityLabel.textContent = `Selected: ${recommendation.label}`;
         recommendationCopy.textContent = recommendation.sounds.map((sound) => soundLabels[sound]).join(", ");
-        activityButtons.forEach((button) => button.classList.toggle("active", button.dataset.activity === activityId));
+        activityButtons.forEach((button) => {
+            const isSelected = button.dataset.activity === activityId;
+            button.classList.toggle("active", isSelected);
+            button.setAttribute("aria-pressed", String(isSelected));
+        });
     }
 
     cards.forEach((card) => {

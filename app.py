@@ -221,7 +221,7 @@ def logout():
 @app.route("/")
 @login_required
 def home():
-    return render_template("index.html")
+    return render_template("index.html", username=session.get("username", "User"))
 
 
 @app.route("/appearance")
