@@ -1,15 +1,15 @@
 (() => {
     const recommendations = {
-        learning: { label: "Learning something new", sounds: ["brown", "piano", "ocean"] },
-        reviewing: { label: "Reviewing & revising", sounds: ["pink", "lofi", "brown"] },
-        coding: { label: "Coding & programming", sounds: ["brown", "lofi", "ocean"] },
-        writing: { label: "Writing & typing", sounds: ["852hz", "piano", "lofi"] },
-        reading: { label: "Reading", sounds: ["852hz", "ocean", "pink"] },
-        "problem-solving": { label: "Problem solving", sounds: ["brown", "piano", "pink"] },
-        homework: { label: "Homework", sounds: ["lofi", "brown", "852hz"] },
-        creative: { label: "Creative work", sounds: ["ocean", "lofi", "piano"] },
-        memorization: { label: "Memorization", sounds: ["pink", "brown", "ocean"] },
-        break: { label: "Taking a study break", sounds: ["852hz", "ocean", "piano"] }
+        learning: { label: "Learning something new", sounds: ["brown", "piano", "ocean", "acoustic-piano", "ambient-synth"] },
+        reviewing: { label: "Reviewing & revising", sounds: ["pink", "lofi", "cello", "432hz"] },
+        coding: { label: "Coding & programming", sounds: ["brown", "lofi", "acoustic-piano", "ambient-synth"] },
+        writing: { label: "Writing & typing", sounds: ["rain-window", "piano", "lofi", "cello"] },
+        reading: { label: "Reading", sounds: ["rain-window", "ocean", "pink", "cello"] },
+        "problem-solving": { label: "Problem solving", sounds: ["brown", "acoustic-piano", "pink", "theta6"] },
+        homework: { label: "Homework", sounds: ["lofi", "brown", "852hz", "acoustic-piano", "174hz"] },
+        creative: { label: "Creative work", sounds: ["gentle-creek", "lofi", "piano", "ambient-synth"] },
+        memorization: { label: "Memorization", sounds: ["pink", "theta6", "gentle-creek", "ocean"] },
+        break: { label: "Taking a study break", sounds: ["432hz", "ocean", "gentle-creek", "174hz"] }
     };
     const soundLabels = {
         brown: "Brown Noise",

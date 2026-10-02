@@ -181,6 +181,27 @@
                     </h2>
                 </div>
 
+                {% if web_results %}
+                <div style="margin-bottom: 25px;">
+                    <h3 style="margin-bottom: 12px;">🔎 Search Engine Results</h3>
+
+                    <div class="feature-grid">
+                        {% for result in web_results %}
+                        <a href="{{ result.url }}" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;">
+                            <div class="feature-card">
+                                <div class="feature-icon resources-icon">⌕</div>
+                                <div class="feature-content">
+                                    <h3>{{ result.title }}</h3>
+                                    <p>{{ result.description or 'Open this result for more details.' }}</p>
+                                </div>
+                                <span class="card-arrow">→</span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
 
                 <!-- Category 1: Videos -->
                 <div style="margin-bottom: 25px;">

@@ -46,11 +46,75 @@
                     <span class="nav-icon">♡</span>
                     Student Support
                 </a>
+####
+                <div class="ai-nav-section">
 
-                <a href="{{ url_for('ai_help') }}" class="nav-link active">
-                    <span class="nav-icon">✦</span>
-                    AI Study Help
-                </a>
+                    <div class="ai-nav-row">
+
+                        <a href="{{ url_for('ai_help') }}" class="nav-link active">
+                            <span class="nav-icon">✦</span>
+                            <span>AI Study Help</span>
+                        </a>
+
+                        <button
+                            id="ai-chats-toggle"
+                            class="ai-chats-toggle"
+                            type="button"
+                            aria-expanded="false"
+                            title="Show chats"
+                        >
+                            ▾
+                        </button>
+
+                    </div>
+
+
+                    <!-- Collapsible chat section -->
+                    <div id="ai-chat-dropdown" class="ai-chat-dropdown">
+
+                        <div class="chat-sidebar-header">
+
+                            <span>Chats</span>
+
+                            <button
+                            id="new-chat-button"
+                type="button"
+                title="New Chat"
+            >
+                +
+            </button>
+
+        </div>
+
+
+        <div class="chat-list">
+
+            <button class="chat-item active">
+                <span class="chat-item-icon">💬</span>
+                <span class="chat-item-title">Biology Review</span>
+            </button>
+
+            <button class="chat-item">
+                <span class="chat-item-icon">💬</span>
+                <span class="chat-item-title">Math Homework</span>
+            </button>
+
+            <button class="chat-item">
+                <span class="chat-item-icon">💬</span>
+                <span class="chat-item-title">Essay Help</span>
+            </button>
+
+            <button class="chat-item">
+                <span class="chat-item-icon">💬</span>
+                <span class="chat-item-title">Chemistry Questions</span>
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
 
             </nav>
 
@@ -69,31 +133,12 @@
                     </button>
                 </div>
 
-                <div class="chat-list">
-
-                    <button class="chat-item active">
-                        <span class="chat-item-icon">💬</span>
-                        <span class="chat-item-title">Biology Review</span>
-                    </button>
-
-                    <button class="chat-item">
-                        <span class="chat-item-icon">💬</span>
-                        <span class="chat-item-title">Math Homework</span>
-                    </button>
-
-                    <button class="chat-item">
-                        <span class="chat-item-icon">💬</span>
-                        <span class="chat-item-title">Essay Help</span>
-                    </button>
-
-                    <button class="chat-item">
-                        <span class="chat-item-icon">💬</span>
-                        <span class="chat-item-title">Chemistry Questions</span>
-                    </button>
-
+                <div id="chat-list" class="chat-list">
+                    <!-- Real chats will be loaded here -->
                 </div>
 
             </div>
+
 
             <div class="sidebar-bottom">
 
@@ -443,47 +488,21 @@ function addMessage(message, sender) {
 
     const messageDiv = document.createElement("div");
 
-    messageDiv.style.display = "flex";
-
-    messageDiv.style.justifyContent =
-        sender === "user"
-            ? "flex-end"
-            : "flex-start";
-
+    messageDiv.className = `chat-message ${sender}`;
 
     const bubble = document.createElement("div");
 
-    bubble.style.maxWidth = "75%";
-    bubble.style.padding = "12px 16px";
-    bubble.style.borderRadius = "14px";
-    bubble.style.fontSize = "14px";
-    bubble.style.lineHeight = "1.6";
-    bubble.style.whiteSpace = "normal";
-
+    bubble.className = "chat-bubble";
 
     if (sender === "user") {
-
-        bubble.style.background = "#7c3aed";
-        bubble.style.color = "white";
-        bubble.style.borderBottomRightRadius = "4px";
-
         // User messages stay plain text
         bubble.textContent = message;
-
     } else {
-
-        bubble.style.background = "#252638";
-        bubble.style.color = "var(--text)";
-        bubble.style.borderBottomLeftRadius = "4px";
-
         // AI messages support formatting
         bubble.innerHTML = formatAIResponse(message);
-
     }
 
-
     messageDiv.appendChild(bubble);
-
     chatMessages.appendChild(messageDiv);
 
     chatMessages.style.display = "flex";
@@ -491,9 +510,9 @@ function addMessage(message, sender) {
     chatMessages.scrollTop =
         chatMessages.scrollHeight;
 
-
     return bubble;
 }
+
 
 function addResourceCard(resource) {
 

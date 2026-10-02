@@ -241,6 +241,7 @@ def settings():
 def resources():
     query = request.args.get("query", "").strip()
     all_resources = load_resources()
+    web_results = search_web(query) if query else []
 
     if query:
         search_term = query.lower()
@@ -253,7 +254,12 @@ def resources():
     else:
         filtered_resources = all_resources
 
-    return render_template("resources.html", resources=filtered_resources, query=query)
+    return render_template(
+        "resources.html",
+        resources=filtered_resources,
+        query=query,
+        web_results=web_results,
+    )
 
 
 @app.route("/focus")
