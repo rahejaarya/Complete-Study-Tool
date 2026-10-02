@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Focus Mode - StudyTool</title>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='noise.js') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 </head>
@@ -140,6 +141,132 @@
 
                 </div>
 
+                <section class="noise-section focus-sound-library" aria-labelledby="focus-sound-heading">
+                    <div class="noise-section-heading">
+                        <div>
+                            <div class="eyebrow">FOCUS AUDIO</div>
+                            <h2 id="focus-sound-heading">Sound library</h2>
+                        </div>
+                        <button id="stop-all-sounds" class="sound-stop-button" type="button">Stop all</button>
+                    </div>
+                    <div class="sound-library">
+                        <article class="sound-card" data-sound="brown">
+                            <div class="sound-card-top"><span class="sound-art brown-art">≈</span><span class="sound-type">NOISE</span></div>
+                            <h3>Brown Noise</h3><p>Low, warm, and steady for deep work.</p>
+                            <div class="sound-volume-control"><label for="focus-volume-brown">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="focus-volume-brown" type="range" min="0" max="100" value="100"></div>
+                            <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                        </article>
+                        <article class="sound-card" data-sound="pink">
+                            <div class="sound-card-top"><span class="sound-art pink-art">∿</span><span class="sound-type">NOISE</span></div>
+                            <h3>Pink Noise</h3><p>Softer static for reading and review.</p>
+                            <div class="sound-volume-control"><label for="focus-volume-pink">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="focus-volume-pink" type="range" min="0" max="100" value="100"></div>
+                            <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                        </article>
+                        <article class="sound-card" data-sound="852hz">
+                            <div class="sound-card-top"><span class="sound-art rain-art">852</span><span class="sound-type">TONE</span></div>
+                            <h3>852 Hz</h3><p>A steady, continuous sine tone for a quiet study break.</p>
+                            <div class="sound-volume-control"><label for="focus-volume-852hz">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="focus-volume-852hz" type="range" min="0" max="100" value="100"></div>
+                            <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                        </article>
+                        <article class="sound-card" data-sound="ocean">
+                            <div class="sound-card-top"><span class="sound-art ocean-art">◒</span><span class="sound-type">NATURE</span></div>
+                            <h3>Ocean Waves</h3><p>A recording of real ocean waves.</p>
+                            <div class="sound-volume-control"><label for="focus-volume-ocean">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="focus-volume-ocean" type="range" min="0" max="100" value="100"></div>
+                            <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                        </article>
+                        <article class="sound-card" data-sound="lofi">
+                            <div class="sound-card-top"><span class="sound-art lofi-art">▰</span><span class="sound-type">SONG LOOP</span></div>
+                            <h3>Lo-Fi Glow</h3><p>A mellow chord loop for homework and code.</p>
+                            <div class="sound-volume-control"><label for="focus-volume-lofi">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="focus-volume-lofi" type="range" min="0" max="100" value="100"></div>
+                            <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                        </article>
+                        <article class="sound-card" data-sound="piano">
+                            <div class="sound-card-top"><span class="sound-art piano-art">♬</span><span class="sound-type">SONG LOOP</span></div>
+                            <h3>Calm Piano</h3><p>Simple notes for memorization or a reset.</p>
+                            <div class="sound-volume-control"><label for="focus-volume-piano">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="focus-volume-piano" type="range" min="0" max="100" value="100"></div>
+                            <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                        </article>
+                        <article class="sound-card" data-sound="rain-window">
+                            <div class="sound-card-top"><span class="sound-art ocean-art">☂</span><span class="sound-type">NATURE</span></div>
+                            <h3>Rain on Window</h3>
+                            <p>Deep rainfall audio that masks background voices.</p>
+                            <p class="sound-best-for"><strong>Best For:</strong> Dense reading, essay writing, and studying in noisy environments.</p>
+                            <p class="sound-science"><strong>Science:</strong> Covers human vocal frequencies (300–3000 Hz), preventing ambient speech from hijacking reading comprehension.</p>
+                            <div class="sound-volume-control"><label for="focus-volume-rain-window">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="focus-volume-rain-window" type="range" min="0" max="100" value="100"></div>
+                            <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                        </article>
+                        <article class="sound-card" data-sound="acoustic-piano">
+                            <div class="sound-card-top"><span class="sound-art piano-art">♬</span><span class="sound-type">MUSIC</span></div>
+                            <h3>Acoustic Guitar &amp; Piano</h3>
+                            <p>Gentle instrumental melody for steady problem-solving.</p>
+                            <p class="sound-best-for"><strong>Best For:</strong> Math problem sets, coding, and logical reasoning.</p>
+                            <p class="sound-science"><strong>Science:</strong> Low information rate and smooth acoustic decay protect working memory without triggering distraction.</p>
+                            <div class="sound-volume-control"><label for="focus-volume-acoustic-piano">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="focus-volume-acoustic-piano" type="range" min="0" max="100" value="100"></div>
+                            <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                        </article>
+                        <article class="sound-card" data-sound="cello">
+                            <div class="sound-card-top"><span class="sound-art brown-art">♫</span><span class="sound-type">MUSIC</span></div>
+                            <h3>Warm Cello</h3>
+                            <p>Deep, resonant string tones for long study blocks.</p>
+                            <p class="sound-best-for"><strong>Best For:</strong> Textbook review and prolonged research.</p>
+                            <p class="sound-science"><strong>Science:</strong> Low fundamental string frequencies (65–200 Hz) reduce perceived mental strain and cognitive fatigue.</p>
+                            <div class="sound-volume-control"><label for="focus-volume-cello">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="focus-volume-cello" type="range" min="0" max="100" value="100"></div>
+                            <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                        </article>
+                        <article class="sound-card" data-sound="ambient-synth">
+                            <div class="sound-card-top"><span class="sound-art lofi-art">✧</span><span class="sound-type">MUSIC</span></div>
+                            <h3>Soft Ambient Synth</h3>
+                            <p>Floating, beatless harmonies that ease mind chatter.</p>
+                            <p class="sound-best-for"><strong>Best For:</strong> Exam prep and high-stress revision.</p>
+                            <p class="sound-science"><strong>Science:</strong> Eliminates rhythm tracking in the auditory cortex, helping calm overactive sympathetic nervous system responses (test anxiety).</p>
+                            <div class="sound-volume-control"><label for="focus-volume-ambient-synth">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="focus-volume-ambient-synth" type="range" min="0" max="100" value="100"></div>
+                            <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                        </article>
+                        <article class="sound-card" data-sound="gentle-creek">
+                            <div class="sound-card-top"><span class="sound-art ocean-art">⌁</span><span class="sound-type">NATURE</span></div>
+                            <h3>Gentle Creek</h3>
+                            <p>Soft trickling water and forest breeze.</p>
+                            <p class="sound-best-for"><strong>Best For:</strong> Creative brainstorming and note organizing.</p>
+                            <p class="sound-science"><strong>Science:</strong> Organic pink-spectrum sounds engage “soft fascination,” allowing directed attention mechanisms to recharge.</p>
+                            <div class="sound-volume-control"><label for="focus-volume-gentle-creek">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="focus-volume-gentle-creek" type="range" min="0" max="100" value="100"></div>
+                            <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                        </article>
+                        <article class="sound-card" data-sound="432hz">
+                            <div class="sound-card-top"><span class="sound-art rain-art">432</span><span class="sound-type">TONE</span></div>
+                            <h3>432 Hz Solfeggio Tuning</h3>
+                            <p>Natural harmonic sine tone tuned for physical calm.</p>
+                            <p class="sound-best-for"><strong>Best For:</strong> Stress relief during tough subjects or after long study blocks.</p>
+                            <p class="sound-science"><strong>Science:</strong> Studies show 432 Hz tones slightly lower resting heart rate and respiratory rate compared to standard 440 Hz tuning.</p>
+                            <div class="sound-volume-control"><label for="focus-volume-432hz">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="focus-volume-432hz" type="range" min="0" max="100" value="100"></div>
+                            <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                        </article>
+                        <article class="sound-card" data-sound="theta6">
+                            <div class="sound-card-top"><span class="sound-art lofi-art">θ</span><span class="sound-type">FREQUENCY</span></div>
+                            <h3>Theta Binaural Beats (6 Hz)</h3>
+                            <p>Dual-ear stereo entrainment for deep learning.</p>
+                            <p class="sound-best-for"><strong>Best For:</strong> Memorizing flashcards, language acquisition, and conceptual study.</p>
+                            <p class="sound-science"><strong>Science:</strong> A 6 Hz frequency differential encourages brainwave entrainment in the Theta band (4–8 Hz), linked to deep memory consolidation.</p>
+                            <div class="sound-volume-control"><label for="focus-volume-theta6">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="focus-volume-theta6" type="range" min="0" max="100" value="100"></div>
+                            <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                        </article>
+                        <article class="sound-card" data-sound="174hz">
+                            <div class="sound-card-top"><span class="sound-art brown-art">174</span><span class="sound-type">TONE</span></div>
+                            <h3>174 Hz Foundation Frequency</h3>
+                            <p>Low-frequency sine wave designed to ease physical tension.</p>
+                            <p class="sound-best-for"><strong>Best For:</strong> Late-night study sessions and overcoming desk fatigue.</p>
+                            <p class="sound-science"><strong>Science:</strong> Low-frequency acoustic vibrations in the 100–200 Hz range induce mild vibroacoustic relaxation, reducing physical strain from sitting.</p>
+                            <div class="sound-volume-control"><label for="focus-volume-174hz">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="focus-volume-174hz" type="range" min="0" max="100" value="100"></div>
+                            <button class="sound-play" type="button" aria-pressed="false">Play</button>
+                        </article>
+                    </div>
+                    <div class="sound-mixer-bar">
+                        <label for="master-volume">Master volume</label>
+                        <input id="master-volume" type="range" min="0" max="100" value="35">
+                        <span id="volume-value">35%</span>
+                        <span id="audio-status" class="audio-status" aria-live="polite">Ready when you are.</span>
+                    </div>
+                </section>
+
             </section>
 
         </main>
@@ -261,6 +388,7 @@
             toneButton.setAttribute("aria-pressed", "true");
         });
     </script>
+    <audio id="ocean-waves-audio" src="https://cdn.freesound.org/previews/456/456899_9518146-hq.mp3" preload="none" loop hidden></audio>
 
 </body>
 </html>

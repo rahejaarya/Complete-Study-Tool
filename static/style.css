@@ -2827,6 +2827,24 @@ body {
     line-height: 1.5;
 }
 
+.sound-card .sound-best-for {
+    min-height: 0;
+    padding: 8px 9px;
+    border-radius: 9px;
+    background: var(--purple-light);
+    color: var(--text);
+}
+
+.sound-card .sound-best-for strong {
+    color: var(--purple);
+}
+
+.sound-card .sound-science {
+    min-height: 0;
+    margin-top: 2px;
+    font-size: 11px;
+}
+
 .sound-play {
     margin-top: 8px;
     padding: 0;

@@ -12,12 +12,26 @@
         break: { label: "Taking a study break", sounds: ["852hz", "ocean", "piano"] }
     };
     const soundLabels = {
-        brown: "Brown Noise", pink: "Pink Noise", "852hz": "852 Hz", ocean: "Ocean Waves", lofi: "Lo-Fi Glow", piano: "Calm Piano"
+        brown: "Brown Noise",
+        pink: "Pink Noise",
+        "852hz": "852 Hz",
+        ocean: "Ocean Waves",
+        lofi: "Lo-Fi Glow",
+        piano: "Calm Piano",
+        "rain-window": "Rain on Window",
+        "acoustic-piano": "Acoustic Guitar & Piano",
+        cello: "Warm Cello",
+        "ambient-synth": "Soft Ambient Synth",
+        "gentle-creek": "Gentle Creek",
+        "432hz": "432 Hz Solfeggio Tuning",
+        theta6: "Theta Binaural Beats (6 Hz)",
+        "174hz": "174 Hz Foundation Frequency"
     };
     const cards = Array.from(document.querySelectorAll("[data-sound]"));
     const activityButtons = Array.from(document.querySelectorAll("[data-activity]"));
     const recommendationCopy = document.getElementById("recommendation-copy");
     const selectedActivityLabel = document.getElementById("selected-activity-label");
+    const loadRecommendationsButton = document.getElementById("load-recommendations");
     const audioStatus = document.getElementById("audio-status");
     const volumeInput = document.getElementById("master-volume");
     const volumeValue = document.getElementById("volume-value");
@@ -59,54 +73,63 @@
 
     function createNoiseSound(context, kind) {
         const source = context.createBufferSource();
-        source.buffer = createNoiseBuffer(context, kind);
+        source.buffer = createNoiseBuffer(context, kind === "brown" ? "brown" : "pink");
         source.loop = true;
         const filter = context.createBiquadFilter();
-        filter.type = kind === "brown" ? "lowpass" : "highpass";
-        filter.frequency.value = kind === "brown" ? 900 : 500;
+        filter.type = kind === "brown" ? "lowpass" : kind === "rain-window" ? "bandpass" : kind === "gentle-creek" ? "lowpass" : "highpass";
+        filter.frequency.value = kind === "brown" ? 900 : kind === "rain-window" ? 1200 : kind === "gentle-creek" ? 1700 : 500;
         const gain = context.createGain();
-        gain.gain.value = 0.08 * soundVolumes.get(kind);
+        const baseVolume = ["rain-window", "gentle-creek"].includes(kind) ? 0.055 : 0.08;
+        gain.gain.value = baseVolume * soundVolumes.get(kind);
         source.connect(filter).connect(gain).connect(masterGain);
         source.start();
         return {
             stop: () => source.stop(),
-            setVolume: (value) => { gain.gain.setTargetAtTime(0.08 * value, context.currentTime, 0.02); }
+            setVolume: (value) => { gain.gain.setTargetAtTime(baseVolume * value, context.currentTime, 0.02); }
         };
     }
 
     function createMusicSound(context, kind) {
+        const profiles = {
+            piano: { notes: [261.63, 329.63, 392, 329.63, 293.66, 349.23, 440, 349.23], type: "triangle", interval: 900, decay: 1.2 },
+            lofi: { notes: [146.83, 174.61, 220, 261.63, 220, 174.61], type: "sine", interval: 1200, decay: 1.7 },
+            "acoustic-piano": { notes: [196, 246.94, 293.66, 246.94, 220, 261.63, 329.63, 261.63], type: "triangle", interval: 1250, decay: 1.5 },
+            cello: { notes: [65.41, 98, 130.81, 98, 73.42, 110, 146.83, 110], type: "sine", interval: 1700, decay: 2.2 },
+            "ambient-synth": { notes: [174.61, 220, 261.63, 329.63, 261.63, 220], type: "sine", interval: 2200, decay: 2.8 }
+        };
+        const profile = profiles[kind];
+        const baseVolume = kind === "ambient-synth" ? 0.04 : 0.055;
         const gain = context.createGain();
-        gain.gain.value = 0.055 * soundVolumes.get(kind);
+        gain.gain.value = baseVolume * soundVolumes.get(kind);
         gain.connect(masterGain);
-        const notes = kind === "piano" ? [261.63, 329.63, 392, 329.63, 293.66, 349.23, 440, 349.23] : [146.83, 174.61, 220, 261.63, 220, 174.61];
         let noteIndex = 0;
         const playNote = () => {
             const oscillator = context.createOscillator();
             const noteGain = context.createGain();
-            oscillator.type = kind === "piano" ? "triangle" : "sine";
-            oscillator.frequency.value = notes[noteIndex % notes.length];
+            oscillator.type = profile.type;
+            oscillator.frequency.value = profile.notes[noteIndex % profile.notes.length];
             noteGain.gain.setValueAtTime(0, context.currentTime);
             noteGain.gain.linearRampToValueAtTime(0.7, context.currentTime + 0.04);
-            noteGain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + (kind === "piano" ? 1.2 : 1.7));
+            noteGain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + profile.decay);
             oscillator.connect(noteGain).connect(gain);
             oscillator.start();
-            oscillator.stop(context.currentTime + 1.8);
+            oscillator.stop(context.currentTime + profile.decay + 0.1);
             noteIndex += 1;
         };
         playNote();
-        const interval = window.setInterval(playNote, kind === "piano" ? 900 : 1200);
+        const interval = window.setInterval(playNote, profile.interval);
         return {
             stop: () => window.clearInterval(interval),
-            setVolume: (value) => { gain.gain.setTargetAtTime(0.055 * value, context.currentTime, 0.02); }
+            setVolume: (value) => { gain.gain.setTargetAtTime(baseVolume * value, context.currentTime, 0.02); }
         };
     }
 
-    function createToneSound(context, frequency) {
+    function createToneSound(context, frequency, soundId) {
         const oscillator = context.createOscillator();
         const gain = context.createGain();
         oscillator.type = "sine";
         oscillator.frequency.value = frequency;
-        gain.gain.value = 0.08 * soundVolumes.get("852hz");
+        gain.gain.value = 0.08 * soundVolumes.get(soundId);
         oscillator.connect(gain).connect(masterGain);
         oscillator.start();
         return {
@@ -116,6 +139,36 @@
                 gain.disconnect();
             },
             setVolume: (value) => { gain.gain.setTargetAtTime(0.08 * value, context.currentTime, 0.02); }
+        };
+    }
+
+    function createBinauralSound(context) {
+        const oscillators = [context.createOscillator(), context.createOscillator()];
+        const panners = [context.createStereoPanner(), context.createStereoPanner()];
+        const gains = [context.createGain(), context.createGain()];
+        const volume = soundVolumes.get("theta6");
+        oscillators[0].frequency.value = 217;
+        oscillators[1].frequency.value = 223;
+        panners[0].pan.value = -1;
+        panners[1].pan.value = 1;
+        gains.forEach((gain) => { gain.gain.value = 0.035 * volume; });
+        oscillators.forEach((oscillator, index) => {
+            oscillator.type = "sine";
+            oscillator.connect(panners[index]).connect(gains[index]).connect(masterGain);
+            oscillator.start();
+        });
+        return {
+            stop: () => {
+                oscillators.forEach((oscillator) => {
+                    oscillator.stop();
+                    oscillator.disconnect();
+                });
+                panners.forEach((panner) => panner.disconnect());
+                gains.forEach((gain) => gain.disconnect());
+            },
+            setVolume: (value) => gains.forEach((gain) => {
+                gain.gain.setTargetAtTime(0.035 * value, context.currentTime, 0.02);
+            })
         };
     }
 
@@ -148,9 +201,15 @@
             if (!context) return;
             await context.resume();
             if (soundId === "852hz") {
-                sound = createToneSound(context, 852);
+                sound = createToneSound(context, 852, soundId);
+            } else if (soundId === "432hz") {
+                sound = createToneSound(context, 432, soundId);
+            } else if (soundId === "174hz") {
+                sound = createToneSound(context, 174, soundId);
+            } else if (soundId === "theta6") {
+                sound = createBinauralSound(context);
             } else {
-                sound = ["brown", "pink"].includes(soundId)
+                sound = ["brown", "pink", "rain-window", "gentle-creek"].includes(soundId)
                     ? createNoiseSound(context, soundId)
                     : createMusicSound(context, soundId);
             }
@@ -195,15 +254,16 @@
         button.addEventListener("click", () => updateRecommendations(button.dataset.activity));
     });
 
-    document.getElementById("load-recommendations").addEventListener("click", async () => {
-        const activeActivity = activityButtons.find((button) => button.classList.contains("active")).dataset.activity;
-        const sounds = recommendations[activeActivity].sounds;
+    loadRecommendationsButton?.addEventListener("click", async () => {
+        const activeButton = activityButtons.find((button) => button.classList.contains("active"));
+        if (!activeButton) return;
+        const sounds = recommendations[activeButton.dataset.activity].sounds;
         for (const sound of sounds) {
             if (!activeSounds.has(sound)) await toggleSound(sound);
         }
     });
 
-    document.getElementById("stop-all-sounds").addEventListener("click", () => {
+    document.getElementById("stop-all-sounds")?.addEventListener("click", () => {
         activeSounds.forEach((sound, soundId) => {
             sound.stop();
             updateCard(soundId, false);

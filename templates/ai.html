@@ -54,6 +54,47 @@
 
             </nav>
 
+            <!-- Chat History -->
+            <div class="chat-sidebar">
+
+                <div class="chat-sidebar-header">
+                    <span>Chats</span>
+
+                    <button
+                        id="new-chat-button"
+                        type="button"
+                        title="New Chat"
+                    >
+                        +
+                    </button>
+                </div>
+
+                <div class="chat-list">
+
+                    <button class="chat-item active">
+                        <span class="chat-item-icon">💬</span>
+                        <span class="chat-item-title">Biology Review</span>
+                    </button>
+
+                    <button class="chat-item">
+                        <span class="chat-item-icon">💬</span>
+                        <span class="chat-item-title">Math Homework</span>
+                    </button>
+
+                    <button class="chat-item">
+                        <span class="chat-item-icon">💬</span>
+                        <span class="chat-item-title">Essay Help</span>
+                    </button>
+
+                    <button class="chat-item">
+                        <span class="chat-item-icon">💬</span>
+                        <span class="chat-item-title">Chemistry Questions</span>
+                    </button>
+
+                </div>
+
+            </div>
+
             <div class="sidebar-bottom">
 
                 <a href="{{ url_for('settings') }}" class="nav-link">

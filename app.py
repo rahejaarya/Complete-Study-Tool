@@ -3,7 +3,7 @@ import os
 import sqlite3
 from functools import wraps
 from urllib.parse import urlparse
-from hisddgs import DDGS
+from ddgs import DDGS
 
 from flask import Flask, Response, redirect, render_template, request, session, url_for, jsonify  # type: ignore[reportMissingImports]
 from werkzeug.security import check_password_hash, generate_password_hash
