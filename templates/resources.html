@@ -192,7 +192,9 @@
                                 <div class="feature-icon resources-icon">⌕</div>
                                 <div class="feature-content">
                                     <h3>{{ result.title }}</h3>
-                                    <p>{{ result.description or 'Open this result for more details.' }}</p>
+                                    <p style="display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; margin: 0;">
+                                        {{ (result.description or 'Open this result for more details.') | truncate(180, true, '...') }}
+                                    </p>
                                 </div>
                                 <span class="card-arrow">→</span>
                             </div>
