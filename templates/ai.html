@@ -77,49 +77,14 @@
                             <button
                                 id="new-chat-button"
                                 type="button"
-                                title="New Chat"
+                                title="New conversation"
+                                aria-label="New conversation"
                             >
                                 +
                             </button>
                         </div>
 
                         <div class="chat-list">
-
-                            <!-- Your existing chat items go here.
-                                 Do NOT add hardcoded chats here. -->
-
-                        </div>
-
-                    </div>
-
-                </div>
-###
-
-
-                    <!-- Collapsible chat section -->
-                    <div id="ai-chat-dropdown" class="ai-chat-dropdown">
-
-                        <div class="chat-sidebar-header">
-
-                            <span>Chats</span>
-
-                            <button
-                                id="new-chat-button"
-                                type="button"
-                                title="New Chat"
-                            >
-                               +
-                            </button>
-
-                        </div>
-
-
-                        <div class="chat-list">
-
-                            <button class="chat-item active">
-                                <span class="chat-item-icon">💬</span>
-                                <span class="chat-item-title">Biology Review</span>
-                            </button>
                         </div>
 
                     </div>
@@ -168,12 +133,6 @@
 
                 </div>
 
-                <div class="top-actions">
-                    <button>＋</button>
-                    <button>ϟ</button>
-                    <button>♧</button>
-                </div>
-
             </header>
 
 
@@ -203,13 +162,7 @@
 
 
                         <!-- Chat messages -->
-                        <div id="chat-messages" style="
-                            display: none;
-                            flex-direction: column;
-                            gap: 12px;
-                            margin-bottom: 18px;
-                            text-align: left;
-                        "></div>
+                        <div id="chat-messages" class="chat-messages" style="display: none;"></div>
 
 
                         <!-- Input -->
@@ -394,6 +347,10 @@ const aiSend = document.getElementById("ai-send");
 const chatMessages = document.getElementById("chat-messages");
 const featureGrid = document.querySelector(".feature-grid");
 const sectionHeading = document.querySelector(".section-heading");
+const chatList = document.querySelector(".chat-list");
+const newChatButton = document.getElementById("new-chat-button");
+let currentChatId = null;
+let isSendingMessage = false;
 
 
 /*
@@ -508,69 +465,52 @@ function addResourceCard(resource) {
 
     const card = document.createElement("a");
 
+    card.className = "ai-resource-card";
     card.href = resource.url;
     card.target = "_blank";
     card.rel = "noopener noreferrer";
 
-    card.style.display = "flex";
-    card.style.gap = "14px";
-    card.style.marginTop = "14px";
-    card.style.padding = "12px";
-    card.style.borderRadius = "12px";
-    card.style.background = "#1d1e2b";
-    card.style.border = "1px solid rgba(255,255,255,0.08)";
-    card.style.textDecoration = "none";
-    card.style.color = "inherit";
-    card.style.maxWidth = "650px";
+    let image = null;
+    if (resource.image) {
+        image = document.createElement("img");
+        image.className = "ai-resource-image";
+        image.src = resource.image;
+        image.alt = "";
+    }
 
-    const image = document.createElement("img");
-
-    image.src = resource.image || "/static/default-resource.png";
-    image.alt = "";
-
-    image.style.width = "110px";
-    image.style.height = "75px";
-    image.style.objectFit = "cover";
-    image.style.borderRadius = "8px";
-    image.style.flexShrink = "0";
+    function addMemoryWarning(message) {
+        const warning = document.createElement("div");
+        warning.className = "ai-memory-warning";
+        warning.textContent = message;
+        chatMessages.appendChild(warning);
+    }
 
     const content = document.createElement("div");
 
-    content.style.display = "flex";
-    content.style.flexDirection = "column";
-    content.style.justifyContent = "center";
-    content.style.minWidth = "0";
+    content.className = "ai-resource-content";
 
     const type = document.createElement("div");
 
+    type.className = "ai-resource-type";
     type.textContent = resource.type || "Resource";
-
-    type.style.fontSize = "11px";
-    type.style.color = "#a78bfa";
-    type.style.fontWeight = "600";
-    type.style.marginBottom = "3px";
 
     const title = document.createElement("div");
 
+    title.className = "ai-resource-title";
     title.textContent = resource.title;
-
-    title.style.fontSize = "14px";
-    title.style.fontWeight = "600";
-    title.style.color = "var(--text)";
 
     const description = document.createElement("div");
 
+    description.className = "ai-resource-description";
     description.textContent = resource.description;
-
-    description.style.fontSize = "12px";
-    description.style.color = "#a0a1b2";
-    description.style.marginTop = "4px";
 
     content.appendChild(type);
     content.appendChild(title);
     content.appendChild(description);
 
-    card.appendChild(image);
+    if (image) {
+        card.appendChild(image);
+    }
     card.appendChild(content);
 
     chatMessages.appendChild(card);
@@ -579,15 +519,135 @@ function addResourceCard(resource) {
         chatMessages.scrollHeight;
 }
 
+function clearConversationView() {
+    chatMessages.replaceChildren();
+    chatMessages.style.display = "none";
+    featureGrid.style.display = "";
+    sectionHeading.style.display = "";
+}
+
+function renderSavedMessage(message) {
+    if (message.role === "user") {
+        addMessage(message.content, "user");
+    } else if (message.role === "assistant") {
+        addMessage(message.content, "ai");
+    } else if (message.role === "resource" && message.resource) {
+        addResourceCard(message.resource);
+    }
+}
+
+async function loadChatList() {
+    const response = await fetch("/api/ai/chats");
+    if (!response.ok) {
+        throw new Error("Could not load saved conversations.");
+    }
+
+    const data = await response.json();
+    chatList.replaceChildren();
+
+    for (const chat of data.chats) {
+        const row = document.createElement("div");
+        row.className = "chat-list-item";
+        row.classList.toggle("active", chat.id === currentChatId);
+
+        const openButton = document.createElement("button");
+        openButton.type = "button";
+        openButton.className = "chat-item";
+        openButton.title = chat.title;
+        openButton.disabled = isSendingMessage;
+
+        const icon = document.createElement("span");
+        icon.className = "chat-item-icon";
+        icon.textContent = "▸";
+
+        const title = document.createElement("span");
+        title.className = "chat-item-title";
+        title.textContent = chat.title;
+
+        openButton.append(icon, title);
+        openButton.addEventListener("click", () => openSavedChat(chat.id));
+
+        const renameButton = document.createElement("button");
+        renameButton.type = "button";
+        renameButton.className = "chat-rename-button";
+        renameButton.textContent = "⋯";
+        renameButton.title = `Rename ${chat.title}`;
+        renameButton.setAttribute("aria-label", `Rename ${chat.title}`);
+        renameButton.disabled = isSendingMessage;
+        renameButton.addEventListener("click", () => renameSavedChat(chat));
+
+        row.append(openButton, renameButton);
+        chatList.appendChild(row);
+    }
+}
+
+async function openSavedChat(chatId) {
+    if (isSendingMessage) {
+        return;
+    }
+
+    const response = await fetch(`/api/ai/chats/${encodeURIComponent(chatId)}`);
+    if (!response.ok) {
+        throw new Error("Could not open this conversation.");
+    }
+
+    const { chat } = await response.json();
+    currentChatId = chat.id;
+    clearConversationView();
+
+    for (const message of chat.messages) {
+        renderSavedMessage(message);
+    }
+    if (chat.messages.length) {
+        featureGrid.style.display = "none";
+        sectionHeading.style.display = "none";
+    }
+    await loadChatList();
+}
+
+async function renameSavedChat(chat) {
+    const title = window.prompt("Rename conversation", chat.title);
+    if (title === null || !title.trim()) {
+        return;
+    }
+
+    const response = await fetch(
+        `/api/ai/chats/${encodeURIComponent(chat.id)}/rename`,
+        {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({title: title.trim()})
+        }
+    );
+    if (!response.ok) {
+        throw new Error("Could not rename this conversation.");
+    }
+
+    await loadChatList();
+}
+
+newChatButton.addEventListener("click", function () {
+    if (isSendingMessage) {
+        return;
+    }
+    currentChatId = null;
+    clearConversationView();
+    loadChatList();
+});
+
 
 async function sendMessage() {
 
     const message = aiInput.value.trim();
 
-    if (!message) {
+    if (!message || isSendingMessage) {
         return;
     }
 
+    isSendingMessage = true;
+    aiSend.disabled = true;
+    newChatButton.disabled = true;
+    loadChatList();
 
     // Hide the four feature cards
     featureGrid.style.display = "none";
@@ -603,7 +663,6 @@ async function sendMessage() {
 
 
     // Disable send button
-    aiSend.disabled = true;
     aiSend.textContent = "Thinking...";
 
 
@@ -624,7 +683,7 @@ async function sendMessage() {
 
             body: JSON.stringify({
                 message: message,
-                ontext: chatMessages.innerText
+                chat_id: currentChatId
             })
 
 
@@ -641,8 +700,6 @@ async function sendMessage() {
         let fullResponse = "";
 
         let buffer = "";
-
-        let pendingResource = null;
 
         while (true) {
 
@@ -664,7 +721,14 @@ async function sendMessage() {
 
                 const event = JSON.parse(line);
 
-                if (event.type === "token") {
+                if (event.type === "chat") {
+
+                    currentChatId = event.chat.id;
+                    await loadChatList();
+
+                }
+
+                else if (event.type === "token") {
 
                     fullResponse += event.content;
 
@@ -675,32 +739,25 @@ async function sendMessage() {
 
                 else if (event.type === "resource") {
 
-                    pendingResource = event.resource;
+                    addResourceCard(event.resource);
 
                 }
 
                 else if (event.type === "done") {
 
                     console.log("AI response complete.");
-
-                    if (pendingResource) {
-
-                        addResourceCard(pendingResource);
-
-                        pendingResource = null;
-
-                    }
-
                 }
 
+                else if (event.type === "memory_error") {
+
+                    addMemoryWarning(event.message);
+
+                }
 
                 chatMessages.scrollTop =
                     chatMessages.scrollHeight;
             }
         }
-
-
-
 
     } catch (error) {
 
@@ -714,6 +771,10 @@ async function sendMessage() {
         aiSend.disabled = false;
 
         aiSend.textContent = "Send";
+
+        isSendingMessage = false;
+        newChatButton.disabled = false;
+        await loadChatList();
 
         aiInput.focus();
 
@@ -765,6 +826,10 @@ aiChatsToggle.addEventListener("click", function () {
 
     aiChatsToggle.title =
         isOpen ? "Hide chats" : "Show chats";
+});
+
+loadChatList().catch((error) => {
+    console.error(error);
 });
 
 
