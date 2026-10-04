@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Support - StudyTool</title>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
@@ -40,10 +41,7 @@
                     <span class="nav-icon">♡</span>
                     Student Support
                 </a>
-                <a href="{{ url_for('ai_help') }}" class="nav-link">
-                    <span class="nav-icon">♪</span>
-                    AI Study Help
-                </a>
+                {% include "_ai_nav.html" %}
             </nav>
 
             <div class="sidebar-bottom">
@@ -208,8 +206,8 @@
             <small>Support</small>
         </a>
         <a href="{{ url_for('ai_help') }}" class="mobile-link">
-            <span>♪</span>
-            <small>AI Help</small>
+            <span>✦</span>
+            <small>Sammy</small>
         </a>
     </nav>
 

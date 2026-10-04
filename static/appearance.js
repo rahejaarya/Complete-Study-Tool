@@ -37,14 +37,35 @@
         });
     });
 
-    applyButton.addEventListener("click", () => {
+    window.addEventListener("studytool:theme-loaded", (event) => {
+        selectedTheme = event.detail.theme;
+        updateSelection();
+    });
+
+    applyButton.addEventListener("click", async () => {
         document.documentElement.dataset.theme = selectedTheme;
+        applyButton.disabled = true;
+        status.textContent = "Saving your theme to your account...";
         try {
             window.localStorage.setItem(storageKey, selectedTheme);
-            status.textContent = `${themeNames[selectedTheme]} is now your app theme.`;
         } catch (error) {
-            status.textContent = "The theme is selected but could not be saved in this browser.";
-            console.warn("Color theme could not be saved to browser storage.", error);
+            console.warn("Color theme could not be cached in browser storage.", error);
+        }
+        try {
+            const response = await fetch("/api/preferences/theme", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ theme: selectedTheme })
+            });
+            if (!response.ok) {
+                throw new Error(`Theme save failed with status ${response.status}.`);
+            }
+            status.textContent = `${themeNames[selectedTheme]} is now saved to your account.`;
+        } catch (error) {
+            status.textContent = "The theme is previewed but could not be saved to your account. Please try again.";
+            console.error("Color theme could not be saved to the account.", error);
+        } finally {
+            applyButton.disabled = false;
         }
     });
 

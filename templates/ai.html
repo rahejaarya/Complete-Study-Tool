@@ -47,49 +47,7 @@
                     Student Support
                 </a>
                 
-                <div class="ai-nav-section">
-
-                    <div class="ai-nav-row">
-
-                        <a href="{{ url_for('ai_help') }}" class="nav-link active">
-                            <span class="nav-icon">✦</span>
-                            <span>AI Study Help</span>
-                        </a>
-
-                        <button
-                            id="ai-chats-toggle"
-                            class="ai-chats-toggle"
-                            type="button"
-                            aria-expanded="false"
-                            aria-controls="ai-chat-dropdown"
-                            title="Show chats"
-                        >
-                            ▾
-                        </button>
-
-                    </div>
-
-                    <div id="ai-chat-dropdown" class="ai-chat-dropdown">
-
-                        <div class="chat-sidebar-header">
-                            <span>Chats</span>
-
-                            <button
-                                id="new-chat-button"
-                                type="button"
-                                title="New conversation"
-                                aria-label="New conversation"
-                            >
-                                +
-                            </button>
-                        </div>
-
-                        <div class="chat-list">
-                        </div>
-
-                    </div>
-
-                </div>
+                {% include "_ai_nav.html" %}
 
 
             </nav>
@@ -166,7 +124,7 @@
 
 
                         <!-- Input -->
-                        <div class="search-box" style="
+                        <div id="ai-prompt-container" class="search-box" style="
                             width: 100%;
                             margin: 0 auto;
                         ">
@@ -337,6 +295,22 @@
 
     </nav>
 
+    <dialog id="chat-dialog" class="chat-dialog" aria-labelledby="chat-dialog-title">
+        <form id="chat-dialog-form">
+            <h2 id="chat-dialog-title"></h2>
+            <p id="chat-dialog-description"></p>
+            <label id="chat-dialog-name-label" for="chat-dialog-name">
+                Conversation name
+                <input id="chat-dialog-name" name="title" type="text" maxlength="80">
+            </label>
+            <p id="chat-dialog-error" role="alert"></p>
+            <div class="chat-dialog-actions">
+                <button id="chat-dialog-cancel" type="button">Cancel</button>
+                <button id="chat-dialog-confirm" type="submit"></button>
+            </div>
+        </form>
+    </dialog>
+
 </body>
 
 <script>
@@ -345,12 +319,24 @@ const aiInput = document.getElementById("ai-input");
 const aiSend = document.getElementById("ai-send");
 
 const chatMessages = document.getElementById("chat-messages");
+const aiDashboard = document.querySelector(".dashboard");
+const aiPromptContainer = document.getElementById("ai-prompt-container");
 const featureGrid = document.querySelector(".feature-grid");
 const sectionHeading = document.querySelector(".section-heading");
 const chatList = document.querySelector(".chat-list");
 const newChatButton = document.getElementById("new-chat-button");
+const chatDialog = document.getElementById("chat-dialog");
+const chatDialogForm = document.getElementById("chat-dialog-form");
+const chatDialogTitle = document.getElementById("chat-dialog-title");
+const chatDialogDescription = document.getElementById("chat-dialog-description");
+const chatDialogNameLabel = document.getElementById("chat-dialog-name-label");
+const chatDialogName = document.getElementById("chat-dialog-name");
+const chatDialogError = document.getElementById("chat-dialog-error");
+const chatDialogCancel = document.getElementById("chat-dialog-cancel");
+const chatDialogConfirm = document.getElementById("chat-dialog-confirm");
 let currentChatId = null;
 let isSendingMessage = false;
+let chatDialogAction = null;
 
 
 /*
@@ -431,11 +417,14 @@ function formatAIResponse(text) {
 }
 
 
-function addMessage(message, sender) {
+function addMessage(message, sender, displayOrder = null) {
 
     const messageDiv = document.createElement("div");
 
     messageDiv.className = `chat-message ${sender}`;
+    if (displayOrder !== null) {
+        messageDiv.style.order = String(displayOrder);
+    }
 
     const bubble = document.createElement("div");
 
@@ -453,6 +442,7 @@ function addMessage(message, sender) {
     chatMessages.appendChild(messageDiv);
 
     chatMessages.style.display = "flex";
+    aiDashboard.classList.add("has-active-chat");
 
     chatMessages.scrollTop =
         chatMessages.scrollHeight;
@@ -461,11 +451,14 @@ function addMessage(message, sender) {
 }
 
 
-function addResourceCard(resource) {
+function addResourceCard(resource, displayOrder = null) {
 
     const card = document.createElement("a");
 
     card.className = "ai-resource-card";
+    if (displayOrder !== null) {
+        card.style.order = String(displayOrder);
+    }
     card.href = resource.url;
     card.target = "_blank";
     card.rel = "noopener noreferrer";
@@ -514,6 +507,7 @@ function addResourceCard(resource) {
     card.appendChild(content);
 
     chatMessages.appendChild(card);
+    aiDashboard.classList.add("has-active-chat");
 
     chatMessages.scrollTop =
         chatMessages.scrollHeight;
@@ -522,17 +516,18 @@ function addResourceCard(resource) {
 function clearConversationView() {
     chatMessages.replaceChildren();
     chatMessages.style.display = "none";
+    aiDashboard.classList.remove("has-active-chat");
     featureGrid.style.display = "";
     sectionHeading.style.display = "";
 }
 
-function renderSavedMessage(message) {
+function renderSavedMessage(message, displayOrder) {
     if (message.role === "user") {
-        addMessage(message.content, "user");
+        addMessage(message.content, "user", displayOrder);
     } else if (message.role === "assistant") {
-        addMessage(message.content, "ai");
+        addMessage(message.content, "ai", displayOrder);
     } else if (message.role === "resource" && message.resource) {
-        addResourceCard(message.resource);
+        addResourceCard(message.resource, displayOrder);
     }
 }
 
@@ -567,16 +562,57 @@ async function loadChatList() {
         openButton.append(icon, title);
         openButton.addEventListener("click", () => openSavedChat(chat.id));
 
-        const renameButton = document.createElement("button");
-        renameButton.type = "button";
-        renameButton.className = "chat-rename-button";
-        renameButton.textContent = "⋯";
-        renameButton.title = `Rename ${chat.title}`;
-        renameButton.setAttribute("aria-label", `Rename ${chat.title}`);
-        renameButton.disabled = isSendingMessage;
-        renameButton.addEventListener("click", () => renameSavedChat(chat));
+        const actionsButton = document.createElement("button");
+        actionsButton.type = "button";
+        actionsButton.className = "chat-rename-button";
+        actionsButton.textContent = "⋯";
+        actionsButton.title = `Options for ${chat.title}`;
+        actionsButton.setAttribute("aria-label", `Options for ${chat.title}`);
+        actionsButton.setAttribute("aria-haspopup", "menu");
+        actionsButton.setAttribute("aria-expanded", "false");
+        actionsButton.disabled = isSendingMessage;
 
-        row.append(openButton, renameButton);
+        const actionsMenu = document.createElement("div");
+        actionsMenu.className = "chat-actions-menu";
+        actionsMenu.setAttribute("role", "menu");
+        actionsMenu.hidden = true;
+
+        const renameAction = document.createElement("button");
+        renameAction.type = "button";
+        renameAction.textContent = "Rename";
+        renameAction.setAttribute("role", "menuitem");
+        renameAction.addEventListener("click", () => {
+            closeChatActionsMenu(actionsMenu, actionsButton);
+            renameSavedChat(chat);
+        });
+        const deleteAction = document.createElement("button");
+        deleteAction.type = "button";
+        deleteAction.textContent = "Delete";
+        deleteAction.setAttribute("role", "menuitem");
+        deleteAction.addEventListener("click", () => {
+            closeChatActionsMenu(actionsMenu, actionsButton);
+            deleteSavedChat(chat);
+        });
+        actionsMenu.append(renameAction, deleteAction);
+        actionsButton.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const open = actionsMenu.hidden;
+            document.querySelectorAll(".chat-actions-menu:not([hidden])").forEach(
+                (menu) => {
+                    menu.hidden = true;
+                    menu.closest(".chat-list-item")
+                        ?.querySelector(".chat-rename-button")
+                        ?.setAttribute("aria-expanded", "false");
+                }
+            );
+            actionsMenu.hidden = !open;
+            actionsButton.setAttribute("aria-expanded", String(open));
+            if (open) {
+                renameAction.focus();
+            }
+        });
+
+        row.append(openButton, actionsButton, actionsMenu);
         chatList.appendChild(row);
     }
 }
@@ -595,8 +631,10 @@ async function openSavedChat(chatId) {
     currentChatId = chat.id;
     clearConversationView();
 
+    let displayOrder = 0;
     for (const message of chat.messages) {
-        renderSavedMessage(message);
+        renderSavedMessage(message, displayOrder);
+        displayOrder += 1;
     }
     if (chat.messages.length) {
         featureGrid.style.display = "none";
@@ -605,26 +643,118 @@ async function openSavedChat(chatId) {
     await loadChatList();
 }
 
-async function renameSavedChat(chat) {
-    const title = window.prompt("Rename conversation", chat.title);
-    if (title === null || !title.trim()) {
-        return;
-    }
+function closeChatActionsMenu(menu, button) {
+    menu.hidden = true;
+    button.setAttribute("aria-expanded", "false");
+}
 
-    const response = await fetch(
-        `/api/ai/chats/${encodeURIComponent(chat.id)}/rename`,
-        {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({title: title.trim()})
+document.addEventListener("keydown", (event) => {
+    const openMenu = document.querySelector(".chat-actions-menu:not([hidden])");
+    if (event.key === "Escape" && openMenu) {
+        const trigger = openMenu.closest(".chat-list-item")
+            ?.querySelector(".chat-rename-button");
+        closeChatActionsMenu(openMenu, trigger);
+        trigger?.focus();
+    } else if (
+        openMenu
+        && (event.key === "ArrowDown" || event.key === "ArrowUp")
+    ) {
+        const items = [...openMenu.querySelectorAll('[role="menuitem"]')];
+        const currentIndex = items.indexOf(document.activeElement);
+        const step = event.key === "ArrowDown" ? 1 : -1;
+        items[(currentIndex + step + items.length) % items.length]?.focus();
+    }
+});
+
+document.addEventListener("click", (event) => {
+    document.querySelectorAll(".chat-actions-menu:not([hidden])").forEach(
+        (menu) => {
+            if (menu.closest(".chat-list-item")?.contains(event.target)) {
+                return;
+            }
+            const trigger = menu.closest(".chat-list-item")
+                ?.querySelector(".chat-rename-button");
+            closeChatActionsMenu(menu, trigger);
         }
     );
-    if (!response.ok) {
-        throw new Error("Could not rename this conversation.");
-    }
+});
 
-    await loadChatList();
+function showChatDialog(chat, action) {
+    chatDialogAction = {chat, action};
+    chatDialogError.textContent = "";
+    chatDialogName.value = chat.title;
+    const isRename = action === "rename";
+    chatDialogTitle.textContent = isRename
+        ? "Rename conversation"
+        : "Delete conversation?";
+    chatDialogDescription.textContent = isRename
+        ? "Choose a name for this conversation."
+        : `“${chat.title}” will be permanently deleted. This cannot be undone.`;
+    chatDialogNameLabel.hidden = !isRename;
+    chatDialogName.required = isRename;
+    chatDialogConfirm.textContent = isRename ? "Save name" : "Delete";
+    chatDialogConfirm.classList.toggle("danger", !isRename);
+    chatDialog.showModal();
+    if (isRename) {
+        chatDialogName.focus();
+        chatDialogName.select();
+    } else {
+        chatDialogCancel.focus();
+    }
 }
+
+async function renameSavedChat(chat) {
+    showChatDialog(chat, "rename");
+}
+
+async function deleteSavedChat(chat) {
+    showChatDialog(chat, "delete");
+}
+
+chatDialogCancel.addEventListener("click", () => chatDialog.close());
+chatDialogForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!chatDialogAction) {
+        return;
+    }
+    const {chat, action} = chatDialogAction;
+    chatDialogConfirm.disabled = true;
+    chatDialogCancel.disabled = true;
+    try {
+        const isRename = action === "rename";
+        const response = await fetch(
+            isRename
+                ? `/api/ai/chats/${encodeURIComponent(chat.id)}/rename`
+                : `/api/ai/chats/${encodeURIComponent(chat.id)}`,
+            {
+                method: isRename ? "POST" : "DELETE",
+                ...(isRename ? {
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({title: chatDialogName.value.trim()})
+                } : {})
+            }
+        );
+        if (!response.ok) {
+            chatDialogError.textContent = isRename
+                ? "Could not rename this conversation."
+                : "Could not delete this conversation.";
+            return;
+        }
+        chatDialog.close();
+        chatDialogAction = null;
+        if (action === "delete" && currentChatId === chat.id) {
+            currentChatId = null;
+            clearConversationView();
+        }
+        await loadChatList();
+    } catch (requestError) {
+        console.error(requestError);
+        chatDialogError.textContent = "Could not complete this action.";
+    } finally {
+        chatDialogConfirm.disabled = false;
+        chatDialogCancel.disabled = false;
+    }
+});
 
 newChatButton.addEventListener("click", function () {
     if (isSendingMessage) {
@@ -820,6 +950,10 @@ aiChatsToggle.addEventListener("click", function () {
         "aria-expanded",
         isOpen
     );
+    aiChatsToggle.setAttribute(
+        "aria-label",
+        isOpen ? "Hide saved chats" : "Show saved chats"
+    );
 
     aiChatsToggle.textContent =
         isOpen ? "▴" : "▾";
@@ -832,6 +966,12 @@ loadChatList().catch((error) => {
     console.error(error);
 });
 
+const requestedChatId = new URLSearchParams(window.location.search).get("chat_id");
+if (requestedChatId) {
+    openSavedChat(requestedChatId).catch((error) => {
+        console.error(error);
+    });
+}
 
 </script>
 

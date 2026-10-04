@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Study Resources - StudyTool</title>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
@@ -47,10 +48,7 @@
                     Student Support
                 </a>
 
-                <a href="{{ url_for('ai_help') }}" class="nav-link">
-                    <span class="nav-icon">♪</span>
-                    AI Study Help
-                </a>
+                {% include "_ai_nav.html" %}
 
             </nav>
 
@@ -79,7 +77,7 @@
                 <button class="mobile-menu">☰</button>
 
                 <div class="welcome">
-                    <div class="welcome-icon">📚</div>
+                    <div class="welcome-icon">⌕</div>
                     <div>
                         <h1>What do you want to learn?</h1>
                         <p>Find free resources for any subject or topic.</p>

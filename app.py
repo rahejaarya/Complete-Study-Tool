@@ -22,7 +22,26 @@ app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "studytool-dev-secret-key")
 app.config["DATABASE"] = os.path.join(app.root_path, "studytool.db")
-app.config["AI_SAVE_DATA_DIR"] = os.path.join(app.root_path, "static", "AiSaveData")
+app.config["SAVE_DATA_DIR"] = os.path.join(app.root_path, "static", "SaveData")
+
+VALID_THEMES = {
+    "light-lavender",
+    "light-blue",
+    "light-coral",
+    "light-cobalt",
+    "light-emerald",
+    "light-orchid",
+    "light-citrus",
+    "light-slate",
+    "dark-purple",
+    "dark-blue",
+    "dark-green",
+    "dark-citrus",
+    "dark-neon",
+    "dark-ember",
+    "dark-jade",
+    "dark-mocha",
+}
 
 
 def get_db():
@@ -32,11 +51,15 @@ def get_db():
 
 
 def ai_user_directory():
+    return user_save_directory(session.get("user_id"))
+
+
+def user_save_directory(user_id):
     conn = get_db()
     try:
         user = conn.execute(
             "SELECT username FROM users WHERE id = ?",
-            (session.get("user_id"),),
+            (user_id,),
         ).fetchone()
     finally:
         conn.close()
@@ -48,11 +71,13 @@ def ai_user_directory():
     if not re.fullmatch(r"[A-Za-z0-9_-]{3,32}", username):
         raise ValueError("The signed-in username is not valid for AI storage.")
 
-    user_dir = Path(app.config["AI_SAVE_DATA_DIR"]) / username
-    (user_dir / "chats").mkdir(parents=True, exist_ok=True)
+    user_dir = Path(app.config["SAVE_DATA_DIR"]) / username
+    for directory in ("chats", "Schedule", "Settings"):
+        (user_dir / directory).mkdir(parents=True, exist_ok=True)
     memory_path = user_dir / "memory"
     if not memory_path.exists():
-        write_json_atomically(memory_path, {"facts": []})
+        write_json_atomically(memory_path, {"explicit_facts": [], "facts": []})
+    migrate_database_preferences(user_id, user_dir)
     return user_dir
 
 
@@ -100,18 +125,28 @@ def find_chat_file(user_dir, chat_id):
 def load_user_memory(user_dir):
     memory_path = user_dir / "memory"
     if not memory_path.exists():
-        return {"facts": []}
+        return {"explicit_facts": [], "facts": []}
     with memory_path.open("r", encoding="utf-8") as memory_file:
         memory = json.load(memory_file)
     facts = memory.get("facts") if isinstance(memory, dict) else None
     if not isinstance(facts, list):
-        return {"facts": []}
-    return {
-        "facts": [
+        facts = []
+    explicit_facts = (
+        memory.get("explicit_facts", []) if isinstance(memory, dict) else []
+    )
+    if not isinstance(explicit_facts, list):
+        explicit_facts = []
+
+    def clean_facts(candidates):
+        return [
             fact.strip()[:200]
-            for fact in facts
+            for fact in candidates
             if isinstance(fact, str) and fact.strip()
         ][:12]
+
+    return {
+        "explicit_facts": clean_facts(explicit_facts),
+        "facts": clean_facts(facts),
     }
 
 
@@ -123,6 +158,15 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS user_preferences (
+            user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+            theme TEXT,
+            schedule_json TEXT NOT NULL DEFAULT '[]'
         )
         """
     )
@@ -142,6 +186,70 @@ def init_db():
     conn.close()
 
 
+def migrate_database_preferences(user_id, user_dir):
+    schedule_path = user_dir / "Schedule" / "schedule.json"
+    settings_path = user_dir / "Settings" / "settings.json"
+    if schedule_path.exists() and settings_path.exists():
+        return
+
+    conn = get_db()
+    try:
+        row = conn.execute(
+            "SELECT theme, schedule_json FROM user_preferences WHERE user_id = ?",
+            (user_id,),
+        ).fetchone()
+    finally:
+        conn.close()
+
+    if row is None:
+        return
+    if not schedule_path.exists():
+        schedule = json.loads(row["schedule_json"])
+        if not isinstance(schedule, list):
+            raise ValueError("Saved schedule data must be a list.")
+        write_json_atomically(schedule_path, schedule)
+    if not settings_path.exists():
+        settings = {}
+        theme = row["theme"]
+        if theme:
+            if theme not in VALID_THEMES:
+                raise ValueError("Saved theme is not valid.")
+            settings["appearance"] = {"theme": theme}
+        write_json_atomically(settings_path, settings)
+
+
+def get_saved_schedule(user_id):
+    schedule_path = user_save_directory(user_id) / "Schedule" / "schedule.json"
+    if not schedule_path.exists():
+        return []
+    with schedule_path.open("r", encoding="utf-8") as schedule_file:
+        schedule = json.load(schedule_file)
+    if not isinstance(schedule, list):
+        raise ValueError("Saved schedule data must be a list.")
+    return schedule
+
+
+def save_user_theme(user_id, theme):
+    settings_path = user_save_directory(user_id) / "Settings" / "settings.json"
+    settings = {}
+    if settings_path.exists():
+        with settings_path.open("r", encoding="utf-8") as settings_file:
+            settings = json.load(settings_file)
+        if not isinstance(settings, dict):
+            raise ValueError("Saved user settings must be an object.")
+    appearance = settings.get("appearance", {})
+    if not isinstance(appearance, dict):
+        raise ValueError("Saved appearance settings must be an object.")
+    appearance["theme"] = theme
+    settings["appearance"] = appearance
+    write_json_atomically(settings_path, settings)
+
+
+def save_user_schedule(user_id, schedule):
+    schedule_path = user_save_directory(user_id) / "Schedule" / "schedule.json"
+    write_json_atomically(schedule_path, schedule)
+
+
 def login_required(view):
     @wraps(view)
     def wrapped_view(*args, **kwargs):
@@ -150,6 +258,141 @@ def login_required(view):
         return redirect(url_for("login", next=request.path))
 
     return wrapped_view
+
+
+@app.route("/api/preferences/theme", methods=["GET", "PUT"])
+@login_required
+def user_theme_preference():
+    user_id = session["user_id"]
+    if request.method == "GET":
+        try:
+            settings_path = (
+                user_save_directory(user_id) / "Settings" / "settings.json"
+            )
+            if not settings_path.exists():
+                return jsonify({"theme": None})
+            with settings_path.open("r", encoding="utf-8") as settings_file:
+                settings = json.load(settings_file)
+            if not isinstance(settings, dict):
+                raise ValueError("Saved user settings must be an object.")
+            appearance = settings.get("appearance", {})
+            if not isinstance(appearance, dict):
+                raise ValueError("Saved appearance settings must be an object.")
+            theme = appearance.get("theme")
+            if theme is not None and theme not in VALID_THEMES:
+                raise ValueError("Saved theme is not valid.")
+            return jsonify({"theme": theme})
+        except (sqlite3.Error, OSError, json.JSONDecodeError, ValueError) as error:
+            app.logger.exception("Could not load user theme: %s", error)
+            return jsonify({"error": "Could not load your saved theme."}), 500
+
+    data = request.get_json(silent=True)
+    theme = data.get("theme") if isinstance(data, dict) else None
+    if not isinstance(theme, str) or theme not in VALID_THEMES:
+        return jsonify({"error": "Choose a valid color theme."}), 400
+    try:
+        save_user_theme(user_id, theme)
+        return jsonify({"theme": theme})
+    except (sqlite3.Error, OSError, json.JSONDecodeError, ValueError) as error:
+        app.logger.exception("Could not save user theme: %s", error)
+        return jsonify({"error": "Could not save your theme to your account."}), 500
+
+
+@app.route("/api/preferences/schedule", methods=["GET", "PUT"])
+@login_required
+def user_schedule_preference():
+    user_id = session["user_id"]
+    if request.method == "GET":
+        try:
+            return jsonify({"events": get_saved_schedule(user_id)})
+        except (sqlite3.Error, OSError, json.JSONDecodeError, ValueError) as error:
+            app.logger.exception("Could not load user schedule: %s", error)
+            return jsonify({"error": "Could not load your saved schedule."}), 500
+
+    data = request.get_json(silent=True)
+    events = data.get("events") if isinstance(data, dict) else None
+    if not isinstance(events, list) or len(events) > 500:
+        return jsonify({"error": "Schedule must contain no more than 500 events."}), 400
+
+    allowed_types = {"to-do", "event", "homework", "exam", "rest"}
+    clean_events = []
+    seen_ids = set()
+    try:
+        for event in events:
+            if not isinstance(event, dict):
+                raise ValueError("Each schedule event must be an object.")
+            event_id = event.get("id")
+            title = event.get("title")
+            event_type = event.get("type")
+            date = event.get("date")
+            time = event.get("time", "09:00")
+            end_time = event.get("end_time")
+            legacy_duration = event.get("duration_minutes")
+            done = event.get("done")
+            if time == "":
+                time = "09:00"
+            if (
+                not isinstance(time, str)
+                or not re.fullmatch(r"(?:[01]\d|2[0-3]):[0-5]\d", time)
+            ):
+                raise ValueError("A schedule event contains an invalid start time.")
+            if end_time is None:
+                if legacy_duration is not None:
+                    if (
+                        isinstance(legacy_duration, bool)
+                        or not isinstance(legacy_duration, int)
+                        or not 15 <= legacy_duration <= 1440
+                    ):
+                        raise ValueError("A schedule event contains an invalid duration.")
+                    start_minutes = int(time[:2]) * 60 + int(time[3:])
+                    end_minutes = start_minutes + legacy_duration
+                    if end_minutes > 1439:
+                        raise ValueError("A schedule event cannot continue past midnight.")
+                    end_time = f"{end_minutes // 60:02d}:{end_minutes % 60:02d}"
+                else:
+                    start_minutes = int(time[:2]) * 60 + int(time[3:])
+                    end_minutes = min(start_minutes + 60, 1439)
+                    end_time = f"{end_minutes // 60:02d}:{end_minutes % 60:02d}"
+            if (
+                not isinstance(event_id, str)
+                or len(event_id) > 36
+                or not event_id
+                or event_id in seen_ids
+                or not isinstance(title, str)
+                or not title.strip()
+                or len(title.strip()) > 120
+                or not isinstance(event_type, str)
+                or event_type not in allowed_types
+                or not isinstance(date, str)
+                or not isinstance(time, str)
+                or not re.fullmatch(r"(?:[01]\d|2[0-3]):[0-5]\d", time)
+                or not isinstance(end_time, str)
+                or not re.fullmatch(r"(?:[01]\d|2[0-3]):[0-5]\d", end_time)
+                or not isinstance(done, bool)
+            ):
+                raise ValueError("A schedule event contains invalid fields.")
+            datetime.strptime(date, "%Y-%m-%d")
+            if end_time <= time:
+                raise ValueError("A schedule event end time must follow its start time.")
+            seen_ids.add(event_id)
+            clean_events.append({
+                "id": event_id,
+                "title": title.strip(),
+                "type": event_type,
+                "date": date,
+                "time": time,
+                "end_time": end_time,
+                "done": done,
+            })
+    except (TypeError, ValueError) as error:
+        return jsonify({"error": str(error) or "A schedule date is invalid."}), 400
+
+    try:
+        save_user_schedule(user_id, clean_events)
+        return jsonify({"events": clean_events})
+    except (sqlite3.Error, OSError, json.JSONDecodeError, ValueError) as error:
+        app.logger.exception("Could not save user schedule: %s", error)
+        return jsonify({"error": "Could not save your schedule to your account."}), 500
 
 
 def safe_next_url(target):
@@ -341,21 +584,20 @@ def ai_chat():
                 }) + "\n"
 
             if full_response.strip():
-                chat["messages"].extend(
-                    {"role": "resource", "resource": resource}
-                    for resource in resources
-                )
                 chat["messages"].append({
                     "role": "assistant",
                     "content": full_response,
                 })
+                chat["messages"].extend(
+                    {"role": "resource", "resource": resource}
+                    for resource in resources
+                )
                 chat["updated_at"] = datetime.now(timezone.utc).isoformat()
                 write_json_atomically(chat_path, chat)
                 try:
                     current_memory = update_user_memory(
                         current_memory,
                         message,
-                        full_response,
                     )
                     write_json_atomically(user_dir / "memory", current_memory)
                 except Exception as memory_error:
@@ -456,6 +698,21 @@ def rename_ai_chat(chat_id):
         return jsonify({"error": "Could not rename this conversation."}), 500
 
 
+@app.route("/api/ai/chats/<chat_id>", methods=["DELETE"])
+@login_required
+def delete_ai_chat(chat_id):
+    try:
+        user_dir = ai_user_directory()
+        chat_path = find_chat_file(user_dir, chat_id)
+        if chat_path is None:
+            return jsonify({"error": "Conversation not found."}), 404
+        chat_path.unlink()
+        return jsonify({"deleted": chat_id})
+    except OSError as error:
+        app.logger.exception("Could not delete AI conversation: %s", error)
+        return jsonify({"error": "Could not delete this conversation."}), 500
+
+
 @app.route("/logout")
 def logout():
     session.clear()
@@ -471,7 +728,7 @@ def home():
 @app.route("/appearance")
 @login_required
 def appearance():
-    return render_template("appearance.html")
+    return render_template("settings.html")
 
 
 @app.route("/settings")

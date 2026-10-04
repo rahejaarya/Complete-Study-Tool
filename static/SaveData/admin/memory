@@ -1,0 +1,10 @@
+{
+  "explicit_facts": [
+    "Takes offense when told their essay should be only 5 paragraphs.",
+    "Wrote an academic essay about food insecurity or inequality in a specific country",
+    "Implied connection to 'World Hunger' for the topic"
+  ],
+  "facts": [
+    "User uses colloquial language ('write it bro') but also demands strict adherence to formatting constraints (5 paragraphs) when receiving work."
+  ]
+}

@@ -822,6 +822,7 @@ body {
 
 .search-box #ai-send {
     flex: 0 0 auto;
+    margin-right: -8px;
     padding: 10px 18px;
     border: 1px solid var(--purple);
     border-radius: 11px;
@@ -850,6 +851,23 @@ body {
     gap: 12px;
     margin-bottom: 18px;
     text-align: left;
+}
+
+.dashboard.has-active-chat #chat-messages {
+    padding-bottom: 84px;
+}
+
+.dashboard.has-active-chat #ai-prompt-container {
+    position: fixed;
+    z-index: 80;
+    bottom: 18px;
+    left: 300px;
+    right: 55px;
+    width: auto !important;
+    max-width: 850px;
+    margin: 0 auto !important;
+    background: var(--control-bg);
+    box-shadow: 0 8px 28px var(--card-shadow);
 }
 
 .chat-message {
@@ -1538,6 +1556,13 @@ body {
     }
 }
 
+@media (max-width: 950px) and (min-width: 701px) {
+    .dashboard.has-active-chat #ai-prompt-container {
+        left: 240px;
+        right: 30px;
+    }
+}
+
 @media (max-width: 700px) {
     .support-emergency,
     .grounding-card {
@@ -1911,74 +1936,208 @@ body {
     text-align: right;
 }
 
-.weekly-grid-scroll {
-    overflow-x: auto;
+.weekly-grid-frame {
+    width: 100%;
     border: 1px solid var(--border);
     border-radius: 15px;
-}
-
-.weekly-grid {
-    min-width: 1050px;
-    display: grid;
-    grid-template-columns: repeat(7, minmax(140px, 1fr));
-}
-
-.weekly-day {
-    min-height: 220px;
-    padding: 13px 10px;
-    border-right: 1px solid var(--border);
     background: var(--white);
 }
 
-.weekly-day.is-today {
-    background: var(--purple-light);
-    box-shadow: inset 0 3px 0 var(--purple);
+.weekly-grid {
+    --calendar-hour-height: 18px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 42px repeat(7, minmax(0, 1fr));
+    grid-template-rows: 42px auto;
 }
 
-.weekly-day:last-child {
-    border-right: 0;
+.weekly-time-head,
+.weekly-day-header {
+    z-index: 5;
+    border-bottom: 1px solid var(--border);
+    background: var(--white);
 }
 
-.weekly-day h3 {
-    margin: 1px 2px 12px;
+.weekly-time-head {
+    left: 0;
+    z-index: 7;
+    border-right: 1px solid var(--border);
+}
+
+.weekly-day-header {
+    padding: 9px 5px 6px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    font-size: 14px;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border-right: 1px solid var(--border);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 650;
 }
 
-.calendar-date {
+.weekly-day-header time {
     color: var(--muted);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
 }
 
-.weekly-day.is-today .calendar-weekday,
-.weekly-day.is-today .calendar-date {
+.weekly-day-header.is-today {
+    background: var(--purple-light);
+    color: var(--purple);
+    box-shadow: inset 0 3px 0 var(--purple);
+}
+
+.weekly-day-header.is-today time {
     color: var(--purple);
     font-weight: 700;
 }
 
+.calendar-time-column {
+    position: relative;
+    z-index: 3;
+    display: grid;
+    grid-template-rows: repeat(24, var(--calendar-hour-height));
+    height: calc(24 * var(--calendar-hour-height));
+    border-right: 1px solid var(--border);
+    background: var(--background);
+}
+
+.calendar-hour-label {
+    position: relative;
+    top: -4px;
+    padding-right: 4px;
+    color: var(--muted);
+    font-size: 9px;
+    text-align: right;
+}
+
+.weekly-day-column {
+    position: relative;
+    display: grid;
+    grid-template-rows: repeat(24, var(--calendar-hour-height));
+    height: calc(24 * var(--calendar-hour-height));
+    border-right: 1px solid var(--border);
+    background: var(--white);
+}
+
+.weekly-day-column.is-today {
+    background: color-mix(in srgb, var(--purple-light) 25%, var(--white));
+}
+
+.weekly-hour-slot {
+    z-index: 0;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+}
+
+.weekly-hour-slot:hover,
+.weekly-hour-slot:focus-visible {
+    outline: 0;
+    background: var(--purple-light);
+}
+
+.weekly-event-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.current-time-indicator {
+    position: absolute;
+    z-index: 4;
+    right: 0;
+    left: 0;
+    height: 2px;
+    background: #e53935;
+    pointer-events: none;
+}
+
+.current-time-indicator::before {
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e53935;
+    content: "";
+}
+
 .schedule-block {
-    margin-bottom: 8px;
-    padding: 9px;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    left: 2px;
+    height: 16px;
+    min-height: 13px;
+    margin: 0;
+    padding: 2px 3px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    align-items: flex-start;
+    gap: 0;
+    overflow: hidden;
+    border: 0;
     border-left: 3px solid var(--purple);
-    border-radius: 8px;
+    border-radius: 5px;
     background: var(--purple-light);
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.schedule-block.is-done {
+    opacity: 0.58;
 }
 
 .schedule-block span {
     color: var(--muted);
-    font-size: 10px;
+    font-size: 8px;
 }
 
 .schedule-block strong {
-    font-size: 12px;
-    line-height: 1.35;
+    font-size: 9px;
+    line-height: 1.05;
     overflow-wrap: anywhere;
+}
+
+.schedule-navigation,
+.calendar-navigation {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.calendar-navigation .planner-action {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+    line-height: 1;
+}
+
+.calendar-navigation .planner-action:hover:not(:disabled) {
+    border-color: var(--purple);
+    background: var(--purple-light);
+    color: var(--text);
+}
+
+.calendar-week-range {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 13px;
 }
 
 .schedule-school {
@@ -2005,6 +2164,170 @@ body {
 .schedule-event {
     border-color: var(--purple);
     background: var(--purple-light);
+}
+
+.schedule-dialog {
+    position: fixed;
+    z-index: 30;
+    width: min(380px, calc(100vw - 16px));
+    max-width: 380px;
+    max-height: min(88vh, 650px);
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--background);
+    color: var(--text);
+    box-shadow: 0 10px 30px var(--card-shadow);
+}
+
+.schedule-dialog::backdrop {
+    background: transparent;
+}
+
+.schedule-dialog-form {
+    padding: 17px;
+    display: grid;
+    gap: 12px;
+}
+
+.schedule-dialog-header,
+.schedule-dialog-actions,
+.schedule-dialog-row,
+.date-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.schedule-dialog-header h2 {
+    font-size: 19px;
+}
+
+.schedule-dialog-field {
+    min-width: 0;
+    display: grid;
+    gap: 5px;
+}
+
+.schedule-dialog-field > span {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.schedule-dialog-field input,
+.schedule-dialog-field select {
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 9px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--white);
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+}
+
+.schedule-dialog-field input:focus,
+.schedule-dialog-field select:focus {
+    border-color: var(--purple);
+    outline: 2px solid var(--purple-light);
+}
+
+.schedule-dialog-row > * {
+    flex: 1;
+}
+
+.date-picker {
+    padding: 9px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--white);
+}
+
+.date-picker-header {
+    margin-bottom: 8px;
+}
+
+.date-picker-header strong {
+    font-size: 13px;
+}
+
+.date-picker-weekdays,
+.date-picker-days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 3px;
+}
+
+.date-picker[hidden] {
+    display: none;
+}
+
+.date-picker-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.date-picker-toggle {
+    padding: 2px 6px;
+    font-size: 10px;
+}
+
+.date-picker-weekdays {
+    margin-bottom: 4px;
+    color: var(--muted);
+    font-size: 10px;
+    text-align: center;
+}
+
+.date-picker-day {
+    aspect-ratio: 1;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.date-picker-day:hover,
+.date-picker-day:focus-visible {
+    outline: 1px solid var(--purple);
+}
+
+.date-picker-day.is-outside-month {
+    color: var(--muted);
+    opacity: 0.6;
+}
+
+.date-picker-day.is-selected {
+    background: var(--purple);
+    color: var(--white);
+}
+
+.date-picker-day.is-today:not(.is-selected) {
+    box-shadow: inset 0 0 0 1px var(--purple);
+    color: var(--purple);
+}
+
+.schedule-dialog-actions {
+    justify-content: flex-end;
+}
+
+.schedule-dialog-actions #planner-dialog-delete {
+    margin-right: auto;
+}
+
+.schedule-dialog .chat-dialog-error {
+    min-height: 0;
+    margin: 0;
 }
 
 .planner-intro {
@@ -2212,12 +2535,20 @@ body {
 
     .schedule-section-header {
         align-items: flex-start;
-        flex-direction: column;
-        gap: 5px;
+        flex-wrap: wrap;
+        gap: 12px;
     }
 
     .schedule-section-header > p {
         text-align: left;
+    }
+
+    .calendar-navigation {
+        margin-left: auto;
+    }
+
+    .schedule-dialog {
+        max-width: calc(100vw - 16px);
     }
 
     .planner-form {
@@ -2312,6 +2643,16 @@ body {
         margin-left: 0;
 
         padding: 20px 17px 30px;
+    }
+
+    .dashboard.has-active-chat #chat-messages {
+        padding-bottom: 96px;
+    }
+
+    .dashboard.has-active-chat #ai-prompt-container {
+        right: 17px;
+        bottom: 82px;
+        left: 17px;
     }
 
 
@@ -3156,6 +3497,10 @@ body {
     align-items: center;
     width: 100%;
     border-radius: 12px;
+    background: transparent;
+}
+
+.ai-nav-row.active {
     background: var(--purple-light);
 }
 
@@ -3185,7 +3530,7 @@ body {
     border-radius: 8px;
 
     background: transparent;
-    color: var(--purple);
+    color: var(--muted);
 
     cursor: pointer;
     font-size: 13px;
@@ -3199,6 +3544,10 @@ body {
 .ai-chats-toggle:hover {
     background: var(--nav-hover);
     color: var(--text);
+}
+
+.ai-nav-row.active .ai-chats-toggle {
+    color: var(--purple);
 }
 
 
@@ -3271,6 +3620,7 @@ body {
 }
 
 .ai-chat-dropdown .chat-list-item {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 2px;
@@ -3278,7 +3628,9 @@ body {
 }
 
 .ai-chat-dropdown .chat-item {
-    width: 100%;
+    min-width: 0;
+    flex: 1;
+    width: auto;
 
     display: flex;
     align-items: center;
@@ -3291,6 +3643,7 @@ body {
 
     background: transparent;
     color: var(--text-muted, #a0a1b2);
+    text-decoration: none;
 
     text-align: left;
     cursor: pointer;
@@ -3304,7 +3657,8 @@ body {
 }
 
 .ai-chat-dropdown .chat-item:disabled,
-.ai-chat-dropdown .chat-rename-button:disabled {
+.ai-chat-dropdown .chat-rename-button:disabled,
+.ai-chat-dropdown .chat-delete-button:disabled {
     cursor: wait;
     opacity: 0.65;
 }
@@ -3330,9 +3684,68 @@ body {
     font-size: 16px;
 }
 
+.ai-chat-dropdown .chat-actions-trigger {
+    flex: 0 0 25px;
+    width: 25px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font: inherit;
+    font-size: 16px;
+}
+
+.ai-chat-dropdown .chat-actions-trigger:hover {
+    background: var(--purple-light);
+    color: var(--purple);
+}
+
 .ai-chat-dropdown .chat-rename-button:hover {
     background: var(--purple-light);
     color: var(--purple);
+}
+
+.ai-chat-dropdown .chat-actions-menu {
+    position: absolute;
+    z-index: 30;
+    top: calc(100% - 2px);
+    right: 2px;
+    min-width: 112px;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--white);
+    box-shadow: 0 8px 24px rgba(20, 20, 35, 0.18);
+}
+
+.ai-chat-dropdown .chat-actions-menu[hidden] {
+    display: none;
+}
+
+.ai-chat-dropdown .chat-actions-menu button {
+    padding: 7px 9px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+}
+
+.ai-chat-dropdown .chat-actions-menu button:hover,
+.ai-chat-dropdown .chat-actions-menu button:focus-visible {
+    outline: none;
+    background: var(--nav-hover);
+}
+
+.ai-chat-dropdown .chat-actions-menu button:last-child {
+    color: var(--danger, #b42318);
 }
 
 .ai-chat-dropdown .chat-item-icon {
@@ -3344,4 +3757,115 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.chat-list-empty {
+    display: block;
+    padding: 8px 7px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.chat-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50vw;
+    margin: 0;
+    transform: translate(-50%, -50%);
+    width: min(420px, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+    padding: 0;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--white);
+    color: var(--text);
+    box-shadow: 0 24px 80px rgba(15, 15, 30, 0.28);
+}
+
+.chat-dialog::backdrop {
+    background: rgba(18, 18, 28, 0.48);
+    backdrop-filter: blur(2px);
+}
+
+.chat-dialog-error:not(:empty) {
+    margin: 10px 0 0;
+    color: var(--danger, #b42318);
+    font-size: 12px;
+}
+
+.chat-dialog form {
+    padding: 22px;
+}
+
+.chat-dialog h2 {
+    margin: 0 0 8px;
+    color: var(--text);
+    font-size: 20px;
+}
+
+.chat-dialog p {
+    margin: 0 0 16px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.chat-dialog label {
+    display: grid;
+    gap: 6px;
+    color: var(--text);
+    font-size: 13px;
+}
+
+.chat-dialog label[hidden] {
+    display: none;
+}
+
+.chat-dialog input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--white);
+    color: var(--text);
+    font: inherit;
+}
+
+.chat-dialog #chat-dialog-error:not(:empty) {
+    margin: 10px 0 0;
+    color: var(--danger, #b42318);
+    font-size: 12px;
+}
+
+.chat-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.chat-dialog-actions button {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--white);
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+}
+
+.chat-dialog-actions button[type="submit"] {
+    border-color: var(--purple);
+    background: var(--purple);
+    color: var(--white);
+}
+
+.chat-dialog-actions button.danger {
+    border-color: var(--danger, #b42318);
+    background: var(--danger, #b42318);
+}
+
+.chat-dialog-actions button:disabled {
+    cursor: wait;
+    opacity: 0.65;
 }

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Management &amp; Schedule | StudyTool</title>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
@@ -37,10 +38,7 @@
                     <span class="nav-icon">♡</span>
                     Student Support
                 </a>
-                <a href="{{ url_for('ai_help') }}" class="nav-link">
-                    <span class="nav-icon">♪</span>
-                    AI Study Help
-                </a>
+                {% include "_ai_nav.html" %}
             </nav>
 
             <div class="sidebar-bottom">
@@ -56,10 +54,6 @@
         </aside>
 
         <main class="main-content">
-            <a href="{{ url_for('home') }}" class="back-link">
-                &larr; Go back to main page
-            </a>
-
             <header class="topbar">
                 <button class="mobile-menu" type="button" aria-label="Open menu">☰</button>
                 <div class="welcome">
@@ -187,74 +181,38 @@
                     <div class="schedule-section-header">
                         <div>
                             <div class="eyebrow">YOUR WEEK AT A GLANCE</div>
-                            <h2 id="weekly-schedule-heading">This Week</h2>
+                            <h2 id="weekly-schedule-heading">Scheduler</h2>
+                            <p id="calendar-week-range" class="calendar-week-range"></p>
+                        </div>
+                        <div class="calendar-navigation" aria-label="Calendar navigation">
+                            <button id="calendar-previous" class="planner-action" type="button" aria-label="Previous week">‹</button>
+                            <button id="calendar-today" class="timer-button" type="button">Today</button>
+                            <button id="calendar-next" class="planner-action" type="button" aria-label="Next week">›</button>
                         </div>
                     </div>
-                    <div class="weekly-grid-scroll" tabindex="0" aria-label="Weekly schedule, scroll horizontally to see all days">
-                        <div class="weekly-grid">
-                            <div class="weekly-day">
-                                <h3><span class="calendar-weekday">Monday</span><time class="calendar-date"></time></h3>
-                            </div>
-                            <div class="weekly-day">
-                                <h3><span class="calendar-weekday">Tuesday</span><time class="calendar-date"></time></h3>
-                            </div>
-                            <div class="weekly-day">
-                                <h3><span class="calendar-weekday">Wednesday</span><time class="calendar-date"></time></h3>
-                            </div>
-                            <div class="weekly-day">
-                                <h3><span class="calendar-weekday">Thursday</span><time class="calendar-date"></time></h3>
-                            </div>
-                            <div class="weekly-day">
-                                <h3><span class="calendar-weekday">Friday</span><time class="calendar-date"></time></h3>
-                            </div>
-                            <div class="weekly-day">
-                                <h3><span class="calendar-weekday">Saturday</span><time class="calendar-date"></time></h3>
-                            </div>
-                            <div class="weekly-day">
-                                <h3><span class="calendar-weekday">Sunday</span><time class="calendar-date"></time></h3>
-                            </div>
+                    <div class="weekly-grid-frame" aria-label="Week calendar from midnight to midnight">
+                        <div class="weekly-grid" id="weekly-grid">
+                            <div class="weekly-time-head" aria-hidden="true"></div>
+                            <div class="weekly-day-header"><span>Monday</span><time></time></div>
+                            <div class="weekly-day-header"><span>Tuesday</span><time></time></div>
+                            <div class="weekly-day-header"><span>Wednesday</span><time></time></div>
+                            <div class="weekly-day-header"><span>Thursday</span><time></time></div>
+                            <div class="weekly-day-header"><span>Friday</span><time></time></div>
+                            <div class="weekly-day-header"><span>Saturday</span><time></time></div>
+                            <div class="weekly-day-header"><span>Sunday</span><time></time></div>
+                            <div id="calendar-time-column" class="calendar-time-column" aria-hidden="true"></div>
+                            <div class="weekly-day-column" data-day-index="0" aria-label="Monday schedule"></div>
+                            <div class="weekly-day-column" data-day-index="1" aria-label="Tuesday schedule"></div>
+                            <div class="weekly-day-column" data-day-index="2" aria-label="Wednesday schedule"></div>
+                            <div class="weekly-day-column" data-day-index="3" aria-label="Thursday schedule"></div>
+                            <div class="weekly-day-column" data-day-index="4" aria-label="Friday schedule"></div>
+                            <div class="weekly-day-column" data-day-index="5" aria-label="Saturday schedule"></div>
+                            <div class="weekly-day-column" data-day-index="6" aria-label="Sunday schedule"></div>
                         </div>
                     </div>
-                </section>
-
-                <section class="main-card planner-card" aria-labelledby="planner-heading">
-                    <div class="eyebrow">MAKE IT YOURS</div>
-                    <h2 id="planner-heading">Add an Event or To-Do</h2>
-                    <p class="planner-intro">Add school events, assignments, study sessions, or personal reminders. Your list is saved in this browser.</p>
-                    <form id="planner-form" class="planner-form">
-                        <label>
-                            <span>What do you need to do?</span>
-                            <input id="planner-title" name="title" type="text" maxlength="120" required placeholder="e.g. Finish biology lab report">
-                        </label>
-                        <label>
-                            <span>Type</span>
-                            <select id="planner-type" name="type">
-                                <option value="to-do">To-do</option>
-                                <option value="event">Event</option>
-                                <option value="homework">Homework</option>
-                                <option value="exam">Test / Quiz / Exam</option>
-                                <option value="rest">Rest / Break</option>
-                            </select>
-                        </label>
-                        <label>
-                            <span>Date</span>
-                            <input id="planner-date" name="date" type="date" required>
-                        </label>
-                        <label>
-                            <span>Time (optional)</span>
-                            <input id="planner-time" name="time" type="time">
-                        </label>
-                        <button class="timer-button timer-button-primary planner-submit" type="submit">Add to my plan</button>
-                    </form>
                     <p id="planner-status" class="planner-status" aria-live="polite"></p>
-                    <div id="planner-list" class="planner-list" aria-live="polite"></div>
                 </section>
 
-                <section class="main-card deadline-section" aria-labelledby="deadlines-heading">
-                    <div class="eyebrow">PLAN AHEAD</div>
-                    <h2 id="deadlines-heading">Upcoming Deadlines</h2>
-                    <div id="deadlines-list" class="deadline-grid" aria-live="polite"></div>
-                </section>
             </section>
         </main>
     </div>
@@ -275,10 +233,66 @@
         <a href="{{ url_for('support') }}" class="mobile-link">
             <span>♡</span><small>Support</small>
         </a>
-        <a href="{{ url_for('ai_help') }}" class="mobile-link">
-            <span>♪</span><small>AI Help</small>
-        </a>
     </nav>
+
+    <dialog id="planner-dialog" class="schedule-dialog" aria-labelledby="planner-dialog-title" aria-modal="false">
+        <form id="planner-form" class="schedule-dialog-form">
+            <header class="schedule-dialog-header">
+                <div>
+                    <h2 id="planner-dialog-title">Add to calendar</h2>
+                </div>
+                <button id="planner-dialog-close" class="planner-action" type="button" aria-label="Close event editor">×</button>
+            </header>
+            <label class="schedule-dialog-field">
+                <span>Name</span>
+                <input id="planner-title" name="title" type="text" maxlength="120" required placeholder="e.g. Biology homework">
+            </label>
+            <div class="schedule-dialog-row">
+                <label class="schedule-dialog-field">
+                    <span>Type</span>
+                    <select id="planner-type" name="type">
+                        <option value="to-do">To-Do</option>
+                        <option value="homework">Homework</option>
+                        <option value="event">Event</option>
+                        <option value="exam">Quiz/Exam</option>
+                        <option value="rest">Rest/Break</option>
+                    </select>
+                </label>
+                <label class="schedule-dialog-field">
+                    <span>Starts</span>
+                    <input id="planner-time" name="time" type="time" required>
+                </label>
+                <label class="schedule-dialog-field">
+                    <span>Ends</span>
+                    <input id="planner-end-time" name="end_time" type="time" required>
+                </label>
+            </div>
+            <div class="schedule-dialog-field">
+                <div class="date-picker-label-row">
+                    <span id="planner-date-label">Date</span>
+                    <button id="date-picker-toggle" class="planner-action date-picker-toggle" type="button">Change date</button>
+                </div>
+                <input id="planner-date" name="date" type="hidden">
+                <div class="date-picker" id="date-picker" hidden>
+                    <div class="date-picker-header">
+                        <button id="date-picker-previous" class="planner-action" type="button" aria-label="Previous month">‹</button>
+                        <strong id="date-picker-month"></strong>
+                        <button id="date-picker-next" class="planner-action" type="button" aria-label="Next month">›</button>
+                    </div>
+                    <div class="date-picker-weekdays" aria-hidden="true">
+                        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                    </div>
+                    <div id="date-picker-days" class="date-picker-days" role="group" aria-labelledby="planner-date-label"></div>
+                </div>
+            </div>
+            <p id="planner-dialog-error" class="chat-dialog-error" role="alert"></p>
+            <footer class="schedule-dialog-actions">
+                <button id="planner-dialog-delete" class="timer-button planner-delete" type="button" hidden>Delete</button>
+                <button id="planner-dialog-cancel" class="timer-button" type="button">Cancel</button>
+                <button class="timer-button timer-button-primary" id="planner-submit" type="submit">Save event</button>
+            </footer>
+        </form>
+    </dialog>
 
     <script>
         (() => {
@@ -297,17 +311,43 @@
             const plannerType = document.getElementById("planner-type");
             const plannerDate = document.getElementById("planner-date");
             const plannerTime = document.getElementById("planner-time");
+            const plannerEndTime = document.getElementById("planner-end-time");
             const plannerStatus = document.getElementById("planner-status");
-            const plannerList = document.getElementById("planner-list");
-            const deadlinesList = document.getElementById("deadlines-list");
-            const weeklyDays = Array.from(document.querySelectorAll(".weekly-day"));
+            const plannerSubmitButton = document.getElementById("planner-submit");
+            const plannerDialog = document.getElementById("planner-dialog");
+            const plannerDialogTitle = document.getElementById("planner-dialog-title");
+            const plannerDialogError = document.getElementById("planner-dialog-error");
+            const datePickerMonth = document.getElementById("date-picker-month");
+            const datePickerDays = document.getElementById("date-picker-days");
+            const datePicker = document.getElementById("date-picker");
+            const datePickerToggle = document.getElementById("date-picker-toggle");
+            const calendarWeekRange = document.getElementById("calendar-week-range");
+            const calendarTimeColumn = document.getElementById("calendar-time-column");
+            const weeklyGrid = document.getElementById("weekly-grid");
+            const weeklyDays = Array.from(document.querySelectorAll(".weekly-day-column"));
+            const weeklyDayHeaders = Array.from(document.querySelectorAll(".weekly-day-header"));
+            const calendarPrevious = document.getElementById("calendar-previous");
+            const calendarNext = document.getElementById("calendar-next");
+            const calendarToday = document.getElementById("calendar-today");
+            const datePickerPrevious = document.getElementById("date-picker-previous");
+            const datePickerNext = document.getElementById("date-picker-next");
+            const plannerDialogClose = document.getElementById("planner-dialog-close");
+            const plannerDialogCancel = document.getElementById("planner-dialog-cancel");
+            const plannerDialogDelete = document.getElementById("planner-dialog-delete");
             const eventStorageKey = "studytool_time_management_events_v1";
 
             let selectedPreset = { work: 25, rest: 5, name: "Pomodoro Technique" };
             let sessionPhase = "work";
             let remainingSeconds = selectedPreset.work * 60;
             let timerInterval;
-            let storageAvailable = true;
+            let events = [];
+            let eventsReady = false;
+            let saveQueue = Promise.resolve(true);
+            let weekOffset = 0;
+            let pickerMonth = new Date();
+            let editingEventId = null;
+            let editorAnchor = null;
+            plannerSubmitButton.disabled = true;
 
             function formatTime(totalSeconds) {
                 const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
@@ -423,57 +463,131 @@
             resetButton.addEventListener("click", resetTimer);
             renderTimer();
 
-            function loadEvents() {
-                try {
-                    const savedEvents = window.localStorage.getItem(eventStorageKey);
-                    if (!savedEvents) {
-                        return [];
-                    }
-                    const parsedEvents = JSON.parse(savedEvents);
-                    if (!Array.isArray(parsedEvents)) {
-                        throw new Error("Saved planner data must be a list.");
-                    }
-                    return parsedEvents.filter((event) =>
-                        event
-                        && typeof event.id === "string"
-                        && typeof event.title === "string"
-                        && typeof event.date === "string"
-                        && typeof event.type === "string"
-                        && typeof event.done === "boolean"
-                        && (!event.time || typeof event.time === "string")
-                    );
-                } catch (error) {
-                    storageAvailable = false;
-                    plannerStatus.textContent = "Saved items could not be loaded. New items will only be available until you leave this page.";
-                    console.warn("Planner items could not be loaded from browser storage.", error);
-                    return [];
+            function validEvents(candidate) {
+                if (!Array.isArray(candidate)) {
+                    throw new Error("Saved planner data must be a list.");
                 }
+                return candidate.filter((event) =>
+                    event
+                    && typeof event.id === "string"
+                    && typeof event.title === "string"
+                    && typeof event.date === "string"
+                    && typeof event.type === "string"
+                    && typeof event.done === "boolean"
+                    && (!event.time || typeof event.time === "string")
+                ).map((event) => {
+                    const startTime = event.time || "09:00";
+                    let endTime = event.end_time;
+                    if (!endTime) {
+                        const duration = Number(event.duration_minutes) || 60;
+                        const [hours, minutes] = startTime.split(":").map(Number);
+                        const endMinutes = Math.min(hours * 60 + minutes + duration, 1439);
+                        endTime = `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:${String(endMinutes % 60).padStart(2, "0")}`;
+                    }
+                    const { duration_minutes: _legacyDuration, ...savedFields } = event;
+                    return {
+                        ...savedFields,
+                        time: startTime,
+                        end_time: endTime
+                    };
+                });
             }
 
-            let events = loadEvents();
+            async function loadEvents() {
+                try {
+                    const response = await fetch("/api/preferences/schedule");
+                    if (!response.ok) {
+                        throw new Error(`Schedule request failed with status ${response.status}.`);
+                    }
+                    const data = await response.json();
+                    events = validEvents(data.events);
+                    eventsReady = true;
+
+                    let migrationComplete = false;
+                    try {
+                        migrationComplete = window.localStorage.getItem(
+                            "studytool_time_management_account_migrated_v1"
+                        ) === "complete";
+                    } catch (error) {
+                        console.warn("Schedule migration state could not be read.", error);
+                    }
+                    if (events.length > 0 && !migrationComplete) {
+                        try {
+                            window.localStorage.setItem(
+                                "studytool_time_management_account_migrated_v1",
+                                "complete"
+                            );
+                        } catch (error) {
+                            console.warn("Schedule migration state could not be saved.", error);
+                        }
+                    } else if (events.length === 0 && !migrationComplete) {
+                        let migrationSaveFailed = false;
+                        try {
+                            const legacyEvents = window.localStorage.getItem(eventStorageKey);
+                            if (legacyEvents) {
+                                const importedEvents = validEvents(JSON.parse(legacyEvents));
+                                if (importedEvents.length > 0) {
+                                    const importResponse = await fetch("/api/preferences/schedule", {
+                                        method: "PUT",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ events: importedEvents })
+                                    });
+                                    if (!importResponse.ok) {
+                                        migrationSaveFailed = true;
+                                        eventsReady = false;
+                                        throw new Error(`Schedule migration failed with status ${importResponse.status}.`);
+                                    }
+                                    const importedData = await importResponse.json();
+                                    events = validEvents(importedData.events);
+                                }
+                            }
+                            window.localStorage.setItem(
+                                "studytool_time_management_account_migrated_v1",
+                                "complete"
+                            );
+                        } catch (error) {
+                            if (migrationSaveFailed) {
+                                plannerStatus.textContent = "Your existing schedule could not be migrated. Refresh the page or try again before editing it.";
+                            }
+                            console.warn("Existing browser schedule could not be migrated.", error);
+                        }
+                    }
+                    if (eventsReady) {
+                        plannerStatus.textContent = "Your schedule is loaded from your account.";
+                    }
+                } catch (error) {
+                    plannerStatus.textContent = "Your schedule could not be loaded. Refresh the page or try again later.";
+                    console.error("Planner items could not be loaded from your account.", error);
+                } finally {
+                    plannerSubmitButton.disabled = !eventsReady;
+                    renderScheduleEvents();
+                    renderCurrentTimeIndicator();
+                }
+            }
 
             function saveEvents() {
-                if (!storageAvailable) {
-                    return false;
+                if (!eventsReady) {
+                    return Promise.resolve(false);
                 }
-                try {
-                    window.localStorage.setItem(eventStorageKey, JSON.stringify(events));
+                const snapshot = events.map((event) => ({ ...event }));
+                plannerStatus.textContent = "Saving your schedule to your account...";
+                saveQueue = saveQueue.then(async () => {
+                    const response = await fetch("/api/preferences/schedule", {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ events: snapshot })
+                    });
+                    if (!response.ok) {
+                        throw new Error(`Schedule save failed with status ${response.status}.`);
+                    }
+                    plannerStatus.textContent = "Your schedule is saved to your account.";
                     return true;
-                } catch (error) {
-                    storageAvailable = false;
-                    plannerStatus.textContent = "Your changes could not be saved in this browser. Please check browser storage settings.";
-                    console.warn("Planner items could not be saved to browser storage.", error);
+                }).catch((error) => {
+                    plannerStatus.textContent = "Your changes could not be saved to your account. Please try again.";
+                    console.error("Planner items could not be saved to your account.", error);
                     return false;
-                }
-            }
-
-            function formatEventDate(dateString) {
-                const date = new Date(`${dateString}T12:00:00`);
-                return date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
-            }
-
-            function formatEventType(type) {
-                return type === "exam" ? "Test / Quiz / Exam" : type;
+                });
+                return saveQueue;
             }
 
             function formatDateKey(date) {
@@ -488,149 +602,307 @@
                 return new Date(year, month - 1, day);
             }
 
+            function defaultEndTime(startTime) {
+                const [hours, minutes] = startTime.split(":").map(Number);
+                const endMinutes = Math.min(hours * 60 + minutes + 60, 1439);
+                return `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:${String(endMinutes % 60).padStart(2, "0")}`;
+            }
+
             function renderCalendarDates() {
                 const today = new Date();
                 const weekStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
                 weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+                weekStart.setDate(weekStart.getDate() + weekOffset * 7);
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekStart.getDate() + 6);
+                const rangeOptions = { month: "short", day: "numeric" };
+                calendarWeekRange.textContent = `${weekStart.toLocaleDateString(undefined, rangeOptions)} – ${weekEnd.toLocaleDateString(undefined, { ...rangeOptions, year: "numeric" })}`;
+
+                calendarTimeColumn.replaceChildren();
+                for (let hour = 0; hour < 24; hour += 1) {
+                    const label = document.createElement("span");
+                    label.className = "calendar-hour-label";
+                    if (hour !== 0) {
+                        label.textContent = `${String(hour).padStart(2, "0")}:00`;
+                    }
+                    calendarTimeColumn.append(label);
+                }
 
                 weeklyDays.forEach((dayColumn, index) => {
                     const date = new Date(weekStart);
                     date.setDate(weekStart.getDate() + index);
                     const dateKey = formatDateKey(date);
-                    const dateLabel = dayColumn.querySelector(".calendar-date");
                     dayColumn.dataset.calendarDate = dateKey;
+                    const header = weeklyDayHeaders[index];
+                    const weekdayLabel = header.querySelector("span");
+                    const dateLabel = header.querySelector("time");
+                    weekdayLabel.textContent = date.toLocaleDateString(undefined, { weekday: "short" });
                     dateLabel.dateTime = dateKey;
                     dateLabel.textContent = date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-                    dayColumn.classList.toggle("is-today", dateKey === formatDateKey(today));
-                    if (dateKey === formatDateKey(today)) {
-                        dayColumn.setAttribute("aria-current", "date");
+                    const isToday = dateKey === formatDateKey(today);
+                    header.classList.toggle("is-today", isToday);
+                    dayColumn.classList.toggle("is-today", isToday);
+                    dayColumn.setAttribute(
+                        "aria-label",
+                        `${date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} schedule`
+                    );
+                    if (isToday) {
+                        header.setAttribute("aria-current", "date");
                     } else {
-                        dayColumn.removeAttribute("aria-current");
+                        header.removeAttribute("aria-current");
                     }
+
+                    dayColumn.replaceChildren();
+                    for (let hour = 0; hour < 24; hour += 1) {
+                        const slot = document.createElement("button");
+                        slot.type = "button";
+                        slot.className = "weekly-hour-slot";
+                        slot.dataset.hour = String(hour);
+                        slot.setAttribute(
+                            "aria-label",
+                            `Add to ${dayColumn.getAttribute("aria-label")} at ${String(hour).padStart(2, "0")}:00`
+                        );
+                        dayColumn.append(slot);
+                    }
+                    const eventLayer = document.createElement("div");
+                    eventLayer.className = "weekly-event-layer";
+                    eventLayer.setAttribute("aria-label", "Scheduled events");
+                    dayColumn.append(eventLayer);
                 });
-            }
-
-            function renderEvents() {
-                plannerList.replaceChildren();
-                if (events.length === 0) {
-                    const emptyMessage = document.createElement("p");
-                    emptyMessage.className = "planner-empty";
-                    emptyMessage.textContent = "Your added events and to-dos will appear here.";
-                    plannerList.append(emptyMessage);
-                    return;
-                }
-
-                events.sort((left, right) => {
-                    const leftDate = `${left.date}T${left.time || "23:59"}`;
-                    const rightDate = `${right.date}T${right.time || "23:59"}`;
-                    return leftDate.localeCompare(rightDate);
-                });
-
-                events.forEach((event) => {
-                    const item = document.createElement("article");
-                    item.className = `planner-item${event.done ? " is-done" : ""}`;
-
-                    const details = document.createElement("div");
-                    details.className = "planner-item-details";
-                    const title = document.createElement("h3");
-                    title.textContent = event.title;
-                    const metadata = document.createElement("p");
-                    metadata.textContent = `${formatEventType(event.type)} · ${formatEventDate(event.date)}${event.time ? ` · ${event.time}` : ""}`;
-                    details.append(title, metadata);
-
-                    const actions = document.createElement("div");
-                    actions.className = "planner-item-actions";
-                    const doneButton = document.createElement("button");
-                    doneButton.type = "button";
-                    doneButton.className = "planner-action";
-                    doneButton.textContent = event.done ? "Undo" : "Done";
-                    doneButton.setAttribute("aria-label", `${event.done ? "Mark incomplete" : "Mark complete"}: ${event.title}`);
-                    doneButton.addEventListener("click", () => {
-                        event.done = !event.done;
-                        saveEvents();
-                        renderEvents();
-                        renderDeadlines();
-                    });
-
-                    const deleteButton = document.createElement("button");
-                    deleteButton.type = "button";
-                    deleteButton.className = "planner-action planner-delete";
-                    deleteButton.textContent = "Remove";
-                    deleteButton.setAttribute("aria-label", `Remove: ${event.title}`);
-                    deleteButton.addEventListener("click", () => {
-                        events = events.filter((savedEvent) => savedEvent.id !== event.id);
-                        saveEvents();
-                        renderEvents();
-                        renderScheduleEvents();
-                        renderDeadlines();
-                    });
-
-                    actions.append(doneButton, deleteButton);
-                    item.append(details, actions);
-                    plannerList.append(item);
-                });
-            }
-
-            function renderDeadlines() {
-                deadlinesList.replaceChildren();
-                const today = parseDateKey(formatDateKey(new Date()));
-                const deadlineEvents = events
-                    .filter((event) =>
-                        !event.done
-                        && ["to-do", "homework", "exam"].includes(event.type)
-                        && parseDateKey(event.date) >= today
-                    )
-                    .sort((left, right) => left.date.localeCompare(right.date));
-
-                if (deadlineEvents.length === 0) {
-                    const emptyMessage = document.createElement("p");
-                    emptyMessage.className = "planner-empty";
-                    emptyMessage.textContent = "No upcoming deadlines. Add homework, a to-do, or a test with a due date to see it here.";
-                    deadlinesList.append(emptyMessage);
-                    return;
-                }
-
-                deadlineEvents.forEach((event) => {
-                    const daysLeft = Math.round((parseDateKey(event.date) - today) / 86400000);
-                    const card = document.createElement("article");
-                    card.className = "deadline-card";
-
-                    const tag = document.createElement("span");
-                    tag.className = "deadline-tag";
-                    tag.textContent = daysLeft === 0
-                        ? "Due today"
-                        : `${daysLeft} ${daysLeft === 1 ? "day" : "days"} left`;
-
-                    const title = document.createElement("h3");
-                    title.textContent = event.title;
-                    const details = document.createElement("p");
-                    details.textContent = `${formatEventType(event.type)} · ${formatEventDate(event.date)}`;
-                    card.append(tag, title, details);
-                    deadlinesList.append(card);
-                });
+                renderScheduleEvents();
+                renderCurrentTimeIndicator();
             }
 
             function renderScheduleEvents() {
                 weeklyDays.forEach((dayColumn) => {
-                    dayColumn.querySelectorAll(".user-schedule-block").forEach((block) => block.remove());
                     const dayDate = dayColumn.dataset.calendarDate;
-                    const dayEvents = events.filter((event) => event.date === dayDate);
+                    const eventLayer = dayColumn.querySelector(".weekly-event-layer");
+                    if (!eventLayer) {
+                        return;
+                    }
+                    eventLayer.replaceChildren();
 
-                    dayEvents.forEach((event) => {
-                        const block = document.createElement("div");
-                        block.className = `schedule-block user-schedule-block schedule-${event.type}`;
-                        const time = document.createElement("span");
-                        time.textContent = event.time || "All day";
+                    events.filter((event) => event.date === dayDate).forEach((event) => {
+                        const block = document.createElement("button");
+                        block.type = "button";
+                        block.className = `schedule-block user-schedule-block schedule-${event.type}${event.done ? " is-done" : ""}`;
+                        const startMinutes = (Number(event.time?.slice(0, 2) || 0) * 60)
+                            + Number(event.time?.slice(3, 5) || 0);
+                        const endParts = (event.end_time || "10:00").split(":").map(Number);
+                        const endMinutes = endParts[0] * 60 + endParts[1];
+                        const hourHeight = dayColumn.querySelector(".weekly-hour-slot")?.getBoundingClientRect().height || 18;
+                        block.style.top = `${startMinutes * hourHeight / 60 + 1}px`;
+                        block.style.height = `${Math.max(13, (endMinutes - startMinutes) * hourHeight / 60 - 2)}px`;
+                        block.setAttribute("aria-label", `${event.title}, ${event.time || "00:00"} to ${event.end_time || "10:00"}`);
                         const title = document.createElement("strong");
                         title.textContent = event.title;
-                        block.append(time, title);
-                        dayColumn.append(block);
+                        block.append(title);
+                        block.addEventListener("click", () => openEventEditor(
+                            dayDate,
+                            event.time || "00:00",
+                            event,
+                            block
+                        ));
+                        eventLayer.append(block);
                     });
                 });
             }
 
-            plannerForm.addEventListener("submit", (submitEvent) => {
+            function renderCurrentTimeIndicator() {
+                weeklyDays.forEach((dayColumn) => {
+                    dayColumn.querySelector(".current-time-indicator")?.remove();
+                });
+
+                const todayKey = formatDateKey(new Date());
+                const todayColumn = weeklyDays.find(
+                    (dayColumn) => dayColumn.dataset.calendarDate === todayKey
+                );
+                if (!todayColumn) {
+                    return;
+                }
+
+                const now = new Date();
+                const hourHeight = todayColumn.querySelector(".weekly-hour-slot")
+                    ?.getBoundingClientRect().height || 18;
+                const indicator = document.createElement("div");
+                indicator.className = "current-time-indicator";
+                indicator.setAttribute("role", "img");
+                indicator.setAttribute(
+                    "aria-label",
+                    `Current time ${now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+                );
+                indicator.style.top = `${(now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60) * hourHeight / 60}px`;
+                todayColumn.querySelector(".weekly-event-layer").append(indicator);
+            }
+
+            function renderDatePicker() {
+                datePickerMonth.textContent = pickerMonth.toLocaleDateString(undefined, {
+                    month: "long",
+                    year: "numeric"
+                });
+                datePickerDays.replaceChildren();
+                const firstOfMonth = new Date(pickerMonth.getFullYear(), pickerMonth.getMonth(), 1);
+                const gridStart = new Date(firstOfMonth);
+                gridStart.setDate(1 - ((firstOfMonth.getDay() + 6) % 7));
+                for (let index = 0; index < 42; index += 1) {
+                    const day = new Date(gridStart);
+                    day.setDate(gridStart.getDate() + index);
+                    const dateKey = formatDateKey(day);
+                    const dayButton = document.createElement("button");
+                    dayButton.type = "button";
+                    dayButton.className = "date-picker-day";
+                    dayButton.textContent = String(day.getDate());
+                    dayButton.classList.toggle("is-outside-month", day.getMonth() !== pickerMonth.getMonth());
+                    dayButton.classList.toggle("is-selected", dateKey === plannerDate.value);
+                    dayButton.classList.toggle("is-today", dateKey === formatDateKey(new Date()));
+                    dayButton.setAttribute("aria-pressed", String(dateKey === plannerDate.value));
+                    dayButton.setAttribute("aria-label", day.toLocaleDateString(undefined, {
+                        weekday: "long",
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric"
+                    }));
+                    dayButton.addEventListener("click", () => {
+                        plannerDate.value = dateKey;
+                        pickerMonth = new Date(day.getFullYear(), day.getMonth(), 1);
+                        datePickerToggle.textContent = `Date: ${day.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
+                        renderDatePicker();
+                    });
+                    datePickerDays.append(dayButton);
+                }
+            }
+
+            function positionEventEditor(anchor) {
+                if (!anchor) {
+                    return;
+                }
+                const rect = anchor.getBoundingClientRect();
+                const editorRect = plannerDialog.getBoundingClientRect();
+                const gap = 8;
+                let left = rect.right + gap;
+                if (left + editorRect.width > window.innerWidth - 8) {
+                    left = rect.left - editorRect.width - gap;
+                }
+                left = Math.max(8, Math.min(left, window.innerWidth - editorRect.width - 8));
+                const top = Math.max(8, Math.min(
+                    rect.top,
+                    window.innerHeight - editorRect.height - 8
+                ));
+                plannerDialog.style.left = `${left}px`;
+                plannerDialog.style.top = `${top}px`;
+            }
+
+            function openEventEditor(dateKey, time, event = null, anchor = null) {
+                if (!eventsReady) {
+                    plannerStatus.textContent = "Wait for your saved schedule to load before adding events.";
+                    return;
+                }
+                editingEventId = event?.id || null;
+                editorAnchor = anchor;
+                plannerForm.reset();
+                plannerDialogError.textContent = "";
+                plannerDialogTitle.textContent = event ? "Edit item" : "Add item";
+                plannerSubmitButton.textContent = event ? "Save changes" : "Save event";
+                plannerDialogDelete.hidden = !event;
+                plannerTitle.value = event?.title || "";
+                plannerType.value = event?.type || "to-do";
+                plannerDate.value = event?.date || dateKey;
+                plannerTime.value = event?.time || time || "09:00";
+                plannerEndTime.value = event?.end_time || defaultEndTime(plannerTime.value);
+                pickerMonth = parseDateKey(plannerDate.value);
+                datePicker.hidden = true;
+                datePickerToggle.textContent = `Date: ${parseDateKey(plannerDate.value).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
+                renderDatePicker();
+                plannerDialog.show();
+                positionEventEditor(anchor);
+                plannerTitle.focus();
+            }
+
+            function closeEventEditor() {
+                plannerDialog.close();
+                editingEventId = null;
+                editorAnchor = null;
+                plannerDialogError.textContent = "";
+            }
+
+            weeklyGrid.addEventListener("click", (clickEvent) => {
+                const slot = clickEvent.target.closest(".weekly-hour-slot");
+                if (!slot || !eventsReady) {
+                    return;
+                }
+                const dayColumn = slot.closest(".weekly-day-column");
+                openEventEditor(
+                    dayColumn.dataset.calendarDate,
+                    `${String(Number(slot.dataset.hour)).padStart(2, "0")}:00`,
+                    null,
+                    slot
+                );
+            });
+            datePickerToggle.addEventListener("click", () => {
+                datePicker.hidden = !datePicker.hidden;
+                datePickerToggle.textContent = datePicker.hidden
+                    ? `Date: ${parseDateKey(plannerDate.value).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`
+                    : "Hide calendar";
+                window.requestAnimationFrame(() => positionEventEditor(editorAnchor));
+            });
+            plannerDialogClose.addEventListener("click", closeEventEditor);
+            plannerDialogCancel.addEventListener("click", closeEventEditor);
+            plannerDialogDelete.addEventListener("click", async () => {
+                if (!editingEventId) {
+                    return;
+                }
+                const originalEvents = events.map((event) => ({ ...event }));
+                events = events.filter((event) => event.id !== editingEventId);
+                const saved = await saveEvents();
+                if (!saved) {
+                    events = originalEvents;
+                    plannerDialogError.textContent = "Could not delete this calendar item. Please try again.";
+                    renderCalendarDates();
+                    return;
+                }
+                plannerStatus.textContent = "Calendar item deleted.";
+                closeEventEditor();
+                renderCalendarDates();
+            });
+            plannerDialog.addEventListener("click", (clickEvent) => {
+                clickEvent.stopPropagation();
+            });
+            document.addEventListener("pointerdown", (pointerEvent) => {
+                if (plannerDialog.open && !plannerDialog.contains(pointerEvent.target)) {
+                    closeEventEditor();
+                }
+            });
+            window.addEventListener("resize", () => {
+                if (plannerDialog.open) {
+                    positionEventEditor(editorAnchor);
+                }
+            });
+            datePickerPrevious.addEventListener("click", () => {
+                pickerMonth = new Date(pickerMonth.getFullYear(), pickerMonth.getMonth() - 1, 1);
+                renderDatePicker();
+            });
+            datePickerNext.addEventListener("click", () => {
+                pickerMonth = new Date(pickerMonth.getFullYear(), pickerMonth.getMonth() + 1, 1);
+                renderDatePicker();
+            });
+            calendarPrevious.addEventListener("click", () => {
+                weekOffset -= 1;
+                renderCalendarDates();
+            });
+            calendarNext.addEventListener("click", () => {
+                weekOffset += 1;
+                renderCalendarDates();
+            });
+            calendarToday.addEventListener("click", () => {
+                weekOffset = 0;
+                renderCalendarDates();
+            });
+
+            plannerForm.addEventListener("submit", async (submitEvent) => {
                 submitEvent.preventDefault();
+                if (!eventsReady) {
+                    return;
+                }
                 if (!plannerForm.reportValidity()) {
                     return;
                 }
@@ -642,31 +914,54 @@
                     return;
                 }
                 plannerTitle.setCustomValidity("");
+                if (!plannerDate.value) {
+                    plannerDialogError.textContent = "Choose a date from the calendar.";
+                    return;
+                }
+                plannerDialogError.textContent = "";
+                if (plannerEndTime.value <= plannerTime.value) {
+                    plannerDialogError.textContent = "Choose an end time later than the start time.";
+                    return;
+                }
 
-                events.push({
-                    id: window.crypto.randomUUID(),
+                const originalEvents = events.map((event) => ({ ...event }));
+                const existingEvent = events.find((event) => event.id === editingEventId);
+                const savedEvent = {
+                    id: editingEventId || window.crypto.randomUUID(),
                     title,
                     type: plannerType.value,
                     date: plannerDate.value,
                     time: plannerTime.value,
-                    done: false
-                });
+                    end_time: plannerEndTime.value,
+                    done: existingEvent?.done || false
+                };
+                if (editingEventId) {
+                    events = events.map((event) => event.id === editingEventId ? savedEvent : event);
+                } else {
+                    events.push(savedEvent);
+                }
 
-                const saved = saveEvents();
+                const saved = await saveEvents();
                 plannerStatus.textContent = saved
-                    ? "Added to your plan and saved in this browser."
-                    : "Added for this visit, but could not be saved in this browser.";
-                plannerForm.reset();
-                renderEvents();
-                renderScheduleEvents();
-                renderDeadlines();
+                    ? `${editingEventId ? "Updated" : "Added"} and saved to your account.`
+                    : "Your change could not be saved to your account.";
+                if (saved) {
+                    closeEventEditor();
+                } else {
+                    events = originalEvents;
+                    plannerDialogError.textContent = "Could not save this calendar item. Please try again.";
+                }
+                renderCalendarDates();
             });
 
             plannerTitle.addEventListener("input", () => plannerTitle.setCustomValidity(""));
+            plannerDialog.addEventListener("close", () => {
+                plannerDialog.style.left = "";
+                plannerDialog.style.top = "";
+            });
             renderCalendarDates();
-            renderEvents();
-            renderScheduleEvents();
-            renderDeadlines();
+            window.setInterval(renderCurrentTimeIndicator, 30000);
+            void loadEvents();
         })();
     </script>
 </body>

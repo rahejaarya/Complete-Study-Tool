@@ -1,0 +1,38 @@
+<div class="ai-nav-section">
+    <div class="ai-nav-row{% if request.endpoint == 'ai_help' %} active{% endif %}">
+        <a href="{{ url_for('ai_help') }}" class="nav-link{% if request.endpoint == 'ai_help' %} active{% endif %}"{% if request.endpoint == 'ai_help' %} aria-current="page"{% endif %}>
+            <span class="nav-icon">✦</span>
+            <span>Sammy</span>
+        </a>
+        <button
+            id="ai-chats-toggle"
+            class="ai-chats-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="ai-chat-dropdown"
+            title="Show chats"
+            aria-label="Show saved chats"
+        >▾</button>
+    </div>
+    <div id="ai-chat-dropdown" class="ai-chat-dropdown">
+        <div class="chat-sidebar-header">
+            <span>Chats</span>
+            {% if request.endpoint == "ai_help" %}
+            <button
+                id="new-chat-button"
+                type="button"
+                title="New conversation"
+                aria-label="New conversation"
+            >+</button>
+            {% else %}
+            <a
+                id="new-chat-button"
+                href="{{ url_for('ai_help') }}"
+                title="New conversation"
+                aria-label="New conversation"
+            >+</a>
+            {% endif %}
+        </div>
+        <div class="chat-list"></div>
+    </div>
+</div>

@@ -233,6 +233,18 @@ Do not claim that you cannot provide links or recommendations."""
         system_prompt += "\n\nWeb research:\n" + web_context
 
     memory_facts = user_memory.get("facts", []) if isinstance(user_memory, dict) else []
+    explicit_facts = (
+        user_memory.get("explicit_facts", [])
+        if isinstance(user_memory, dict)
+        else []
+    )
+    if explicit_facts:
+        system_prompt += (
+            "\n\nThings the user directly told you about themselves or their study "
+            "preferences (prioritize these over inferred context):\n"
+            + "\n".join(f"- {fact}" for fact in explicit_facts)
+            + "\nTreat these as user-provided facts and use them when relevant."
+        )
     if memory_facts:
         system_prompt += (
             "\n\nNon-sensitive study-related facts remembered about this user:\n"
@@ -262,32 +274,38 @@ Do not claim that you cannot provide links or recommendations."""
         yield f"Error: {e}"
 
 
-def update_user_memory(existing_memory, user_message, assistant_response):
+def update_user_memory(existing_memory, user_message):
     facts = existing_memory.get("facts", []) if isinstance(existing_memory, dict) else []
+    explicit_facts = (
+        existing_memory.get("explicit_facts", [])
+        if isinstance(existing_memory, dict)
+        else []
+    )
     response = ollama.chat(
         model=MODEL,
         messages=[
             {
                 "role": "system",
                 "content": (
-                    "Maintain a compact JSON memory for a study assistant. Extract "
-                    "only useful, non-sensitive, study-related facts or preferences "
-                    "about the user, such as subjects they are studying, learning "
-                    "preferences, goals, or stated education level. You may infer "
-                    "basic study interests from the discussion, but do not store "
-                    "sensitive traits, health, finances, identity attributes, or "
-                    "secrets. Use only information supported by the user's message; "
-                    "ignore facts invented in the assistant response. Keep at most "
-                    "12 short facts. Return JSON only, with the shape "
-                    '{"facts": ["..."]}.'
+                    "Maintain a compact JSON memory for a study assistant. The "
+                    "user's own words are the authoritative source. Extract clear, "
+                    "direct statements the user makes about themselves, their "
+                    "studies, goals, or preferences into explicit_facts; prioritize "
+                    "these and preserve their meaning without embellishing. Keep "
+                    "useful study-related context inferred from the conversation "
+                    "separately in facts. Never infer a direct statement from an "
+                    "assistant response. Do not store sensitive traits, health, "
+                    "finances, identity attributes, or secrets. Keep at most 12 "
+                    "short strings in each list. Return JSON only with the shape "
+                    '{"explicit_facts": ["..."], "facts": ["..."]}.'
                 ),
             },
             {
                 "role": "user",
                 "content": json.dumps({
                     "existing_facts": facts,
+                    "existing_explicit_facts": explicit_facts,
                     "user_message": user_message,
-                    "assistant_response": assistant_response,
                 }),
             },
         ],
@@ -297,18 +315,29 @@ def update_user_memory(existing_memory, user_message, assistant_response):
     )
     parsed = json.loads(response["message"]["content"])
     updated_facts = parsed.get("facts") if isinstance(parsed, dict) else None
+    updated_explicit_facts = (
+        parsed.get("explicit_facts") if isinstance(parsed, dict) else None
+    )
     if not isinstance(updated_facts, list):
         raise ValueError("AI memory response must contain a facts list.")
+    if not isinstance(updated_explicit_facts, list):
+        raise ValueError("AI memory response must contain an explicit_facts list.")
 
-    cleaned_facts = []
-    for fact in updated_facts:
-        if isinstance(fact, str):
-            cleaned_fact = fact.strip()[:200]
-            if cleaned_fact and cleaned_fact not in cleaned_facts:
-                cleaned_facts.append(cleaned_fact)
-        if len(cleaned_facts) == 12:
-            break
-    return {"facts": cleaned_facts}
+    def clean_facts(candidates):
+        cleaned = []
+        for fact in candidates:
+            if isinstance(fact, str):
+                cleaned_fact = fact.strip()[:200]
+                if cleaned_fact and cleaned_fact not in cleaned:
+                    cleaned.append(cleaned_fact)
+            if len(cleaned) == 12:
+                break
+        return cleaned
+
+    return {
+        "explicit_facts": clean_facts(updated_explicit_facts),
+        "facts": clean_facts(updated_facts),
+    }
 
 
 def search_web(query):

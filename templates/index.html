@@ -6,6 +6,7 @@
     <title>The Complete Study Tool</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
 </head>
 
 <body>
@@ -47,10 +48,7 @@
                     Student Support
                 </a>
 
-                <a href="{{ url_for('ai_help') }}" class="nav-link">
-                    <span class="nav-icon">♪</span>
-                    AI Study Help
-                </a>
+                {% include "_ai_nav.html" %}
 
             </nav>
 
@@ -93,10 +91,6 @@
                 </div>
 
                 <div style="display: flex; gap: 12px; align-items: center;">
-                    <a class="appearance-button" href="{{ url_for('appearance') }}">
-                        <span aria-hidden="true">🎨</span>
-                        Appearance
-                    </a>
                     <a class="appearance-button" href="{{ url_for('logout') }}">
                         <span aria-hidden="true">↩</span>
                         Logout
@@ -123,7 +117,7 @@
                     </p>
 
                     <a href="{{ url_for('resources') }}" class="feature-card study-resource-link">
-                        <span class="feature-icon resources-icon" aria-hidden="true">📚</span>
+                        <span class="feature-icon resources-icon" aria-hidden="true">⌕</span>
                         <span class="feature-content">
                             <span class="feature-title">Study Resources</span>
                             <span class="feature-description">Find free notes, videos and study materials.</span>
@@ -147,7 +141,7 @@
                         <div class="feature-card">
 
                             <div class="feature-icon ai-icon">
-                                ♪
+                                ✦
                             </div>
 
                             <div class="feature-content">
@@ -342,26 +336,20 @@
 
                         </div>
 
-                        <span class="card-arrow">
-                            →
-                        </span>
-
                     </div>
 
 
-                    <div class="empty-activity">
+                    <div class="empty-activity" id="upcoming-deadline" aria-live="polite">
 
                         <div class="activity-icon">
                             ◷
                         </div>
 
-                        <div>
+                        <div class="activity-details">
 
-                            <h3>No activity yet</h3>
+                            <h3 id="upcoming-deadline-title">Loading your next deadline…</h3>
 
-                            <p>
-                                Start studying to see your progress here.
-                            </p>
+                            <p id="upcoming-deadline-details"></p>
 
                         </div>
 
@@ -385,7 +373,7 @@
         </a>
 
         <a href="{{ url_for('resources') }}" class="mobile-link">
-            <span>📚</span>
+            <span>⌕</span>
             <small>Resources</small>
         </a>
 
@@ -405,6 +393,99 @@
         </a>
 
     </nav>
+
+    <script>
+        (() => {
+            const title = document.getElementById("upcoming-deadline-title");
+            const details = document.getElementById("upcoming-deadline-details");
+            let upcomingDeadlines = [];
+
+            function updateDeadlineCountdown() {
+                const now = new Date();
+                const nextDeadline = upcomingDeadlines.find((deadline) => deadline.date > now);
+                if (!nextDeadline) {
+                    title.textContent = "No upcoming deadlines";
+                    details.textContent = "Add a task, homework, or exam in Time Management to see it here.";
+                    return;
+                }
+
+                title.textContent = nextDeadline.title;
+                const remainingMs = nextDeadline.date.getTime() - now.getTime();
+                const totalMinutes = Math.ceil(remainingMs / 60000);
+                const days = Math.floor(totalMinutes / 1440);
+                const hours = Math.floor((totalMinutes % 1440) / 60);
+                const minutes = totalMinutes % 60;
+                let distance;
+                if (days > 0) {
+                    distance = `${days}d ${hours}h away`;
+                } else if (hours > 0) {
+                    distance = `${hours}h ${minutes}m away`;
+                } else {
+                    distance = `${minutes}m away`;
+                }
+
+                const dateLabel = nextDeadline.date.toLocaleString([], {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit"
+                });
+                details.textContent = `${nextDeadline.type} · ${dateLabel} · ${distance}`;
+            }
+
+            fetch("/api/preferences/schedule")
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`Schedule request failed (${response.status}).`);
+                    }
+                    return response.json();
+                })
+                .then((payload) => {
+                    if (!Array.isArray(payload.events)) {
+                        throw new Error("The saved schedule response is invalid.");
+                    }
+
+                    const now = new Date();
+                    const candidates = payload.events
+                        .filter((event) => event && event.done !== true && event.type !== "rest")
+                        .map((event) => {
+                            if (
+                                typeof event.date !== "string"
+                                || !/^\d{4}-\d{2}-\d{2}$/.test(event.date)
+                                || typeof event.time !== "string"
+                                || !/^\d{2}:\d{2}$/.test(event.time)
+                                || typeof event.title !== "string"
+                            ) {
+                                return null;
+                            }
+                            const [year, month, day] = event.date.split("-").map(Number);
+                            const [hour, minute] = event.time.split(":").map(Number);
+                            const date = new Date(year, month - 1, day, hour, minute);
+                            return Number.isNaN(date.getTime()) || date <= now
+                                ? null
+                                : { ...event, date };
+                        })
+                        .filter(Boolean)
+                        .sort((first, second) => first.date - second.date);
+
+                    if (candidates.length === 0) {
+                        title.textContent = "No upcoming deadlines";
+                        details.textContent = "Add a task, homework, or exam in Time Management to see it here.";
+                        return;
+                    }
+
+                    upcomingDeadlines = candidates;
+                    updateDeadlineCountdown();
+                    window.setInterval(updateDeadlineCountdown, 30000);
+                })
+                .catch((error) => {
+                    console.error("Could not load the next dashboard deadline.", error);
+                    title.textContent = "Deadline unavailable";
+                    details.textContent = "We couldn't load your schedule. Please try again later.";
+                });
+        })();
+    </script>
 
     <script>
         (() => {

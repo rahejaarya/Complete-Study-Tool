@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Noise & Songs - StudyTool</title>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="{{ url_for('static', filename='noise.js') }}" defer></script>
 </head>
@@ -21,7 +22,7 @@
                 <a href="{{ url_for('noise_songs') }}" class="nav-link active"><span class="nav-icon">♫</span>Noise &amp; Songs</a>
                 <a href="{{ url_for('time_management') }}" class="nav-link"><span class="nav-icon">✓</span>Time Management</a>
                 <a href="{{ url_for('support') }}" class="nav-link"><span class="nav-icon">♡</span>Student Support</a>
-                <a href="{{ url_for('ai_help') }}" class="nav-link"><span class="nav-icon">♪</span>AI Study Help</a>
+                {% include "_ai_nav.html" %}
             </nav>
             <div class="sidebar-bottom">
                 <a href="{{ url_for('settings') }}" class="nav-link"><span class="nav-icon">⚙</span>Settings</a>
@@ -31,7 +32,6 @@
 
         <main class="main-content noise-page">
             <header class="topbar noise-page-topbar">
-                <a href="{{ url_for('home') }}" class="back-link">&larr; Go back to main page</a>
                 <button class="mobile-menu" type="button">☰</button>
                 <div class="welcome">
                     <div class="welcome-icon">♫</div>

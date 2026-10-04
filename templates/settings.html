@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - StudyTool</title>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='appearance.js') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -32,10 +33,10 @@
             <header class="appearance-mode-header">
                 <div>
                     <h2 id="appearance-settings-heading">Appearance</h2>
-                    <p>Change the color theme used throughout StudyTool.</p>
+                    <p>Choose a light or dark mode, then pick a color to preview.</p>
                 </div>
             </header>
-            <a class="timer-button timer-button-primary" href="{{ url_for('appearance') }}">Open appearance settings</a>
+            {% include "_appearance_settings.html" %}
         </section>
     </main>
 </body>
