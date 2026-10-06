@@ -659,7 +659,7 @@
                 { text: "“Victorious warriors win first and then go to war, while defeated warriors go to war first and then seek to win", author:"- Sun Tzu, The Art of War" }
             ];
 
-            const storageKey = "studytool_motivational_quotes_v4";
+            const storageKey = "studytool_motivational_quotes_v5";
             const quoteText = document.getElementById("quote-text");
             const quoteAuthor = document.getElementById("quote-author");
             const quoteSlide = document.getElementById("quote-slide");
@@ -689,17 +689,16 @@
 
             function loadState() {
                 try {
-                    const savedState = localStorage.getItem(storageKey);
+                    const savedState = sessionStorage.getItem(storageKey);
                     if (savedState) {
                         const parsedState = JSON.parse(savedState);
                         if (isValidState(parsedState)) {
-                            const remainingQuotes = parsedState.order.filter((quoteIndex) => quoteIndex !== 0);
-                            return { order: [0, ...remainingQuotes], index: 0 };
+                            return parsedState;
                         }
                     }
                 } catch (error) {
                     storageAvailable = false;
-                    console.warn("Motivational quote progress could not be loaded from browser storage.", error);
+                    console.warn("Motivational quote progress could not be loaded from this browser tab's storage.", error);
                 }
 
                 return { order: shuffleQuotes(), index: 0 };
@@ -711,10 +710,10 @@
                 }
 
                 try {
-                    localStorage.setItem(storageKey, JSON.stringify(state));
+                    sessionStorage.setItem(storageKey, JSON.stringify(state));
                 } catch (error) {
                     storageAvailable = false;
-                    console.warn("Motivational quote progress could not be saved to browser storage.", error);
+                    console.warn("Motivational quote progress could not be saved to this browser tab's storage.", error);
                 }
             }
 
