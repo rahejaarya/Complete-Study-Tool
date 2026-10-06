@@ -799,6 +799,12 @@ def support():
     return render_template("support.html")
 
 
+@app.route("/procrastination-focus")
+@login_required
+def procrastination_focus():
+    return render_template("procrastination_focus.html")
+
+
 @app.route("/ai")
 @login_required
 def ai_help():

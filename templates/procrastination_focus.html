@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procrastination &amp; Focus - StudyTool</title>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <div class="app">
+
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-mark">✦</div>
+                <span>StudyTool</span>
+            </div>
+
+            <nav class="navigation">
+                <a href="{{ url_for('home') }}" class="nav-link">
+                    <span class="nav-icon">▦</span>
+                    Dashboard
+                </a>
+                <a href="{{ url_for('resources') }}" class="nav-link">
+                    <span class="nav-icon">⌕</span>
+                    Study Resources
+                </a>
+                <a href="{{ url_for('focus') }}" class="nav-link">
+                    <span class="nav-icon">◷</span>
+                    Focus Mode
+                </a>
+                <a href="{{ url_for('noise_songs') }}" class="nav-link">
+                    <span class="nav-icon">♫</span>
+                    Noise &amp; Songs
+                </a>
+                <a href="{{ url_for('time_management') }}" class="nav-link">
+                    <span class="nav-icon">✓</span>
+                    Time Management
+                </a>
+                <a href="{{ url_for('support') }}" class="nav-link active">
+                    <span class="nav-icon">♡</span>
+                    Student Support
+                </a>
+                {% include "_ai_nav.html" %}
+            </nav>
+
+            <div class="sidebar-bottom">
+                <a href="{{ url_for('settings') }}" class="nav-link">
+                    <span class="nav-icon">⚙</span>
+                    Settings
+                </a>
+                <a href="{{ url_for('support') }}" class="nav-link">
+                    <span class="nav-icon">?</span>
+                    Help
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+
+            <a href="{{ url_for('support') }}" class="back-link">
+                &larr; Back to Student Support
+            </a>
+
+            <header class="topbar">
+                <button class="mobile-menu">☰</button>
+                <div class="welcome">
+                    <div class="welcome-icon">⏳</div>
+                    <div>
+                        <h1>Procrastination &amp; Focus</h1>
+                        <p>Small steps beat overwhelm.</p>
+                    </div>
+                </div>
+            </header>
+
+            <section class="dashboard">
+
+                <section class="main-card support-emergency" aria-labelledby="focus-hero-title">
+                    <div class="emergency-heading">
+                        <span class="emergency-icon" aria-hidden="true">✓</span>
+                        <div>
+                            <div class="eyebrow">START SMALL</div>
+                            <h2 id="focus-hero-title">You do not need to feel motivated to begin.</h2>
+                        </div>
+                    </div>
+                    <p class="emergency-intro">When a task feels huge, your brain treats it like a threat. Shrink the job until it feels safe enough to start.</p>
+                </section>
+
+                <div class="section-heading support-section-heading">
+                    <h2>What helps when procrastination hits?</h2>
+                    <p>Try a few strategies that make starting easier, not harder.</p>
+                </div>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon support-icon" aria-hidden="true">🎯</div>
+                        <div class="feature-content">
+                            <h3>Make the first step tiny</h3>
+                            <p>Write only 1 sentence, open the worksheet, or set a 5-minute timer. Progress starts before motivation does.</p>
+                        </div>
+                        <span class="card-arrow" aria-hidden="true">→</span>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon support-icon" aria-hidden="true">🧩</div>
+                        <div class="feature-content">
+                            <h3>Break it into pieces</h3>
+                            <p>Instead of “study for the test,” try “review chapter 2 questions 1–5” or “make a 3-bullet outline.”</p>
+                        </div>
+                        <span class="card-arrow" aria-hidden="true">→</span>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon support-icon" aria-hidden="true">🌿</div>
+                        <div class="feature-content">
+                            <h3>Lower the pressure</h3>
+                            <p>Your goal is to begin, not to be perfect. A rough draft, rough notes, or partial answer still counts as momentum.</p>
+                        </div>
+                        <span class="card-arrow" aria-hidden="true">→</span>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon support-icon" aria-hidden="true">💡</div>
+                        <div class="feature-content">
+                            <h3>Use a reset ritual</h3>
+                            <p>Put your phone away, drink water, take three slow breaths, and set a focused timer before you start.</p>
+                        </div>
+                        <span class="card-arrow" aria-hidden="true">→</span>
+                    </div>
+                </div>
+
+                <section class="main-card grounding-card" aria-labelledby="focus-plan-title">
+                    <div class="eyebrow">A 10-MINUTE START</div>
+                    <h2 id="focus-plan-title">Try this when you feel stuck</h2>
+                    <ul class="grounding-steps">
+                        <li><label><input type="checkbox"> <span><strong>1 minute:</strong> name the task in one sentence</span></label></li>
+                        <li><label><input type="checkbox"> <span><strong>2 minutes:</strong> clear the desk and put your phone away</span></label></li>
+                        <li><label><input type="checkbox"> <span><strong>5 minutes:</strong> do only the first tiny action</span></label></li>
+                        <li><label><input type="checkbox"> <span><strong>2 minutes:</strong> check your progress and keep going</span></label></li>
+                    </ul>
+                </section>
+
+                <section class="main-card grounding-card" aria-labelledby="focus-reminders-title">
+                    <div class="eyebrow">REMINDERS</div>
+                    <h2 id="focus-reminders-title">A few honest truths</h2>
+                    <ul class="grounding-steps">
+                        <li><label><input type="checkbox"> <span>Procrastination is often stress, not laziness.</span></label></li>
+                        <li><label><input type="checkbox"> <span>Starting is usually harder than continuing.</span></label></li>
+                        <li><label><input type="checkbox"> <span>Small progress is still progress.</span></label></li>
+                    </ul>
+                </section>
+
+            </section>
+
+        </main>
+    </div>
+
+    <nav class="mobile-navigation">
+        <a href="{{ url_for('home') }}" class="mobile-link">
+            <span>▦</span>
+            <small>Home</small>
+        </a>
+        <a href="{{ url_for('resources') }}" class="mobile-link">
+            <span>📚</span>
+            <small>Resources</small>
+        </a>
+        <a href="{{ url_for('focus') }}" class="mobile-link">
+            <span>◷</span>
+            <small>Focus</small>
+        </a>
+        <a href="{{ url_for('noise_songs') }}" class="mobile-link">
+            <span>♫</span>
+            <small>Sounds</small>
+        </a>
+        <a href="{{ url_for('time_management') }}" class="mobile-link">
+            <span>✓</span>
+            <small>Time</small>
+        </a>
+        <a href="{{ url_for('support') }}" class="mobile-link active">
+            <span>♡</span>
+            <small>Support</small>
+        </a>
+    </nav>
+
+</body>
+</html>

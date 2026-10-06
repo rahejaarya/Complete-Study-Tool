@@ -114,10 +114,26 @@ class AuthTests(unittest.TestCase):
         self.assertIn(b'href="/focus"', response.data)
         self.assertIn(b'Procrastination &amp; Focus', response.data)
 
+    def test_support_card_links_to_procrastination_focus_page(self):
+        login_response = self.client.post(
+            '/login',
+            data={'username': 'admin', 'password': 'admin123'},
+            follow_redirects=False,
+        )
+        self.assertEqual(login_response.status_code, 302)
+
+        response = self.client.get('/support')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'href="/procrastination-focus"', response.data)
+
+        focus_response = self.client.get('/procrastination-focus')
+        self.assertEqual(focus_response.status_code, 200)
+        self.assertIn(b'Procrastination &amp; Focus', focus_response.data)
+
     def test_protected_page_requires_username_password_session(self):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.headers.get('Location'), '/login?next=/')
+        self.assertEqual(response.headers.get('Location'), '/login?next=/' )
 
 
 if __name__ == '__main__':
