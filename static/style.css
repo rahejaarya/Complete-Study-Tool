@@ -3880,6 +3880,60 @@ body {
     color: var(--muted);
 
     cursor: pointer;
+
+.management-launcher {
+    position: relative;
+    min-height: 210px;
+    border: 1px solid var(--border-color, rgba(120, 130, 160, 0.16));
+    border-radius: 24px;
+    padding: 30px;
+    text-align: left;
+    cursor: default;
+    overflow: hidden;
+    color: var(--text-color, inherit);
+    background:
+        radial-gradient(
+            circle at 90% 10%,
+            color-mix(in srgb, var(--accent-color, #6366f1) 12%, transparent),
+            transparent 34%
+        ),
+        var(--card-bg, #ffffff);
+    box-shadow: 0 12px 35px rgba(20, 25, 50, 0.07);
+    transition:
+        transform 180ms ease,
+        box-shadow 180ms ease,
+        border-color 180ms ease;
+}
+
+.management-launcher:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 42px rgba(20, 25, 50, 0.11);
+    border-color: color-mix(
+        in srgb,
+        var(--accent-color, #6366f1) 30%,
+        transparent
+    );
+}
+
+.management-launcher:focus-visible {
+    outline: 3px solid color-mix(
+        in srgb,
+        var(--accent-color, #6366f1) 35%,
+        transparent
+    );
+    outline-offset: 3px;
+}
+
+.management-launcher.scheduler-launcher,
+.management-launcher.timer-launcher {
+    background:
+        radial-gradient(
+            circle at 90% 5%,
+            color-mix(in srgb, var(--accent-color, #6366f1) 15%, transparent),
+            transparent 35%
+        ),
+        var(--card-bg, #ffffff);
+}
     font-size: 17px;
     text-decoration: none;
 }
