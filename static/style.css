@@ -1304,7 +1304,14 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    cursor: pointer;
     transition: opacity 180ms ease;
+}
+
+.quote-slide:focus-visible {
+    border-radius: 8px;
+    outline: 2px solid var(--purple);
+    outline-offset: 5px;
 }
 
 .quote-slide.is-changing {

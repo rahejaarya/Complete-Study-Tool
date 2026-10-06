@@ -307,7 +307,7 @@
 
                     <!-- Motivational Quote Slideshow -->
                     <section class="main-card motivation-card" aria-label="Motivational quote slideshow">
-                        <blockquote class="quote-slide" id="quote-slide" aria-live="polite" aria-atomic="true">
+                        <blockquote class="quote-slide" id="quote-slide" role="button" tabindex="0" aria-label="Show next motivational quote" aria-live="polite" aria-atomic="true">
                             <p id="quote-text">What's the 'C' in CTE?</p>
                             <cite id="quote-author">— Benjamin Johnson</cite>
                         </blockquote>
@@ -491,36 +491,36 @@
         (() => {
             const quotes = [
                 { text: "What's the 'C' in CTE?", author: "— Benjamin Johnson" },
-                { text: "Your time is limited, so don't waste it living someone else's life.", author: "— Steve Jobs · Entrepreneur" },
-                { text: "I've failed over and over and over again in my life. And that is why I succeed.", author: "— Michael Jordan · Basketball player" },
-                { text: "A champion is defined by how they recover when they fall.", author: "— Serena Williams · Tennis champion" },
-                { text: "You miss 100% of the shots you don't take.", author: "— Wayne Gretzky · Hockey player" },
-                { text: "He who is not courageous enough to take risks will accomplish nothing in life.", author: "— Muhammad Ali · Boxer" },
-                { text: "A life is not important except in the impact it has on other lives.", author: "— Jackie Robinson · Baseball player" },
-                { text: "Champions keep playing until they get it right.", author: "— Billie Jean King · Tennis champion" },
-                { text: "The biggest adventure you can take is to live the life of your dreams.", author: "— Oprah Winfrey · Media entrepreneur" },
-                { text: "Done is better than perfect.", author: "— Sheryl Sandberg · Business leader" },
-                { text: "Well done is better than well said.", author: "— Benjamin Franklin · Inventor and statesman" },
-                { text: "The future belongs to those who believe in the beauty of their dreams.", author: "— Eleanor Roosevelt · Writer and diplomat" },
-                { text: "Alone we can do so little; together we can do so much.", author: "— Helen Keller · Author and advocate" },
-                { text: "Nothing will work unless you do.", author: "— Maya Angelou · Poet and teacher" },
-                { text: "One child, one teacher, one book, one pen can change the world.", author: "— Malala Yousafzai · Education activist" },
-                { text: "Kids don't learn from people they don't like.", author: "— Rita Pierson · Teacher" },
-                { text: "Do not let what you cannot do interfere with what you can do.", author: "— John Wooden · Teacher and coach" },
-                { text: "It was like a new world opened to me.", author: "— Marie Curie · Physicist and chemist" },
-                { text: "You must not fool yourself—and you are the easiest person to fool.", author: "— Richard Feynman · Physicist and teacher" },
-                { text: "Like what you do, and then you will do your best.", author: "— Katherine Johnson · Mathematician" },
-                { text: "Somewhere, something incredible is waiting to be known.", author: "— Carl Sagan · Astronomer and educator" },
-                { text: "That's one small step for a man, one giant leap for mankind.", author: "— Neil Armstrong · Astronaut" },
-                { text: "That brain of mine is something more than merely mortal.", author: "— Ada Lovelace · Mathematician" },
-                { text: "However difficult life may seem, there is always something you can do and succeed at.", author: "— Stephen Hawking · Physicist" },
-                { text: "Education is the most powerful weapon which you can use to change the world.", author: "— Nelson Mandela · Teacher and leader" },
-                { text: "If there is no struggle, there is no progress.", author: "— Frederick Douglass · Writer and abolitionist" },
-                { text: "The credit belongs to the man who is actually in the arena.", author: "— Theodore Roosevelt · President and writer" },
-                { text: "What you do makes a difference.", author: "— Jane Goodall · Primatologist" },
-                { text: "Anyone who does anything to help a child is a hero to me.", author: "— Fred Rogers · Educator and TV host" },
-                { text: "The only place success comes before work is in the dictionary.", author: "— Vince Lombardi · Football coach" },
-                { text: "The most difficult thing is the decision to act; the rest is tenacity.", author: "— Amelia Earhart · Aviator" },
+                { text: "Your time is limited, so don't waste it living someone else's life.", author: "— Steve Jobs" },
+                { text: "I've failed over and over and over again in my life. And that is why I succeed.", author: "— Michael Jordan" },
+                { text: "A champion is defined by how they recover when they fall.", author: "— Serena Williams" },
+                { text: "You miss 100% of the shots you don't take.", author: "— Wayne Gretzky" },
+                { text: "He who is not courageous enough to take risks will accomplish nothing in life.", author: "— Muhammad Ali" },
+                { text: "A life is not important except in the impact it has on other lives.", author: "— Jackie Robinson" },
+                { text: "Champions keep playing until they get it right.", author: "— Billie Jean King" },
+                { text: "The biggest adventure you can take is to live the life of your dreams.", author: "— Oprah Winfrey" },
+                { text: "Done is better than perfect.", author: "— Sheryl Sandberg" },
+                { text: "Well done is better than well said.", author: "— Benjamin Franklin" },
+                { text: "The future belongs to those who believe in the beauty of their dreams.", author: "— Eleanor Roosevelt" },
+                { text: "Alone we can do so little; together we can do so much.", author: "— Helen Keller" },
+                { text: "Nothing will work unless you do.", author: "— Maya Angelou" },
+                { text: "One child, one teacher, one book, one pen can change the world.", author: "— Malala Yousafzai" },
+                { text: "Kids don't learn from people they don't like.", author: "— Rita Pierson" },
+                { text: "Do not let what you cannot do interfere with what you can do.", author: "— John Wooden" },
+                { text: "It was like a new world opened to me.", author: "— Marie Curie" },
+                { text: "You must not fool yourself—and you are the easiest person to fool.", author: "— Richard Feynman" },
+                { text: "Like what you do, and then you will do your best.", author: "— Katherine Johnson" },
+                { text: "Somewhere, something incredible is waiting to be known.", author: "— Carl Sagan" },
+                { text: "That's one small step for a man, one giant leap for mankind.", author: "— Neil Armstrong" },
+                { text: "That brain of mine is something more than merely mortal.", author: "— Ada Lovelace" },
+                { text: "However difficult life may seem, there is always something you can do and succeed at.", author: "— Stephen Hawking" },
+                { text: "Education is the most powerful weapon which you can use to change the world.", author: "— Nelson Mandela" },
+                { text: "If there is no struggle, there is no progress.", author: "— Frederick Douglass" },
+                { text: "The credit belongs to the man who is actually in the arena.", author: "— Theodore Roosevelt" },
+                { text: "What you do makes a difference.", author: "— Jane Goodall" },
+                { text: "Anyone who does anything to help a child is a hero to me.", author: "— Fred Rogers" },
+                { text: "The only place success comes before work is in the dictionary.", author: "— Vince Lombardi" },
+                { text: "The most difficult thing is the decision to act; the rest is tenacity.", author: "— Amelia Earhart" },
                 { text: "It always seems impossible until it's done.", author: "— Nelson Mandela" },
                 { text: "The future depends on what you do today.", author: "— Mahatma Gandhi" },
                 { text: "Great things are done by a series of small things brought together.", author: "— Vincent van Gogh" },
@@ -746,7 +746,7 @@
             }
 
             function startSlideshow() {
-                changeTimer = window.setInterval(advanceQuote, 7000);
+                changeTimer = window.setInterval(advanceQuote, 9000);
                 toggleButton.textContent = "Pause";
                 toggleButton.setAttribute("aria-pressed", "false");
             }
@@ -754,6 +754,14 @@
             showCurrentQuote();
             saveState();
             startSlideshow();
+
+            quoteSlide.addEventListener("click", advanceQuote);
+            quoteSlide.addEventListener("keydown", (event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    advanceQuote();
+                }
+            });
 
             toggleButton.addEventListener("click", () => {
                 if (changeTimer) {
