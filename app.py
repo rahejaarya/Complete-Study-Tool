@@ -722,7 +722,19 @@ def logout():
 @app.route("/")
 @login_required
 def home():
-    return render_template("index.html", username=session.get("username", "User"))
+    search_routes = [
+        {"path": rule.rule, "endpoint": rule.endpoint}
+        for rule in app.url_map.iter_rules()
+        if "GET" in rule.methods
+        and "<" not in rule.rule
+        and not rule.rule.startswith("/api/")
+        and rule.endpoint not in {"static", "login", "signup", "logout", "legacy_time_management", "schedule", "appearance"}
+    ]
+    return render_template(
+        "index.html",
+        username=session.get("username", "User"),
+        search_routes=search_routes,
+    )
 
 
 @app.route("/appearance")

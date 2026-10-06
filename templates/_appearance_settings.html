@@ -9,7 +9,7 @@
                 <span aria-hidden="true">☀</span>
             </header>
             <div class="theme-card-grid">
-                <button class="theme-card" type="button" data-theme-choice="light-lavender" aria-pressed="false">
+                <button class="theme-card" id="theme-choice-light-lavender" type="button" data-theme-choice="light-lavender" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="light-lavender" aria-hidden="true">
                         <span class="mini-dashboard-top"><i></i><i></i></span>
                         <span class="mini-dashboard-content">
@@ -23,7 +23,7 @@
                     </span>
                     <span class="theme-card-name">Lavender</span>
                 </button>
-                <button class="theme-card" type="button" data-theme-choice="light-blue" aria-pressed="false">
+                <button class="theme-card" id="theme-choice-light-blue" type="button" data-theme-choice="light-blue" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="light-blue" aria-hidden="true">
                         <span class="mini-dashboard-top"><i></i><i></i></span>
                         <span class="mini-dashboard-content">
@@ -37,7 +37,7 @@
                     </span>
                     <span class="theme-card-name">Blue</span>
                 </button>
-                <button class="theme-card" type="button" data-theme-choice="light-slate" aria-pressed="false">
+                <button class="theme-card" id="theme-choice-light-slate" type="button" data-theme-choice="light-slate" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="light-slate" aria-hidden="true">
                         <span class="mini-dashboard-top"><i></i><i></i></span>
                         <span class="mini-dashboard-content">
@@ -58,7 +58,7 @@
                     ("light-orchid", "Orchid"),
                     ("light-citrus", "Citrus")
                 ] %}
-                <button class="theme-card" type="button" data-theme-choice="{{ theme_id }}" aria-pressed="false">
+                <button class="theme-card" id="theme-choice-{{ theme_id }}" type="button" data-theme-choice="{{ theme_id }}" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="{{ theme_id }}" aria-hidden="true">
                         <span class="mini-dashboard-top"><i></i><i></i></span>
                         <span class="mini-dashboard-content">
@@ -85,7 +85,7 @@
                 <span aria-hidden="true">☾</span>
             </header>
             <div class="theme-card-grid">
-                <button class="theme-card" type="button" data-theme-choice="dark-purple" aria-pressed="false">
+                <button class="theme-card" id="theme-choice-dark-purple" type="button" data-theme-choice="dark-purple" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="dark-purple" aria-hidden="true">
                         <span class="mini-dashboard-top"><i></i><i></i></span>
                         <span class="mini-dashboard-content">
@@ -99,7 +99,7 @@
                     </span>
                     <span class="theme-card-name">Purple</span>
                 </button>
-                <button class="theme-card" type="button" data-theme-choice="dark-blue" aria-pressed="false">
+                <button class="theme-card" id="theme-choice-dark-blue" type="button" data-theme-choice="dark-blue" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="dark-blue" aria-hidden="true">
                         <span class="mini-dashboard-top"><i></i><i></i></span>
                         <span class="mini-dashboard-content">
@@ -113,7 +113,7 @@
                     </span>
                     <span class="theme-card-name">Blue</span>
                 </button>
-                <button class="theme-card" type="button" data-theme-choice="dark-green" aria-pressed="false">
+                <button class="theme-card" id="theme-choice-dark-green" type="button" data-theme-choice="dark-green" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="dark-green" aria-hidden="true">
                         <span class="mini-dashboard-top"><i></i><i></i></span>
                         <span class="mini-dashboard-content">
@@ -127,7 +127,7 @@
                     </span>
                     <span class="theme-card-name">Green</span>
                 </button>
-                <button class="theme-card" type="button" data-theme-choice="dark-mocha" aria-pressed="false">
+                <button class="theme-card" id="theme-choice-dark-mocha" type="button" data-theme-choice="dark-mocha" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="dark-mocha" aria-hidden="true">
                         <span class="mini-dashboard-top"><i></i><i></i></span>
                         <span class="mini-dashboard-content">
@@ -147,7 +147,7 @@
                     ("dark-ember", "Ember"),
                     ("dark-jade", "Jade")
                 ] %}
-                <button class="theme-card" type="button" data-theme-choice="{{ theme_id }}" aria-pressed="false">
+                <button class="theme-card" id="theme-choice-{{ theme_id }}" type="button" data-theme-choice="{{ theme_id }}" aria-pressed="false">
                     <span class="theme-card-preview" data-theme="{{ theme_id }}" aria-hidden="true">
                         <span class="mini-dashboard-top"><i></i><i></i></span>
                         <span class="mini-dashboard-content">

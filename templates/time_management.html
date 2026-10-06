@@ -7,6 +7,259 @@
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
     <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        /* =========================================================
+           TIME MANAGEMENT EXPANDABLE LAYOUT
+           ========================================================= */
+
+        .schedule-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .management-launchers {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 22px;
+            width: 100%;
+            order: 2;
+        }
+
+        .management-launcher {
+            position: relative;
+            min-height: 210px;
+            border: 1px solid rgba(120, 130, 160, 0.16);
+            border-radius: 24px;
+            padding: 30px;
+            text-align: left;
+            cursor: pointer;
+            overflow: hidden;
+            color: inherit;
+            background:
+                radial-gradient(circle at 90% 10%, rgba(99, 102, 241, 0.12), transparent 34%),
+                var(--card-bg, #ffffff);
+            box-shadow: 0 12px 35px rgba(20, 25, 50, 0.07);
+            transition:
+                transform 180ms ease,
+                box-shadow 180ms ease,
+                border-color 180ms ease;
+        }
+
+        .management-launcher:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 42px rgba(20, 25, 50, 0.11);
+            border-color: rgba(99, 102, 241, 0.28);
+        }
+
+        .management-launcher:focus-visible {
+            outline: 3px solid rgba(99, 102, 241, 0.35);
+            outline-offset: 3px;
+        }
+
+        .management-launcher.scheduler-launcher {
+            background:
+                radial-gradient(circle at 90% 5%, rgba(59, 130, 246, 0.15), transparent 35%),
+                var(--card-bg, #ffffff);
+        }
+
+        .management-launcher.timer-launcher {
+            background:
+                radial-gradient(circle at 90% 5%, rgba(139, 92, 246, 0.15), transparent 35%),
+                var(--card-bg, #ffffff);
+        }
+
+        .launcher-icon {
+            width: 52px;
+            height: 52px;
+            display: grid;
+            place-items: center;
+            border-radius: 16px;
+            margin-bottom: 22px;
+            font-size: 25px;
+            font-weight: 700;
+            background: rgba(99, 102, 241, 0.1);
+            color: #6366f1;
+        }
+
+        .timer-launcher .launcher-icon {
+            background: rgba(139, 92, 246, 0.11);
+            color: #8b5cf6;
+        }
+
+        .launcher-eyebrow {
+            margin-bottom: 7px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            color: #7c83a1;
+        }
+
+        .management-launcher h2 {
+            margin: 0 0 8px;
+            font-size: clamp(1.45rem, 2vw, 1.8rem);
+            line-height: 1.15;
+        }
+
+        .management-launcher p {
+            max-width: 540px;
+            margin: 0;
+            line-height: 1.55;
+            color: #737991;
+        }
+
+        .launcher-arrow {
+            position: absolute;
+            right: 28px;
+            bottom: 24px;
+            font-size: 1.35rem;
+            color: #9aa0b7;
+            transition: transform 180ms ease, color 180ms ease;
+        }
+
+        .management-launcher:hover .launcher-arrow {
+            transform: translateX(4px);
+            color: #6366f1;
+        }
+
+        .expanded-management-panel {
+            width: 100%;
+            order: 1;
+        }
+
+        .expanded-management-panel:not(.is-open) {
+            display: none;
+        }
+
+        .management-expanded-card {
+            position: relative;
+            width: 100%;
+        }
+
+        .management-close-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 12px;
+        }
+
+        .management-close-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            border: 1px solid rgba(120, 130, 160, 0.18);
+            border-radius: 999px;
+            padding: 8px 14px;
+            background: var(--card-bg, #ffffff);
+            color: #737991;
+            font: inherit;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+        }
+
+        .management-close-button:hover {
+            background: rgba(99, 102, 241, 0.08);
+            border-color: rgba(99, 102, 241, 0.25);
+            color: #6366f1;
+        }
+
+        .management-section-hidden {
+            display: none !important;
+        }
+
+        /* Make the expanded cards feel like the original full-size panels. */
+        .expanded-management-panel .main-card {
+            width: 100%;
+        }
+
+        .expanded-management-panel .weekly-schedule-card {
+            margin: 0;
+        }
+
+        /* Study timer expanded view */
+        .expanded-management-panel .timer-card {
+            min-height: 0;
+        }
+
+        /* Scheduler expanded view */
+        .expanded-management-panel .weekly-schedule-card {
+            min-height: 0;
+        }
+
+        /* The study-ratio guide stays underneath the launcher/expanded area. */
+        .study-ratios-card {
+            order: 3;
+            width: 100%;
+        }
+
+        .study-ratios-card summary {
+            cursor: pointer;
+        }
+
+        @media (max-width: 760px) {
+            .management-launchers {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+
+            .management-launcher {
+                min-height: 175px;
+                padding: 20px;
+                border-radius: 19px;
+            }
+
+            .launcher-icon {
+                width: 43px;
+                height: 43px;
+                margin-bottom: 15px;
+                border-radius: 13px;
+                font-size: 21px;
+            }
+
+            .management-launcher h2 {
+                font-size: 1.15rem;
+            }
+
+            .management-launcher p {
+                font-size: 0.83rem;
+            }
+
+            .launcher-arrow {
+                right: 18px;
+                bottom: 15px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .management-launchers {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .management-launcher {
+                min-height: 155px;
+                padding: 17px;
+            }
+
+            .management-launcher p {
+                display: none;
+            }
+
+            .launcher-eyebrow {
+                font-size: 0.62rem;
+            }
+
+            .management-launcher h2 {
+                font-size: 1.05rem;
+            }
+
+            .launcher-arrow {
+                right: 15px;
+                bottom: 13px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -67,246 +320,243 @@
 
             <section class="dashboard schedule-dashboard">
 
-                <!-- SCHEDULER -->
-                <details class="main-card weekly-schedule-card" open>
-                    <summary class="study-ratios-summary">
-                        <div>
-                            <div class="eyebrow">YOUR WEEK AT A GLANCE</div>
-                            <h2 id="weekly-schedule-heading">Scheduler</h2>
-                            <p id="calendar-week-range" class="calendar-week-range"></p>
-                        </div>
-                        <span class="study-ratios-toggle">Show scheduler</span>
-                    </summary>
-
-                    <div class="schedule-section-header">
-                        <div>
-                            <div class="eyebrow">YOUR WEEK AT A GLANCE</div>
-                            <h2>Scheduler</h2>
-                            <p id="calendar-week-range" class="calendar-week-range"></p>
-                        </div>
-
-                        <div class="calendar-navigation" aria-label="Calendar navigation">
-                            <button id="calendar-previous" class="planner-action" type="button" aria-label="Previous week">‹</button>
-                            <button id="calendar-today" class="timer-button" type="button">Today</button>
-                            <button id="calendar-next" class="planner-action" type="button" aria-label="Next week">›</button>
-                        </div>
-                    </div>
-
-                    <div class="weekly-grid-frame" aria-label="Week calendar from midnight to midnight">
-                        <div class="weekly-grid" id="weekly-grid">
-                            <div class="weekly-time-head" aria-hidden="true"></div>
-
-                            <div class="weekly-day-header">
-                                <span>Monday</span>
-                                <time></time>
-                            </div>
-                            <div class="weekly-day-header">
-                                <span>Tuesday</span>
-                                <time></time>
-                            </div>
-                            <div class="weekly-day-header">
-                                <span>Wednesday</span>
-                                <time></time>
-                            </div>
-                            <div class="weekly-day-header">
-                                <span>Thursday</span>
-                                <time></time>
-                            </div>
-                            <div class="weekly-day-header">
-                                <span>Friday</span>
-                                <time></time>
-                            </div>
-                            <div class="weekly-day-header">
-                                <span>Saturday</span>
-                                <time></time>
-                            </div>
-                            <div class="weekly-day-header">
-                                <span>Sunday</span>
-                                <time></time>
-                            </div>
-
-                            <div id="calendar-time-column" class="calendar-time-column" aria-hidden="true"></div>
-
-                            <div class="weekly-day-column" data-day-index="0" aria-label="Monday schedule"></div>
-                            <div class="weekly-day-column" data-day-index="1" aria-label="Tuesday schedule"></div>
-                            <div class="weekly-day-column" data-day-index="2" aria-label="Wednesday schedule"></div>
-                            <div class="weekly-day-column" data-day-index="3" aria-label="Thursday schedule"></div>
-                            <div class="weekly-day-column" data-day-index="4" aria-label="Friday schedule"></div>
-                            <div class="weekly-day-column" data-day-index="5" aria-label="Saturday schedule"></div>
-                            <div class="weekly-day-column" data-day-index="6" aria-label="Sunday schedule"></div>
-                        </div>
-                    </div>
-
-                    <p id="planner-status" class="planner-status" aria-live="polite"></p>
-                </details>
-
-
-                <!-- STUDY TIMER -->
-                <details class="main-card timer-card" open>
-                    <summary class="study-ratios-summary">
-                        <div>
-                            <div class="eyebrow">FOCUS, THEN RECHARGE</div>
-                            <h2>Study Timer</h2>
-                            <p id="timer-session-label">Pomodoro Technique · Work session</p>
-                        </div>
-                        <span class="study-ratios-toggle">Show timer</span>
-                    </summary>
-
-                    <div class="timer-readout" id="timer-readout" role="timer" aria-live="off">25:00</div>
-
-                    <div class="timer-controls" aria-label="Timer controls">
-                        <button id="timer-start" class="timer-button timer-button-primary" type="button">
-                            Start
-                        </button>
-                        <button id="timer-pause" class="timer-button" type="button" disabled>
-                            Pause
-                        </button>
-                        <button id="timer-reset" class="timer-button" type="button">
-                            Reset
+                <!-- =====================================================
+                     EXPANDED SECTION
+                     ===================================================== -->
+                <div
+                    id="expanded-management-panel"
+                    class="expanded-management-panel"
+                    aria-live="polite"
+                >
+                    <div class="management-close-row">
+                        <button
+                            id="management-close"
+                            class="management-close-button"
+                            type="button"
+                            aria-label="Close open section"
+                        >
+                            <span aria-hidden="true">×</span>
+                            Close
                         </button>
                     </div>
 
-                    <p class="timer-status" id="timer-status" aria-live="polite">
-                        Ready when you are.
-                    </p>
+                    <!-- Expanded Study Timer -->
+                    <section
+                        id="expanded-timer"
+                        class="management-expanded-card management-section-hidden"
+                        aria-labelledby="timer-heading"
+                    >
+                        <section class="main-card timer-card">
+                            <div class="timer-intro">
+                                <div class="eyebrow">FOCUS, THEN RECHARGE</div>
+                                <h2 id="timer-heading">Study Timer</h2>
+                                <p id="timer-session-label">Pomodoro Technique · Work session</p>
+                            </div>
 
-                    <div class="preset-heading">
-                        <h3>Choose a study rhythm</h3>
-                        <p>Select a preset to set the work-session timer.</p>
-                    </div>
+                            <div class="timer-readout" id="timer-readout" role="timer" aria-live="off">25:00</div>
 
-                    <div class="preset-grid" role="group" aria-label="Study and break presets">
-                        <button
-                            class="preset-button"
-                            type="button"
-                            data-work="15"
-                            data-break="3"
-                            data-name="Power Session"
-                        >
-                            <span class="preset-time">15m / 3m</span>
-                            <strong>Power Session</strong>
-                            <span>Quick review / flashcards</span>
-                        </button>
+                            <div class="timer-controls" aria-label="Timer controls">
+                                <button id="timer-start" class="timer-button timer-button-primary" type="button">Start</button>
+                                <button id="timer-pause" class="timer-button" type="button" disabled>Pause</button>
+                                <button id="timer-reset" class="timer-button" type="button">Reset</button>
+                            </div>
 
-                        <button
-                            class="preset-button is-active"
-                            type="button"
-                            data-work="25"
-                            data-break="5"
-                            data-name="Pomodoro Technique"
-                            aria-pressed="true"
-                        >
-                            <span class="preset-time">25m / 5m</span>
-                            <strong>Pomodoro Technique</strong>
-                            <span>Procrastination buster</span>
-                        </button>
+                            <p class="timer-status" id="timer-status" aria-live="polite">Ready when you are.</p>
 
-                        <button
-                            class="preset-button"
-                            type="button"
-                            data-work="45"
-                            data-break="15"
-                            data-name="School Block"
-                        >
-                            <span class="preset-time">45m / 15m</span>
-                            <strong>School Block</strong>
-                            <span>Standard class rhythm</span>
-                        </button>
+                            <div class="preset-heading">
+                                <h3>Choose a study rhythm</h3>
+                                <p>Select a preset to set the work-session timer.</p>
+                            </div>
 
-                        <button
-                            class="preset-button"
-                            type="button"
-                            data-work="50"
-                            data-break="10"
-                            data-name="Deep Focus"
-                        >
-                            <span class="preset-time">50m / 10m</span>
-                            <strong>Deep Focus</strong>
-                            <span>Essays &amp; complex problems</span>
-                        </button>
+                            <div class="preset-grid" role="group" aria-label="Study and break presets">
+                                <button id="timer-preset-power-session" class="preset-button" type="button" data-work="15" data-break="3" data-name="Power Session">
+                                    <span class="preset-time">15m / 3m</span>
+                                    <strong>Power Session</strong>
+                                    <span>Quick review / flashcards</span>
+                                </button>
 
-                        <button
-                            class="preset-button"
-                            type="button"
-                            data-work="52"
-                            data-break="17"
-                            data-name="Peak Productivity"
-                        >
-                            <span class="preset-time">52m / 17m</span>
-                            <strong>Peak Productivity</strong>
-                            <span>Based on Draugiem Group study</span>
-                        </button>
+                                <button id="timer-preset-pomodoro-technique" class="preset-button is-active" type="button" data-work="25" data-break="5" data-name="Pomodoro Technique" aria-pressed="true">
+                                    <span class="preset-time">25m / 5m</span>
+                                    <strong>Pomodoro Technique</strong>
+                                    <span>Procrastination buster</span>
+                                </button>
 
-                        <button
-                            class="preset-button"
-                            type="button"
-                            data-work="90"
-                            data-break="20"
-                            data-name="Ultradian Cycle"
-                        >
-                            <span class="preset-time">90m / 20m</span>
-                            <strong>Ultradian Cycle</strong>
-                            <span>Advanced deep-work blocks</span>
-                        </button>
-                    </div>
+                                <button id="timer-preset-school-block" class="preset-button" type="button" data-work="45" data-break="15" data-name="School Block">
+                                    <span class="preset-time">45m / 15m</span>
+                                    <strong>School Block</strong>
+                                    <span>Standard class rhythm</span>
+                                </button>
 
-                    <form id="custom-preset-form" class="custom-preset-form">
-                        <div class="custom-preset-copy">
-                            <h3>Make your own timer</h3>
-                            <p>Choose the study and break lengths that work for you.</p>
-                        </div>
+                                <button id="timer-preset-deep-focus" class="preset-button" type="button" data-work="50" data-break="10" data-name="Deep Focus">
+                                    <span class="preset-time">50m / 10m</span>
+                                    <strong>Deep Focus</strong>
+                                    <span>Essays &amp; complex problems</span>
+                                </button>
 
-                        <label>
-                            <span>Study minutes</span>
-                            <input
-                                id="custom-work-minutes"
-                                name="workMinutes"
-                                type="number"
-                                min="1"
-                                max="180"
-                                step="1"
-                                value="10"
-                                required
-                            >
-                        </label>
+                                <button id="timer-preset-peak-productivity" class="preset-button" type="button" data-work="52" data-break="17" data-name="Peak Productivity">
+                                    <span class="preset-time">52m / 17m</span>
+                                    <strong>Peak Productivity</strong>
+                                    <span>Based on Draugiem Group study</span>
+                                </button>
 
-                        <label>
-                            <span>Break minutes</span>
-                            <input
-                                id="custom-break-minutes"
-                                name="breakMinutes"
-                                type="number"
-                                min="1"
-                                max="60"
-                                step="1"
-                                value="5"
-                                required
-                            >
-                        </label>
+                                <button id="timer-preset-ultradian-cycle" class="preset-button" type="button" data-work="90" data-break="20" data-name="Ultradian Cycle">
+                                    <span class="preset-time">90m / 20m</span>
+                                    <strong>Ultradian Cycle</strong>
+                                    <span>Advanced deep-work blocks</span>
+                                </button>
+                            </div>
 
-                        <button class="timer-button timer-button-primary" type="submit">
-                            Use custom times
-                        </button>
-                    </form>
+                            <form id="custom-preset-form" class="custom-preset-form">
+                                <div class="custom-preset-copy">
+                                    <h3>Make your own timer</h3>
+                                    <p>Choose the study and break lengths that work for you.</p>
+                                </div>
 
-                    <p class="timer-note">
-                        The timer counts down the work session. Use the paired break length
-                        as a reminder to step away and recharge.
-                    </p>
-                </details>
+                                <label>
+                                    <span>Study minutes</span>
+                                    <input id="custom-work-minutes" name="workMinutes" type="number" min="1" max="180" step="1" value="10" required>
+                                </label>
+
+                                <label>
+                                    <span>Break minutes</span>
+                                    <input id="custom-break-minutes" name="breakMinutes" type="number" min="1" max="60" step="1" value="5" required>
+                                </label>
+
+                                <button class="timer-button timer-button-primary" type="submit">
+                                    Use custom times
+                                </button>
+                            </form>
+
+                            <p class="timer-note">
+                                The timer counts down the work session. Use the paired break length as a reminder to step away and recharge.
+                            </p>
+                        </section>
+                    </section>
+
+                    <!-- Expanded Scheduler -->
+                    <section
+                        id="expanded-scheduler"
+                        class="management-expanded-card management-section-hidden"
+                        aria-labelledby="weekly-schedule-heading"
+                    >
+                        <section class="main-card weekly-schedule-card">
+                            <div class="schedule-section-header">
+                                <div>
+                                    <div class="eyebrow">YOUR WEEK AT A GLANCE</div>
+                                    <h2 id="weekly-schedule-heading">Scheduler</h2>
+                                    <p id="calendar-week-range" class="calendar-week-range"></p>
+                                </div>
+
+                                <div class="calendar-navigation" aria-label="Calendar navigation">
+                                    <button id="calendar-previous" class="planner-action" type="button" aria-label="Previous week">‹</button>
+                                    <button id="calendar-today" class="timer-button" type="button">Today</button>
+                                    <button id="calendar-next" class="planner-action" type="button" aria-label="Next week">›</button>
+                                </div>
+                            </div>
+
+                            <div class="weekly-grid-frame" aria-label="Week calendar from midnight to midnight">
+                                <div class="weekly-grid" id="weekly-grid">
+                                    <div class="weekly-time-head" aria-hidden="true"></div>
+
+                                    <div class="weekly-day-header">
+                                        <span>Monday</span><time></time>
+                                    </div>
+                                    <div class="weekly-day-header">
+                                        <span>Tuesday</span><time></time>
+                                    </div>
+                                    <div class="weekly-day-header">
+                                        <span>Wednesday</span><time></time>
+                                    </div>
+                                    <div class="weekly-day-header">
+                                        <span>Thursday</span><time></time>
+                                    </div>
+                                    <div class="weekly-day-header">
+                                        <span>Friday</span><time></time>
+                                    </div>
+                                    <div class="weekly-day-header">
+                                        <span>Saturday</span><time></time>
+                                    </div>
+                                    <div class="weekly-day-header">
+                                        <span>Sunday</span><time></time>
+                                    </div>
+
+                                    <div id="calendar-time-column" class="calendar-time-column" aria-hidden="true"></div>
+
+                                    <div class="weekly-day-column" data-day-index="0" aria-label="Monday schedule"></div>
+                                    <div class="weekly-day-column" data-day-index="1" aria-label="Tuesday schedule"></div>
+                                    <div class="weekly-day-column" data-day-index="2" aria-label="Wednesday schedule"></div>
+                                    <div class="weekly-day-column" data-day-index="3" aria-label="Thursday schedule"></div>
+                                    <div class="weekly-day-column" data-day-index="4" aria-label="Friday schedule"></div>
+                                    <div class="weekly-day-column" data-day-index="5" aria-label="Saturday schedule"></div>
+                                    <div class="weekly-day-column" data-day-index="6" aria-label="Sunday schedule"></div>
+                                </div>
+                            </div>
+
+                            <p id="planner-status" class="planner-status" aria-live="polite"></p>
+                        </section>
+                    </section>
+                </div>
 
 
-                <!-- STUDY SESSION GUIDE - KEPT AT THE VERY BOTTOM -->
+                <!-- =====================================================
+                     TOP TWO BUTTONS
+                     ===================================================== -->
+                <div class="management-launchers" aria-label="Time management tools">
+
+                    <button
+                        id="scheduler-launcher"
+                        class="management-launcher scheduler-launcher"
+                        type="button"
+                        aria-controls="expanded-scheduler"
+                        aria-expanded="false"
+                    >
+                        <div class="launcher-icon" aria-hidden="true">▦</div>
+
+                        <div class="launcher-eyebrow">PLAN YOUR WEEK</div>
+
+                        <h2>Scheduler</h2>
+
+                        <p>
+                            Organize homework, events, exams, breaks, and everything else
+                            on your weekly calendar.
+                        </p>
+
+                        <span class="launcher-arrow" aria-hidden="true">→</span>
+                    </button>
+
+                    <button
+                        id="timer-launcher"
+                        class="management-launcher timer-launcher"
+                        type="button"
+                        aria-controls="expanded-timer"
+                        aria-expanded="false"
+                    >
+                        <div class="launcher-icon" aria-hidden="true">◷</div>
+
+                        <div class="launcher-eyebrow">FOCUS &amp; RECHARGE</div>
+
+                        <h2>Study Timer</h2>
+
+                        <p>
+                            Choose a study rhythm, start a focused session, and build
+                            better work-and-break habits.
+                        </p>
+
+                        <span class="launcher-arrow" aria-hidden="true">→</span>
+                    </button>
+
+                </div>
+
+
+                <!-- =====================================================
+                     STUDY SESSION GUIDE
+                     ===================================================== -->
                 <details class="main-card study-ratios-card">
                     <summary class="study-ratios-summary">
                         <div>
                             <div class="eyebrow">FIND YOUR RHYTHM</div>
-                            <h2 id="study-ratios-heading">
-                                Which study session should I choose?
-                            </h2>
-                            <p>
-                                Compare work-and-break rhythms to find a pace that fits your task.
-                            </p>
+                            <h2 id="study-ratios-heading">Which study session should I choose?</h2>
+                            <p>Compare work-and-break rhythms to find a pace that fits your task.</p>
                         </div>
                         <span class="study-ratios-toggle">Show guide</span>
                     </summary>
@@ -314,86 +564,38 @@
                     <div class="ratio-guide-grid">
                         <article class="ratio-guide">
                             <h3>50 Minutes Study / 10 Minutes Break</h3>
-                            <p>
-                                <strong>Best for:</strong>
-                                Deep focus, essay writing, and complex problem-solving.
-                            </p>
-                            <p>
-                                <strong>Why it works:</strong>
-                                A focused block of about 45–50 minutes gives you time to
-                                settle into demanding work. A 10-minute break offers a chance
-                                to reset before the next block.
-                            </p>
+                            <p><strong>Best for:</strong> Deep focus, essay writing, and complex problem-solving.</p>
+                            <p><strong>Why it works:</strong> A focused block of about 45–50 minutes gives you time to settle into demanding work. A 10-minute break offers a chance to reset before the next block.</p>
                         </article>
 
                         <article class="ratio-guide">
                             <h3>25 Minutes Study / 5 Minutes Break</h3>
-                            <p>
-                                <strong>Best for:</strong>
-                                Beating procrastination, quick review sessions, and heavy memorization.
-                            </p>
-                            <p>
-                                <strong>Why it works:</strong>
-                                Short work intervals can make it easier to get started and
-                                sustain attention. After four sessions, take a longer
-                                15–30 minute break.
-                            </p>
+                            <p><strong>Best for:</strong> Beating procrastination, quick review sessions, and heavy memorization.</p>
+                            <p><strong>Why it works:</strong> Short work intervals can make it easier to get started and sustain attention. After four sessions, take a longer 15–30 minute break.</p>
                         </article>
 
                         <article class="ratio-guide">
                             <h3>15 Minutes Study / 3 Minutes Break</h3>
-                            <p>
-                                <strong>Best for:</strong>
-                                Flashcards, quick review, or starting a task that feels overwhelming.
-                            </p>
-                            <p>
-                                <strong>Why it works:</strong>
-                                A short, clearly bounded session lowers the barrier to beginning
-                                and makes review easy to fit between other activities.
-                            </p>
+                            <p><strong>Best for:</strong> Flashcards, quick review, or starting a task that feels overwhelming.</p>
+                            <p><strong>Why it works:</strong> A short, clearly bounded session lowers the barrier to beginning and makes review easy to fit between other activities.</p>
                         </article>
 
                         <article class="ratio-guide">
                             <h3>45 Minutes Study / 15 Minutes Break</h3>
-                            <p>
-                                <strong>Best for:</strong>
-                                Homework sessions, textbook reading, and a class-like study block.
-                            </p>
-                            <p>
-                                <strong>Why it works:</strong>
-                                A moderate work period leaves enough time to make progress,
-                                while a full 15-minute pause creates room to move, hydrate,
-                                or reset.
-                            </p>
+                            <p><strong>Best for:</strong> Homework sessions, textbook reading, and a class-like study block.</p>
+                            <p><strong>Why it works:</strong> A moderate work period leaves enough time to make progress, while a full 15-minute pause creates room to move, hydrate, or reset.</p>
                         </article>
 
                         <article class="ratio-guide">
                             <h3>52 Minutes Study / 17 Minutes Break</h3>
-                            <p>
-                                <strong>Best for:</strong>
-                                A structured focus block when you have a longer study window.
-                            </p>
-                            <p>
-                                <strong>Why it works:</strong>
-                                This work-and-rest ratio is inspired by a Draugiem Group
-                                workplace productivity study. Treat it as one option to try;
-                                the best rhythm can vary from person to person.
-                            </p>
+                            <p><strong>Best for:</strong> A structured focus block when you have a longer study window.</p>
+                            <p><strong>Why it works:</strong> This work-and-rest ratio is inspired by a Draugiem Group workplace productivity study. Treat it as one option to try; the best rhythm can vary from person to person.</p>
                         </article>
 
                         <article class="ratio-guide">
                             <h3>90 Minutes Study / 20 Minutes Break</h3>
-                            <p>
-                                <strong>Best for:</strong>
-                                Advanced deep-work blocks when you are rested and already
-                                comfortable sustaining focus.
-                            </p>
-                            <p>
-                                <strong>Why it works:</strong>
-                                Some people prefer a longer uninterrupted block followed
-                                by a substantial pause. If your focus fades sooner, choose
-                                a shorter preset instead.
-                            </p>
+                            <p><strong>Best for:</strong> Advanced deep-work blocks when you are rested and already comfortable sustaining focus.</p>
+                            <p><strong>Why it works:</strong> Some people prefer a longer uninterrupted block followed by a substantial pause. If your focus fades sooner, choose a shorter preset instead.</p>
                         </article>
                     </div>
                 </details>
@@ -402,36 +604,35 @@
         </main>
     </div>
 
+
+    <!-- =============================================================
+         MOBILE NAVIGATION
+         ============================================================= -->
     <nav class="mobile-navigation" aria-label="Mobile navigation">
         <a href="{{ url_for('home') }}" class="mobile-link">
-            <span>▦</span>
-            <small>Home</small>
+            <span>▦</span><small>Home</small>
         </a>
         <a href="{{ url_for('resources') }}" class="mobile-link">
-            <span>📚</span>
-            <small>Resources</small>
+            <span>📚</span><small>Resources</small>
         </a>
         <a href="{{ url_for('noise_songs') }}" class="mobile-link">
-            <span>♫</span>
-            <small>Sounds</small>
+            <span>♫</span><small>Sounds</small>
         </a>
         <a href="{{ url_for('time_management') }}" class="mobile-link active" aria-current="page">
-            <span>✓</span>
-            <small>Schedule</small>
+            <span>✓</span><small>Schedule</small>
         </a>
         <a href="{{ url_for('support') }}" class="mobile-link">
-            <span>♡</span>
-            <small>Support</small>
+            <span>♡</span><small>Support</small>
         </a>
     </nav>
 
-    <dialog
-        id="planner-dialog"
-        class="schedule-dialog"
-        aria-labelledby="planner-dialog-title"
-        aria-modal="false"
-    >
+
+    <!-- =============================================================
+         EVENT / CALENDAR DIALOG
+         ============================================================= -->
+    <dialog id="planner-dialog" class="schedule-dialog" aria-labelledby="planner-dialog-title" aria-modal="false">
         <form id="planner-form" class="schedule-dialog-form">
+
             <header class="schedule-dialog-header">
                 <div>
                     <h2 id="planner-dialog-title">Add to calendar</h2>
@@ -485,11 +686,7 @@
             <div class="schedule-dialog-field">
                 <div class="date-picker-label-row">
                     <span id="planner-date-label">Date</span>
-                    <button
-                        id="date-picker-toggle"
-                        class="planner-action date-picker-toggle"
-                        type="button"
-                    >
+                    <button id="date-picker-toggle" class="planner-action date-picker-toggle" type="button">
                         Change date
                     </button>
                 </div>
@@ -498,25 +695,9 @@
 
                 <div class="date-picker" id="date-picker" hidden>
                     <div class="date-picker-header">
-                        <button
-                            id="date-picker-previous"
-                            class="planner-action"
-                            type="button"
-                            aria-label="Previous month"
-                        >
-                            ‹
-                        </button>
-
+                        <button id="date-picker-previous" class="planner-action" type="button" aria-label="Previous month">‹</button>
                         <strong id="date-picker-month"></strong>
-
-                        <button
-                            id="date-picker-next"
-                            class="planner-action"
-                            type="button"
-                            aria-label="Next month"
-                        >
-                            ›
-                        </button>
+                        <button id="date-picker-next" class="planner-action" type="button" aria-label="Next month">›</button>
                     </div>
 
                     <div class="date-picker-weekdays" aria-hidden="true">
@@ -541,90 +722,146 @@
             <p id="planner-dialog-error" class="chat-dialog-error" role="alert"></p>
 
             <footer class="schedule-dialog-actions">
-                <button
-                    id="planner-dialog-delete"
-                    class="timer-button planner-delete"
-                    type="button"
-                    hidden
-                >
+                <button id="planner-dialog-delete" class="timer-button planner-delete" type="button" hidden>
                     Delete
                 </button>
 
-                <button
-                    id="planner-dialog-cancel"
-                    class="timer-button"
-                    type="button"
-                >
+                <button id="planner-dialog-cancel" class="timer-button" type="button">
                     Cancel
                 </button>
 
-                <button
-                    class="timer-button timer-button-primary"
-                    id="planner-submit"
-                    type="submit"
-                >
+                <button class="timer-button timer-button-primary" id="planner-submit" type="submit">
                     Save event
                 </button>
             </footer>
         </form>
     </dialog>
 
+
+    <!-- =============================================================
+         JAVASCRIPT
+         ============================================================= -->
     <script>
         (() => {
+            /* =========================================================
+               EXPANDABLE SECTION CONTROLS
+               ========================================================= */
+
+            const expandedPanel = document.getElementById("expanded-management-panel");
+            const expandedTimer = document.getElementById("expanded-timer");
+            const expandedScheduler = document.getElementById("expanded-scheduler");
+            const schedulerLauncher = document.getElementById("scheduler-launcher");
+            const timerLauncher = document.getElementById("timer-launcher");
+            const managementClose = document.getElementById("management-close");
+
+            let activeManagementSection = null;
+
+            function closeManagementSection() {
+                activeManagementSection = null;
+
+                expandedPanel.classList.remove("is-open");
+                expandedTimer.classList.add("management-section-hidden");
+                expandedScheduler.classList.add("management-section-hidden");
+
+                schedulerLauncher.classList.remove("management-section-hidden");
+                timerLauncher.classList.remove("management-section-hidden");
+
+                schedulerLauncher.setAttribute("aria-expanded", "false");
+                timerLauncher.setAttribute("aria-expanded", "false");
+
+                managementClose.hidden = true;
+            }
+
+            function openManagementSection(section) {
+                /*
+                 * If another section is open, this immediately replaces it.
+                 * There is no second click required.
+                 */
+                expandedPanel.classList.add("is-open");
+
+                expandedTimer.classList.add("management-section-hidden");
+                expandedScheduler.classList.add("management-section-hidden");
+
+                schedulerLauncher.classList.remove("management-section-hidden");
+                timerLauncher.classList.remove("management-section-hidden");
+
+                if (section === "scheduler") {
+                    expandedScheduler.classList.remove("management-section-hidden");
+
+                    schedulerLauncher.classList.add("management-section-hidden");
+                    schedulerLauncher.setAttribute("aria-expanded", "true");
+                    timerLauncher.setAttribute("aria-expanded", "false");
+
+                    activeManagementSection = "scheduler";
+                }
+
+                if (section === "timer") {
+                    expandedTimer.classList.remove("management-section-hidden");
+
+                    timerLauncher.classList.add("management-section-hidden");
+                    timerLauncher.setAttribute("aria-expanded", "true");
+                    schedulerLauncher.setAttribute("aria-expanded", "false");
+
+                    activeManagementSection = "timer";
+                }
+
+                managementClose.hidden = false;
+
+                window.requestAnimationFrame(() => {
+                    expandedPanel.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+                });
+            }
+
+            schedulerLauncher.addEventListener("click", () => {
+                openManagementSection("scheduler");
+            });
+
+            timerLauncher.addEventListener("click", () => {
+                openManagementSection("timer");
+            });
+
+            managementClose.addEventListener("click", closeManagementSection);
+
+            managementClose.hidden = true;
+
+            const hashTarget = window.location.hash
+                ? document.getElementById(window.location.hash.slice(1))
+                : null;
+            const hashTargetSection = hashTarget?.closest("#expanded-timer")
+                ? "timer"
+                : hashTarget?.closest("#expanded-scheduler")
+                    ? "scheduler"
+                    : null;
+
+            if (hashTargetSection) {
+                openManagementSection(hashTargetSection);
+                window.requestAnimationFrame(() => {
+                    window.requestAnimationFrame(() => {
+                        hashTarget.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center"
+                        });
+                    });
+                });
+            }
+
+            /* =========================================================
+               STUDY TIMER
+               ========================================================= */
+
             const timerReadout = document.getElementById("timer-readout");
             const timerLabel = document.getElementById("timer-session-label");
             const timerStatus = document.getElementById("timer-status");
             const startButton = document.getElementById("timer-start");
             const pauseButton = document.getElementById("timer-pause");
             const resetButton = document.getElementById("timer-reset");
-            const presetButtons = Array.from(
-                document.querySelectorAll(".preset-button")
-            );
+            const presetButtons = Array.from(document.querySelectorAll(".preset-button"));
             const customPresetForm = document.getElementById("custom-preset-form");
             const customWorkInput = document.getElementById("custom-work-minutes");
             const customBreakInput = document.getElementById("custom-break-minutes");
-
-            const plannerForm = document.getElementById("planner-form");
-            const plannerTitle = document.getElementById("planner-title");
-            const plannerType = document.getElementById("planner-type");
-            const plannerDate = document.getElementById("planner-date");
-            const plannerTime = document.getElementById("planner-time");
-            const plannerEndTime = document.getElementById("planner-end-time");
-            const plannerStatus = document.getElementById("planner-status");
-            const plannerSubmitButton = document.getElementById("planner-submit");
-            const plannerDialog = document.getElementById("planner-dialog");
-            const plannerDialogTitle = document.getElementById("planner-dialog-title");
-            const plannerDialogError = document.getElementById("planner-dialog-error");
-
-            const datePickerMonth = document.getElementById("date-picker-month");
-            const datePickerDays = document.getElementById("date-picker-days");
-            const datePicker = document.getElementById("date-picker");
-            const datePickerToggle = document.getElementById("date-picker-toggle");
-
-            const calendarWeekRange = document.getElementById("calendar-week-range");
-            const calendarTimeColumn = document.getElementById("calendar-time-column");
-            const weeklyGrid = document.getElementById("weekly-grid");
-
-            const weeklyDays = Array.from(
-                document.querySelectorAll(".weekly-day-column")
-            );
-            const weeklyDayHeaders = Array.from(
-                document.querySelectorAll(".weekly-day-header")
-            );
-
-            const calendarPrevious = document.getElementById("calendar-previous");
-            const calendarNext = document.getElementById("calendar-next");
-            const calendarToday = document.getElementById("calendar-today");
-
-            const datePickerPrevious = document.getElementById("date-picker-previous");
-            const datePickerNext = document.getElementById("date-picker-next");
-
-            const plannerDialogClose = document.getElementById("planner-dialog-close");
-            const plannerDialogCancel = document.getElementById("planner-dialog-cancel");
-            const plannerDialogDelete = document.getElementById("planner-dialog-delete");
-
-            const eventStorageKey =
-                "studytool_time_management_events_v1";
 
             let selectedPreset = {
                 work: 25,
@@ -635,17 +872,6 @@
             let sessionPhase = "work";
             let remainingSeconds = selectedPreset.work * 60;
             let timerInterval;
-
-            let events = [];
-            let eventsReady = false;
-            let saveQueue = Promise.resolve(true);
-
-            let weekOffset = 0;
-            let pickerMonth = new Date();
-            let editingEventId = null;
-            let editorAnchor = null;
-
-            plannerSubmitButton.disabled = true;
 
             function formatTime(totalSeconds) {
                 const minutes = Math.floor(totalSeconds / 60)
@@ -664,13 +890,12 @@
             }
 
             function renderSessionLabel() {
-                const phaseLabel =
-                    sessionPhase === "work" ? "Work session" : "Break";
+                const phaseLabel = sessionPhase === "work"
+                    ? "Work session"
+                    : "Break";
 
                 timerLabel.textContent =
-                    `${selectedPreset.name} · ${phaseLabel} ` +
-                    `(${selectedPreset.work} min work / ` +
-                    `${selectedPreset.rest} min break)`;
+                    `${selectedPreset.name} · ${phaseLabel} (${selectedPreset.work} min work / ${selectedPreset.rest} min break)`;
             }
 
             function stopTimer() {
@@ -687,8 +912,7 @@
                 }
 
                 timerStatus.textContent =
-                    `${selectedPreset.name} ` +
-                    `${sessionPhase === "work" ? "study" : "break"} session in progress.`;
+                    `${selectedPreset.name} ${sessionPhase === "work" ? "study" : "break"} session in progress.`;
 
                 startButton.disabled = true;
                 pauseButton.disabled = false;
@@ -736,8 +960,7 @@
                 stopTimer();
 
                 timerStatus.textContent =
-                    `Timer paused during your ` +
-                    `${sessionPhase === "work" ? "study session" : "break"}.`;
+                    `Timer paused during your ${sessionPhase === "work" ? "study session" : "break"}.`;
             }
 
             function resetTimer() {
@@ -749,8 +972,7 @@
                 renderSessionLabel();
                 renderTimer();
 
-                timerStatus.textContent =
-                    "Timer reset. Ready when you are.";
+                timerStatus.textContent = "Timer reset. Ready when you are.";
             }
 
             presetButtons.forEach((button) => {
@@ -807,6 +1029,51 @@
 
             renderTimer();
 
+
+            /* =========================================================
+               SCHEDULER
+               ========================================================= */
+
+            const plannerForm = document.getElementById("planner-form");
+            const plannerTitle = document.getElementById("planner-title");
+            const plannerType = document.getElementById("planner-type");
+            const plannerDate = document.getElementById("planner-date");
+            const plannerTime = document.getElementById("planner-time");
+            const plannerEndTime = document.getElementById("planner-end-time");
+            const plannerStatus = document.getElementById("planner-status");
+            const plannerSubmitButton = document.getElementById("planner-submit");
+            const plannerDialog = document.getElementById("planner-dialog");
+            const plannerDialogTitle = document.getElementById("planner-dialog-title");
+            const plannerDialogError = document.getElementById("planner-dialog-error");
+            const datePickerMonth = document.getElementById("date-picker-month");
+            const datePickerDays = document.getElementById("date-picker-days");
+            const datePicker = document.getElementById("date-picker");
+            const datePickerToggle = document.getElementById("date-picker-toggle");
+            const calendarWeekRange = document.getElementById("calendar-week-range");
+            const calendarTimeColumn = document.getElementById("calendar-time-column");
+            const weeklyGrid = document.getElementById("weekly-grid");
+            const weeklyDays = Array.from(document.querySelectorAll(".weekly-day-column"));
+            const weeklyDayHeaders = Array.from(document.querySelectorAll(".weekly-day-header"));
+            const calendarPrevious = document.getElementById("calendar-previous");
+            const calendarNext = document.getElementById("calendar-next");
+            const calendarToday = document.getElementById("calendar-today");
+            const datePickerPrevious = document.getElementById("date-picker-previous");
+            const datePickerNext = document.getElementById("date-picker-next");
+            const plannerDialogClose = document.getElementById("planner-dialog-close");
+            const plannerDialogCancel = document.getElementById("planner-dialog-cancel");
+            const plannerDialogDelete = document.getElementById("planner-dialog-delete");
+            const eventStorageKey = "studytool_time_management_events_v1";
+
+            let events = [];
+            let eventsReady = false;
+            let saveQueue = Promise.resolve(true);
+            let weekOffset = 0;
+            let pickerMonth = new Date();
+            let editingEventId = null;
+            let editorAnchor = null;
+
+            plannerSubmitButton.disabled = true;
+
             function validEvents(candidate) {
                 if (!Array.isArray(candidate)) {
                     throw new Error("Saved planner data must be a list.");
@@ -814,13 +1081,13 @@
 
                 return candidate
                     .filter((event) =>
-                        event &&
-                        typeof event.id === "string" &&
-                        typeof event.title === "string" &&
-                        typeof event.date === "string" &&
-                        typeof event.type === "string" &&
-                        typeof event.done === "boolean" &&
-                        (!event.time || typeof event.time === "string")
+                        event
+                        && typeof event.id === "string"
+                        && typeof event.title === "string"
+                        && typeof event.date === "string"
+                        && typeof event.type === "string"
+                        && typeof event.done === "boolean"
+                        && (!event.time || typeof event.time === "string")
                     )
                     .map((event) => {
                         const startTime = event.time || "09:00";
@@ -828,20 +1095,15 @@
                         let endTime = event.end_time;
 
                         if (!endTime) {
-                            const duration =
-                                Number(event.duration_minutes) || 60;
-
-                            const [hours, minutes] =
-                                startTime.split(":").map(Number);
-
+                            const duration = Number(event.duration_minutes) || 60;
+                            const [hours, minutes] = startTime.split(":").map(Number);
                             const endMinutes = Math.min(
                                 hours * 60 + minutes + duration,
                                 1439
                             );
 
                             endTime =
-                                `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:` +
-                                `${String(endMinutes % 60).padStart(2, "0")}`;
+                                `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:${String(endMinutes % 60).padStart(2, "0")}`;
                         }
 
                         const {
@@ -859,8 +1121,7 @@
 
             async function loadEvents() {
                 try {
-                    const response =
-                        await fetch("/api/preferences/schedule");
+                    const response = await fetch("/api/preferences/schedule");
 
                     if (!response.ok) {
                         throw new Error(
@@ -869,7 +1130,6 @@
                     }
 
                     const data = await response.json();
-
                     events = validEvents(data.events);
                     eventsReady = true;
 
@@ -899,10 +1159,7 @@
                                 error
                             );
                         }
-                    } else if (
-                        events.length === 0 &&
-                        !migrationComplete
-                    ) {
+                    } else if (events.length === 0 && !migrationComplete) {
                         let migrationSaveFailed = false;
 
                         try {
@@ -914,20 +1171,18 @@
                                     validEvents(JSON.parse(legacyEvents));
 
                                 if (importedEvents.length > 0) {
-                                    const importResponse =
-                                        await fetch(
-                                            "/api/preferences/schedule",
-                                            {
-                                                method: "PUT",
-                                                headers: {
-                                                    "Content-Type":
-                                                        "application/json"
-                                                },
-                                                body: JSON.stringify({
-                                                    events: importedEvents
-                                                })
-                                            }
-                                        );
+                                    const importResponse = await fetch(
+                                        "/api/preferences/schedule",
+                                        {
+                                            method: "PUT",
+                                            headers: {
+                                                "Content-Type": "application/json"
+                                            },
+                                            body: JSON.stringify({
+                                                events: importedEvents
+                                            })
+                                        }
+                                    );
 
                                     if (!importResponse.ok) {
                                         migrationSaveFailed = true;
@@ -941,8 +1196,7 @@
                                     const importedData =
                                         await importResponse.json();
 
-                                    events =
-                                        validEvents(importedData.events);
+                                    events = validEvents(importedData.events);
                                 }
                             }
 
@@ -953,8 +1207,7 @@
                         } catch (error) {
                             if (migrationSaveFailed) {
                                 plannerStatus.textContent =
-                                    "Your existing schedule could not be migrated. " +
-                                    "Refresh the page or try again before editing it.";
+                                    "Your existing schedule could not be migrated. Refresh the page or try again before editing it.";
                             }
 
                             console.warn(
@@ -970,8 +1223,7 @@
                     }
                 } catch (error) {
                     plannerStatus.textContent =
-                        "Your schedule could not be loaded. " +
-                        "Refresh the page or try again later.";
+                        "Your schedule could not be loaded. Refresh the page or try again later.";
 
                     console.error(
                         "Planner items could not be loaded from your account.",
@@ -979,7 +1231,6 @@
                     );
                 } finally {
                     plannerSubmitButton.disabled = !eventsReady;
-
                     renderScheduleEvents();
                     renderCurrentTimeIndicator();
                 }
@@ -990,16 +1241,16 @@
                     return Promise.resolve(false);
                 }
 
-                const snapshot =
-                    events.map((event) => ({ ...event }));
+                const snapshot = events.map((event) => ({ ...event }));
 
                 plannerStatus.textContent =
                     "Saving your schedule to your account...";
 
                 saveQueue = saveQueue
                     .then(async () => {
-                        const response =
-                            await fetch("/api/preferences/schedule", {
+                        const response = await fetch(
+                            "/api/preferences/schedule",
+                            {
                                 method: "PUT",
                                 headers: {
                                     "Content-Type": "application/json"
@@ -1007,7 +1258,8 @@
                                 body: JSON.stringify({
                                     events: snapshot
                                 })
-                            });
+                            }
+                        );
 
                         if (!response.ok) {
                             throw new Error(
@@ -1022,8 +1274,7 @@
                     })
                     .catch((error) => {
                         plannerStatus.textContent =
-                            "Your changes could not be saved to your account. " +
-                            "Please try again.";
+                            "Your changes could not be saved to your account. Please try again.";
 
                         console.error(
                             "Planner items could not be saved to your account.",
@@ -1038,45 +1289,37 @@
 
             function formatDateKey(date) {
                 const year = date.getFullYear();
-                const month =
-                    String(date.getMonth() + 1).padStart(2, "0");
-                const day =
-                    String(date.getDate()).padStart(2, "0");
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const day = String(date.getDate()).padStart(2, "0");
 
                 return `${year}-${month}-${day}`;
             }
 
             function parseDateKey(dateKey) {
-                const [year, month, day] =
-                    dateKey.split("-").map(Number);
+                const [year, month, day] = dateKey.split("-").map(Number);
 
                 return new Date(year, month - 1, day);
             }
 
             function defaultEndTime(startTime) {
-                const [hours, minutes] =
-                    startTime.split(":").map(Number);
+                const [hours, minutes] = startTime.split(":").map(Number);
 
                 const endMinutes = Math.min(
                     hours * 60 + minutes + 60,
                     1439
                 );
 
-                return (
-                    `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:` +
-                    `${String(endMinutes % 60).padStart(2, "0")}`
-                );
+                return `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:${String(endMinutes % 60).padStart(2, "0")}`;
             }
 
             function renderCalendarDates() {
                 const today = new Date();
 
-                const weekStart =
-                    new Date(
-                        today.getFullYear(),
-                        today.getMonth(),
-                        today.getDate()
-                    );
+                const weekStart = new Date(
+                    today.getFullYear(),
+                    today.getMonth(),
+                    today.getDate()
+                );
 
                 weekStart.setDate(
                     weekStart.getDate() -
@@ -1099,24 +1342,17 @@
                 };
 
                 calendarWeekRange.textContent =
-                    `${weekStart.toLocaleDateString(
-                        undefined,
-                        rangeOptions
-                    )} – ${weekEnd.toLocaleDateString(
-                        undefined,
-                        {
-                            ...rangeOptions,
-                            year: "numeric"
-                        }
-                    )}`;
+                    `${weekStart.toLocaleDateString(undefined, rangeOptions)} – ${weekEnd.toLocaleDateString(undefined, {
+                        ...rangeOptions,
+                        year: "numeric"
+                    })}`;
 
                 calendarTimeColumn.replaceChildren();
 
                 for (let hour = 0; hour < 24; hour += 1) {
                     const label = document.createElement("span");
 
-                    label.className =
-                        "calendar-hour-label";
+                    label.className = "calendar-hour-label";
 
                     if (hour !== 0) {
                         label.textContent =
@@ -1133,42 +1369,29 @@
                         weekStart.getDate() + index
                     );
 
-                    const dateKey =
-                        formatDateKey(date);
+                    const dateKey = formatDateKey(date);
 
-                    dayColumn.dataset.calendarDate =
-                        dateKey;
+                    dayColumn.dataset.calendarDate = dateKey;
 
-                    const header =
-                        weeklyDayHeaders[index];
-
-                    const weekdayLabel =
-                        header.querySelector("span");
-
-                    const dateLabel =
-                        header.querySelector("time");
+                    const header = weeklyDayHeaders[index];
+                    const weekdayLabel = header.querySelector("span");
+                    const dateLabel = header.querySelector("time");
 
                     weekdayLabel.textContent =
-                        date.toLocaleDateString(
-                            undefined,
-                            { weekday: "short" }
-                        );
+                        date.toLocaleDateString(undefined, {
+                            weekday: "short"
+                        });
 
-                    dateLabel.dateTime =
-                        dateKey;
+                    dateLabel.dateTime = dateKey;
 
                     dateLabel.textContent =
-                        date.toLocaleDateString(
-                            undefined,
-                            {
-                                month: "short",
-                                day: "numeric"
-                            }
-                        );
+                        date.toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric"
+                        });
 
                     const isToday =
-                        dateKey ===
-                        formatDateKey(today);
+                        dateKey === formatDateKey(today);
 
                     header.classList.toggle(
                         "is-today",
@@ -1182,14 +1405,11 @@
 
                     dayColumn.setAttribute(
                         "aria-label",
-                        `${date.toLocaleDateString(
-                            undefined,
-                            {
-                                weekday: "long",
-                                month: "long",
-                                day: "numeric"
-                            }
-                        )} schedule`
+                        `${date.toLocaleDateString(undefined, {
+                            weekday: "long",
+                            month: "long",
+                            day: "numeric"
+                        })} schedule`
                     );
 
                     if (isToday) {
@@ -1205,11 +1425,7 @@
 
                     dayColumn.replaceChildren();
 
-                    for (
-                        let hour = 0;
-                        hour < 24;
-                        hour += 1
-                    ) {
+                    for (let hour = 0; hour < 24; hour += 1) {
                         const slot =
                             document.createElement("button");
 
@@ -1222,12 +1438,7 @@
 
                         slot.setAttribute(
                             "aria-label",
-                            `Add to ${dayColumn.getAttribute(
-                                "aria-label"
-                            )} at ${String(hour).padStart(
-                                2,
-                                "0"
-                            )}:00`
+                            `Add to ${dayColumn.getAttribute("aria-label")} at ${String(hour).padStart(2, "0")}:00`
                         );
 
                         dayColumn.append(slot);
@@ -1268,10 +1479,7 @@
                     eventLayer.replaceChildren();
 
                     events
-                        .filter(
-                            (event) =>
-                                event.date === dayDate
-                        )
+                        .filter((event) => event.date === dayDate)
                         .forEach((event) => {
                             const block =
                                 document.createElement("button");
@@ -1279,31 +1487,19 @@
                             block.type = "button";
 
                             block.className =
-                                `schedule-block user-schedule-block ` +
-                                `schedule-${event.type}` +
-                                `${event.done ? " is-done" : ""}`;
+                                `schedule-block user-schedule-block schedule-${event.type}${event.done ? " is-done" : ""}`;
 
                             const startMinutes =
-                                (
-                                    Number(
-                                        event.time?.slice(
-                                            0,
-                                            2
-                                        ) || 0
-                                    ) * 60
-                                ) +
+                                (Number(
+                                    event.time?.slice(0, 2) || 0
+                                ) * 60)
+                                +
                                 Number(
-                                    event.time?.slice(
-                                        3,
-                                        5
-                                    ) || 0
+                                    event.time?.slice(3, 5) || 0
                                 );
 
                             const endParts =
-                                (
-                                    event.end_time ||
-                                    "10:00"
-                                )
+                                (event.end_time || "10:00")
                                     .split(":")
                                     .map(Number);
 
@@ -1326,22 +1522,16 @@
                                 `${Math.max(
                                     13,
                                     (endMinutes - startMinutes) *
-                                        hourHeight /
-                                        60 -
-                                        2
+                                    hourHeight / 60 - 2
                                 )}px`;
 
                             block.setAttribute(
                                 "aria-label",
-                                `${event.title}, ` +
-                                `${event.time || "00:00"} to ` +
-                                `${event.end_time || "10:00"}`
+                                `${event.title}, ${event.time || "00:00"} to ${event.end_time || "10:00"}`
                             );
 
                             const title =
-                                document.createElement(
-                                    "strong"
-                                );
+                                document.createElement("strong");
 
                             title.textContent =
                                 event.title;
@@ -1350,14 +1540,12 @@
 
                             block.addEventListener(
                                 "click",
-                                () =>
-                                    openEventEditor(
-                                        dayDate,
-                                        event.time ||
-                                            "00:00",
-                                        event,
-                                        block
-                                    )
+                                () => openEventEditor(
+                                    dayDate,
+                                    event.time || "00:00",
+                                    event,
+                                    block
+                                )
                             );
 
                             eventLayer.append(block);
@@ -1380,8 +1568,7 @@
                 const todayColumn =
                     weeklyDays.find(
                         (dayColumn) =>
-                            dayColumn.dataset
-                                .calendarDate ===
+                            dayColumn.dataset.calendarDate ===
                             todayKey
                     );
 
@@ -1412,13 +1599,10 @@
 
                 indicator.setAttribute(
                     "aria-label",
-                    `Current time ${now.toLocaleTimeString(
-                        [],
-                        {
-                            hour: "2-digit",
-                            minute: "2-digit"
-                        }
-                    )}`
+                    `Current time ${now.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit"
+                    })}`
                 );
 
                 indicator.style.top =
@@ -1441,13 +1625,10 @@
 
             function renderDatePicker() {
                 datePickerMonth.textContent =
-                    pickerMonth.toLocaleDateString(
-                        undefined,
-                        {
-                            month: "long",
-                            year: "numeric"
-                        }
-                    );
+                    pickerMonth.toLocaleDateString(undefined, {
+                        month: "long",
+                        year: "numeric"
+                    });
 
                 datePickerDays.replaceChildren();
 
@@ -1463,32 +1644,22 @@
 
                 gridStart.setDate(
                     1 -
-                    (
-                        (firstOfMonth.getDay() + 6) %
-                        7
-                    )
+                    ((firstOfMonth.getDay() + 6) % 7)
                 );
 
-                for (
-                    let index = 0;
-                    index < 42;
-                    index += 1
-                ) {
+                for (let index = 0; index < 42; index += 1) {
                     const day =
                         new Date(gridStart);
 
                     day.setDate(
-                        gridStart.getDate() +
-                        index
+                        gridStart.getDate() + index
                     );
 
                     const dateKey =
                         formatDateKey(day);
 
                     const dayButton =
-                        document.createElement(
-                            "button"
-                        );
+                        document.createElement("button");
 
                     dayButton.type = "button";
                     dayButton.className =
@@ -1499,43 +1670,32 @@
 
                     dayButton.classList.toggle(
                         "is-outside-month",
-                        day.getMonth() !==
-                            pickerMonth.getMonth()
+                        day.getMonth() !== pickerMonth.getMonth()
                     );
 
                     dayButton.classList.toggle(
                         "is-selected",
-                        dateKey ===
-                            plannerDate.value
+                        dateKey === plannerDate.value
                     );
 
                     dayButton.classList.toggle(
                         "is-today",
-                        dateKey ===
-                            formatDateKey(
-                                new Date()
-                            )
+                        dateKey === formatDateKey(new Date())
                     );
 
                     dayButton.setAttribute(
                         "aria-pressed",
-                        String(
-                            dateKey ===
-                                plannerDate.value
-                        )
+                        String(dateKey === plannerDate.value)
                     );
 
                     dayButton.setAttribute(
                         "aria-label",
-                        day.toLocaleDateString(
-                            undefined,
-                            {
-                                weekday: "long",
-                                month: "long",
-                                day: "numeric",
-                                year: "numeric"
-                            }
-                        )
+                        day.toLocaleDateString(undefined, {
+                            weekday: "long",
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric"
+                        })
                     );
 
                     dayButton.addEventListener(
@@ -1552,22 +1712,17 @@
                                 );
 
                             datePickerToggle.textContent =
-                                `Date: ${day.toLocaleDateString(
-                                    undefined,
-                                    {
-                                        month: "short",
-                                        day: "numeric",
-                                        year: "numeric"
-                                    }
-                                )}`;
+                                `Date: ${day.toLocaleDateString(undefined, {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric"
+                                })}`;
 
                             renderDatePicker();
                         }
                     );
 
-                    datePickerDays.append(
-                        dayButton
-                    );
+                    datePickerDays.append(dayButton);
                 }
             }
 
@@ -1597,25 +1752,27 @@
                         gap;
                 }
 
-                left = Math.max(
-                    8,
-                    Math.min(
-                        left,
-                        window.innerWidth -
+                left =
+                    Math.max(
+                        8,
+                        Math.min(
+                            left,
+                            window.innerWidth -
                             editorRect.width -
                             8
-                    )
-                );
+                        )
+                    );
 
-                const top = Math.max(
-                    8,
-                    Math.min(
-                        rect.top,
-                        window.innerHeight -
+                const top =
+                    Math.max(
+                        8,
+                        Math.min(
+                            rect.top,
+                            window.innerHeight -
                             editorRect.height -
                             8
-                    )
-                );
+                        )
+                    );
 
                 plannerDialog.style.left =
                     `${left}px`;
@@ -1633,23 +1790,21 @@
                 if (!eventsReady) {
                     plannerStatus.textContent =
                         "Wait for your saved schedule to load before adding events.";
+
                     return;
                 }
 
                 editingEventId =
                     event?.id || null;
 
-                editorAnchor = anchor;
+                editorAnchor =
+                    anchor;
 
                 plannerForm.reset();
-
-                plannerDialogError.textContent =
-                    "";
+                plannerDialogError.textContent = "";
 
                 plannerDialogTitle.textContent =
-                    event
-                        ? "Edit item"
-                        : "Add item";
+                    event ? "Edit item" : "Add item";
 
                 plannerSubmitButton.textContent =
                     event
@@ -1687,14 +1842,11 @@
                 datePickerToggle.textContent =
                     `Date: ${parseDateKey(
                         plannerDate.value
-                    ).toLocaleDateString(
-                        undefined,
-                        {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric"
-                        }
-                    )}`;
+                    ).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric"
+                    })}`;
 
                 renderDatePicker();
 
@@ -1710,9 +1862,7 @@
 
                 editingEventId = null;
                 editorAnchor = null;
-
-                plannerDialogError.textContent =
-                    "";
+                plannerDialogError.textContent = "";
             }
 
             weeklyGrid.addEventListener(
@@ -1723,10 +1873,7 @@
                             ".weekly-hour-slot"
                         );
 
-                    if (
-                        !slot ||
-                        !eventsReady
-                    ) {
+                    if (!slot || !eventsReady) {
                         return;
                     }
 
@@ -1736,11 +1883,8 @@
                         );
 
                     openEventEditor(
-                        dayColumn.dataset
-                            .calendarDate,
-                        `${String(
-                            Number(slot.dataset.hour)
-                        ).padStart(2, "0")}:00`,
+                        dayColumn.dataset.calendarDate,
+                        `${String(Number(slot.dataset.hour)).padStart(2, "0")}:00`,
                         null,
                         slot
                     );
@@ -1757,14 +1901,11 @@
                         datePicker.hidden
                             ? `Date: ${parseDateKey(
                                 plannerDate.value
-                            ).toLocaleDateString(
-                                undefined,
-                                {
-                                    month: "short",
-                                    day: "numeric",
-                                    year: "numeric"
-                                }
-                            )}`
+                            ).toLocaleDateString(undefined, {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric"
+                            })}`
                             : "Hide calendar";
 
                     window.requestAnimationFrame(
@@ -1948,8 +2089,7 @@
                         return;
                     }
 
-                    plannerDialogError.textContent =
-                        "";
+                    plannerDialogError.textContent = "";
 
                     if (
                         plannerEndTime.value <=
@@ -2007,7 +2147,9 @@
                                         : event
                             );
                     } else {
-                        events.push(savedEvent);
+                        events.push(
+                            savedEvent
+                        );
                     }
 
                     const saved =
@@ -2046,6 +2188,11 @@
                 }
             );
 
+
+            /* =========================================================
+               INITIALIZE CALENDAR
+               ========================================================= */
+
             renderCalendarDates();
 
             window.setInterval(
@@ -2054,6 +2201,7 @@
             );
 
             void loadEvents();
+
         })();
     </script>
 </body>

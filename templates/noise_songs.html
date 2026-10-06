@@ -90,43 +90,43 @@
                     <button id="stop-all-sounds" class="sound-stop-button" type="button">Stop all</button>
                 </div>
                 <div class="sound-library">
-                    <article class="sound-card" data-sound="brown">
+                    <article class="sound-card" id="sound-brown" data-sound="brown">
                         <div class="sound-card-top"><span class="sound-art brown-art">≈</span><span class="sound-type">NOISE</span></div>
                         <h3>Brown Noise</h3><p>Low, warm, and steady for deep work.</p>
                         <div class="sound-volume-control"><label for="volume-brown">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-brown" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
-                    <article class="sound-card" data-sound="pink">
+                    <article class="sound-card" id="sound-pink" data-sound="pink">
                         <div class="sound-card-top"><span class="sound-art pink-art">∿</span><span class="sound-type">NOISE</span></div>
                         <h3>Pink Noise</h3><p>Softer static for reading and review.</p>
                         <div class="sound-volume-control"><label for="volume-pink">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-pink" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
-                    <article class="sound-card" data-sound="852hz">
+                    <article class="sound-card" id="sound-852hz" data-sound="852hz">
                         <div class="sound-card-top"><span class="sound-art rain-art">852</span><span class="sound-type">TONE</span></div>
                         <h3>852 Hz</h3><p>A steady, continuous sine tone proven to get rid of overthinking. Take a break.</p>
                         <div class="sound-volume-control"><label for="volume-852hz">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-852hz" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
-                    <article class="sound-card" data-sound="ocean">
+                    <article class="sound-card" id="sound-ocean" data-sound="ocean">
                         <div class="sound-card-top"><span class="sound-art ocean-art">◒</span><span class="sound-type">NATURE</span></div>
                         <h3>Ocean Waves</h3><p>A recording of real ocean waves.</p>
                         <div class="sound-volume-control"><label for="volume-ocean">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-ocean" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
-                    <article class="sound-card" data-sound="lofi">
+                    <article class="sound-card" id="sound-lofi" data-sound="lofi">
                         <div class="sound-card-top"><span class="sound-art lofi-art">▰</span><span class="sound-type">SONG LOOP</span></div>
                         <h3>Lo-Fi Glow</h3><p>A mellow chord loop for homework and code.</p>
                         <div class="sound-volume-control"><label for="volume-lofi">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-lofi" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
-                    <article class="sound-card" data-sound="piano">
+                    <article class="sound-card" id="sound-piano" data-sound="piano">
                         <div class="sound-card-top"><span class="sound-art piano-art">♬</span><span class="sound-type">SONG LOOP</span></div>
                         <h3>Calm Piano</h3><p>Simple notes for memorization or a reset.</p>
                         <div class="sound-volume-control"><label for="volume-piano">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-piano" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
-                    <article class="sound-card" data-sound="rain-window">
+                    <article class="sound-card" id="sound-rain-window" data-sound="rain-window">
                         <div class="sound-card-top"><span class="sound-art ocean-art">☂</span><span class="sound-type">NATURE</span></div>
                         <h3>Rain on Window</h3>
                         <p>Deep rainfall audio that masks background voices.</p>
@@ -135,7 +135,7 @@
                         <div class="sound-volume-control"><label for="volume-rain-window">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-rain-window" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
-                    <article class="sound-card" data-sound="acoustic-piano">
+                    <article class="sound-card" id="sound-acoustic-piano" data-sound="acoustic-piano">
                         <div class="sound-card-top"><span class="sound-art piano-art">♬</span><span class="sound-type">MUSIC</span></div>
                         <h3>Acoustic Guitar &amp; Piano</h3>
                         <p>Gentle instrumental melody for steady problem-solving.</p>
@@ -144,7 +144,7 @@
                         <div class="sound-volume-control"><label for="volume-acoustic-piano">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-acoustic-piano" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
-                    <article class="sound-card" data-sound="cello">
+                    <article class="sound-card" id="sound-cello" data-sound="cello">
                         <div class="sound-card-top"><span class="sound-art brown-art">♫</span><span class="sound-type">MUSIC</span></div>
                         <h3>Warm Cello</h3>
                         <p>Deep, resonant string tones for long study blocks.</p>
@@ -153,7 +153,7 @@
                         <div class="sound-volume-control"><label for="volume-cello">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-cello" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
-                    <article class="sound-card" data-sound="ambient-synth">
+                    <article class="sound-card" id="sound-ambient-synth" data-sound="ambient-synth">
                         <div class="sound-card-top"><span class="sound-art lofi-art">✧</span><span class="sound-type">MUSIC</span></div>
                         <h3>Soft Ambient Synth</h3>
                         <p>Floating, beatless harmonies that ease mind chatter.</p>
@@ -162,7 +162,7 @@
                         <div class="sound-volume-control"><label for="volume-ambient-synth">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-ambient-synth" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
-                    <article class="sound-card" data-sound="gentle-creek">
+                    <article class="sound-card" id="sound-gentle-creek" data-sound="gentle-creek">
                         <div class="sound-card-top"><span class="sound-art ocean-art">⌁</span><span class="sound-type">NATURE</span></div>
                         <h3>Gentle Creek</h3>
                         <p>Soft trickling water and forest breeze.</p>
@@ -171,7 +171,7 @@
                         <div class="sound-volume-control"><label for="volume-gentle-creek">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-gentle-creek" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
-                    <article class="sound-card" data-sound="432hz">
+                    <article class="sound-card" id="sound-432hz" data-sound="432hz">
                         <div class="sound-card-top"><span class="sound-art rain-art">432</span><span class="sound-type">TONE</span></div>
                         <h3>432 Hz Solfeggio Tuning</h3>
                         <p>Natural harmonic sine tone tuned for physical calm.</p>
@@ -180,7 +180,7 @@
                         <div class="sound-volume-control"><label for="volume-432hz">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-432hz" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
-                    <article class="sound-card" data-sound="theta6">
+                    <article class="sound-card" id="sound-theta6" data-sound="theta6">
                         <div class="sound-card-top"><span class="sound-art lofi-art">θ</span><span class="sound-type">FREQUENCY</span></div>
                         <h3>Theta Binaural Beats (6 Hz)</h3>
                         <p>Dual-ear stereo entrainment for deep learning.</p>
@@ -189,7 +189,7 @@
                         <div class="sound-volume-control"><label for="volume-theta6">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-theta6" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
-                    <article class="sound-card" data-sound="174hz">
+                    <article class="sound-card" id="sound-174hz" data-sound="174hz">
                         <div class="sound-card-top"><span class="sound-art brown-art">174</span><span class="sound-type">TONE</span></div>
                         <h3>174 Hz Foundation Frequency</h3>
                         <p>Low-frequency sine wave designed to ease physical tension.</p>

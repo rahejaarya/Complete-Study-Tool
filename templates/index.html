@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
     <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='global_search.js') }}" defer></script>
 </head>
 
 <body>
@@ -77,17 +78,21 @@
 
                 <button class="mobile-menu">☰</button>
 
-                <div class="welcome">
-
-                    <div class="welcome-icon">
-                        ☀
+                <div class="dashboard-welcome">
+                    <div class="welcome">
+                        <div class="welcome-icon">
+                            ☀
+                        </div>
+                        <div>
+                            <h1>Welcome back, {{ username }}</h1>
+                            <p>Ready to make some progress?</p>
+                        </div>
                     </div>
-
-                    <div>
-                        <h1>Welcome back, {{ username }}</h1>
-                        <p>Ready to make some progress?</p>
-                    </div>
-
+                    <label class="global-search-trigger" for="global-search-open" title="Search all features (⌘K or Ctrl+K)">
+                        <span aria-hidden="true">⌕</span>
+                        <input id="global-search-open" type="search" placeholder="Search features..." readonly aria-haspopup="dialog" aria-controls="global-search-dialog" aria-expanded="false">
+                        <kbd>⌘/Ctrl K</kbd>
+                    </label>
                 </div>
 
                 <div style="display: flex; gap: 12px; align-items: center;">
@@ -362,6 +367,24 @@
         </main>
 
     </div>
+
+    <div class="global-search-overlay" id="global-search-overlay" hidden>
+        <section class="global-search-dialog" id="global-search-dialog" role="dialog" aria-modal="true" aria-labelledby="global-search-title">
+            <h2 class="visually-hidden" id="global-search-title">Search StudyTool</h2>
+            <label class="global-search-input-wrap">
+                <span aria-hidden="true">⌕</span>
+                <input id="global-search-input" type="search" autocomplete="off" placeholder="Search pages, sounds, timers, settings..." aria-label="Search all StudyTool features" aria-controls="global-search-results">
+                <kbd>ESC</kbd>
+                <button class="global-search-close" id="global-search-close" type="button" aria-label="Close search">×</button>
+            </label>
+            <div class="global-search-results" id="global-search-results" role="listbox" aria-label="Search results">
+                <p class="global-search-hint">Search every page, focus sound, timer, and setting.</p>
+            </div>
+            <footer class="global-search-footer"><span>↑↓ Navigate</span><span>↵ Open</span><span>Esc Close</span></footer>
+        </section>
+    </div>
+
+    <script id="global-search-routes" type="application/json">{{ search_routes | tojson }}</script>
 
 
     <!-- Mobile Bottom Navigation -->
