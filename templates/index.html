@@ -663,6 +663,7 @@
             const quoteText = document.getElementById("quote-text");
             const quoteAuthor = document.getElementById("quote-author");
             const quoteSlide = document.getElementById("quote-slide");
+            const quoteCard = quoteSlide.closest(".motivation-card");
             const toggleButton = document.getElementById("quote-toggle");
             let storageAvailable = true;
             let changeTimer;
@@ -755,7 +756,11 @@
             saveState();
             startSlideshow();
 
-            quoteSlide.addEventListener("click", advanceQuote);
+            quoteCard.addEventListener("click", (event) => {
+                if (!toggleButton.contains(event.target)) {
+                    advanceQuote();
+                }
+            });
             quoteSlide.addEventListener("keydown", (event) => {
                 if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
