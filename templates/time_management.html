@@ -24,7 +24,7 @@
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 22px;
             width: 100%;
-            order: 2;
+            order: 1;
         }
 
         .management-launcher {
@@ -125,7 +125,7 @@
 
         .expanded-management-panel {
             width: 100%;
-            order: 1;
+            order: 2;
         }
 
         .expanded-management-panel:not(.is-open) {
@@ -167,6 +167,13 @@
 
         .management-section-hidden {
             display: none !important;
+        }
+
+        .management-launcher.management-section-hidden {
+            display: block !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none;
         }
 
         /* Make the expanded cards feel like the original full-size panels. */
