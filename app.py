@@ -778,7 +778,7 @@ def resources():
 @app.route("/focus")
 @login_required
 def focus():
-    return render_template("focus.html")
+    return redirect(url_for("procrastination_focus"))
 
 
 @app.route("/noise-songs")
