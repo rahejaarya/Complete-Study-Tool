@@ -66,141 +66,67 @@
             </header>
 
             <section class="dashboard schedule-dashboard">
-                <section class="main-card timer-card" aria-labelledby="timer-heading">
-                    <div class="timer-intro">
-                        <div class="eyebrow">FOCUS, THEN RECHARGE</div>
-                        <h2 id="timer-heading">Study Timer</h2>
-                        <p id="timer-session-label">Pomodoro Technique · Work session</p>
-                    </div>
-                    <div class="timer-readout" id="timer-readout" role="timer" aria-live="off">25:00</div>
-                    <div class="timer-controls" aria-label="Timer controls">
-                        <button id="timer-start" class="timer-button timer-button-primary" type="button">Start</button>
-                        <button id="timer-pause" class="timer-button" type="button" disabled>Pause</button>
-                        <button id="timer-reset" class="timer-button" type="button">Reset</button>
-                    </div>
-                    <p class="timer-status" id="timer-status" aria-live="polite">Ready when you are.</p>
 
-                    <div class="preset-heading">
-                        <h3>Choose a study rhythm</h3>
-                        <p>Select a preset to set the work-session timer.</p>
-                    </div>
-                    <div class="preset-grid" role="group" aria-label="Study and break presets">
-                        <button class="preset-button" type="button" data-work="15" data-break="3" data-name="Power Session">
-                            <span class="preset-time">15m / 3m</span>
-                            <strong>Power Session</strong>
-                            <span>Quick review / flashcards</span>
-                        </button>
-                        <button class="preset-button is-active" type="button" data-work="25" data-break="5" data-name="Pomodoro Technique" aria-pressed="true">
-                            <span class="preset-time">25m / 5m</span>
-                            <strong>Pomodoro Technique</strong>
-                            <span>Procrastination buster</span>
-                        </button>
-                        <button class="preset-button" type="button" data-work="45" data-break="15" data-name="School Block">
-                            <span class="preset-time">45m / 15m</span>
-                            <strong>School Block</strong>
-                            <span>Standard class rhythm</span>
-                        </button>
-                        <button class="preset-button" type="button" data-work="50" data-break="10" data-name="Deep Focus">
-                            <span class="preset-time">50m / 10m</span>
-                            <strong>Deep Focus</strong>
-                            <span>Essays &amp; complex problems</span>
-                        </button>
-                        <button class="preset-button" type="button" data-work="52" data-break="17" data-name="Peak Productivity">
-                            <span class="preset-time">52m / 17m</span>
-                            <strong>Peak Productivity</strong>
-                            <span>Based on Draugiem Group study</span>
-                        </button>
-                        <button class="preset-button" type="button" data-work="90" data-break="20" data-name="Ultradian Cycle">
-                            <span class="preset-time">90m / 20m</span>
-                            <strong>Ultradian Cycle</strong>
-                            <span>Advanced deep-work blocks</span>
-                        </button>
-                    </div>
-                    <form id="custom-preset-form" class="custom-preset-form">
-                        <div class="custom-preset-copy">
-                            <h3>Make your own timer</h3>
-                            <p>Choose the study and break lengths that work for you.</p>
-                        </div>
-                        <label>
-                            <span>Study minutes</span>
-                            <input id="custom-work-minutes" name="workMinutes" type="number" min="1" max="180" step="1" value="10" required>
-                        </label>
-                        <label>
-                            <span>Break minutes</span>
-                            <input id="custom-break-minutes" name="breakMinutes" type="number" min="1" max="60" step="1" value="5" required>
-                        </label>
-                        <button class="timer-button timer-button-primary" type="submit">Use custom times</button>
-                    </form>
-                    <p class="timer-note">The timer counts down the work session. Use the paired break length as a reminder to step away and recharge.</p>
-                </section>
-
-                <details class="main-card study-ratios-card">
+                <!-- SCHEDULER -->
+                <details class="main-card weekly-schedule-card" open>
                     <summary class="study-ratios-summary">
-                        <div>
-                            <div class="eyebrow">FIND YOUR RHYTHM</div>
-                            <h2 id="study-ratios-heading">Which study session should I choose?</h2>
-                            <p>Compare work-and-break rhythms to find a pace that fits your task.</p>
-                        </div>
-                        <span class="study-ratios-toggle">Show guide</span>
-                    </summary>
-                    <div class="ratio-guide-grid">
-                        <article class="ratio-guide">
-                            <h3>50 Minutes Study / 10 Minutes Break</h3>
-                            <p><strong>Best for:</strong> Deep focus, essay writing, and complex problem-solving.</p>
-                            <p><strong>Why it works:</strong> A focused block of about 45–50 minutes gives you time to settle into demanding work. A 10-minute break offers a chance to reset before the next block.</p>
-                        </article>
-                        <article class="ratio-guide">
-                            <h3>25 Minutes Study / 5 Minutes Break</h3>
-                            <p><strong>Best for:</strong> Beating procrastination, quick review sessions, and heavy memorization.</p>
-                            <p><strong>Why it works:</strong> Short work intervals can make it easier to get started and sustain attention. After four sessions, take a longer 15–30 minute break.</p>
-                        </article>
-                        <article class="ratio-guide">
-                            <h3>15 Minutes Study / 3 Minutes Break</h3>
-                            <p><strong>Best for:</strong> Flashcards, quick review, or starting a task that feels overwhelming.</p>
-                            <p><strong>Why it works:</strong> A short, clearly bounded session lowers the barrier to beginning and makes review easy to fit between other activities.</p>
-                        </article>
-                        <article class="ratio-guide">
-                            <h3>45 Minutes Study / 15 Minutes Break</h3>
-                            <p><strong>Best for:</strong> Homework sessions, textbook reading, and a class-like study block.</p>
-                            <p><strong>Why it works:</strong> A moderate work period leaves enough time to make progress, while a full 15-minute pause creates room to move, hydrate, or reset.</p>
-                        </article>
-                        <article class="ratio-guide">
-                            <h3>52 Minutes Study / 17 Minutes Break</h3>
-                            <p><strong>Best for:</strong> A structured focus block when you have a longer study window.</p>
-                            <p><strong>Why it works:</strong> This work-and-rest ratio is inspired by a Draugiem Group workplace productivity study. Treat it as one option to try; the best rhythm can vary from person to person.</p>
-                        </article>
-                        <article class="ratio-guide">
-                            <h3>90 Minutes Study / 20 Minutes Break</h3>
-                            <p><strong>Best for:</strong> Advanced deep-work blocks when you are rested and already comfortable sustaining focus.</p>
-                            <p><strong>Why it works:</strong> Some people prefer a longer uninterrupted block followed by a substantial pause. If your focus fades sooner, choose a shorter preset instead.</p>
-                        </article>
-                    </div>
-                </details>
-
-                <section class="main-card weekly-schedule-card" aria-labelledby="weekly-schedule-heading">
-                    <div class="schedule-section-header">
                         <div>
                             <div class="eyebrow">YOUR WEEK AT A GLANCE</div>
                             <h2 id="weekly-schedule-heading">Scheduler</h2>
                             <p id="calendar-week-range" class="calendar-week-range"></p>
                         </div>
+                        <span class="study-ratios-toggle">Show scheduler</span>
+                    </summary>
+
+                    <div class="schedule-section-header">
+                        <div>
+                            <div class="eyebrow">YOUR WEEK AT A GLANCE</div>
+                            <h2>Scheduler</h2>
+                            <p id="calendar-week-range" class="calendar-week-range"></p>
+                        </div>
+
                         <div class="calendar-navigation" aria-label="Calendar navigation">
                             <button id="calendar-previous" class="planner-action" type="button" aria-label="Previous week">‹</button>
                             <button id="calendar-today" class="timer-button" type="button">Today</button>
                             <button id="calendar-next" class="planner-action" type="button" aria-label="Next week">›</button>
                         </div>
                     </div>
+
                     <div class="weekly-grid-frame" aria-label="Week calendar from midnight to midnight">
                         <div class="weekly-grid" id="weekly-grid">
                             <div class="weekly-time-head" aria-hidden="true"></div>
-                            <div class="weekly-day-header"><span>Monday</span><time></time></div>
-                            <div class="weekly-day-header"><span>Tuesday</span><time></time></div>
-                            <div class="weekly-day-header"><span>Wednesday</span><time></time></div>
-                            <div class="weekly-day-header"><span>Thursday</span><time></time></div>
-                            <div class="weekly-day-header"><span>Friday</span><time></time></div>
-                            <div class="weekly-day-header"><span>Saturday</span><time></time></div>
-                            <div class="weekly-day-header"><span>Sunday</span><time></time></div>
+
+                            <div class="weekly-day-header">
+                                <span>Monday</span>
+                                <time></time>
+                            </div>
+                            <div class="weekly-day-header">
+                                <span>Tuesday</span>
+                                <time></time>
+                            </div>
+                            <div class="weekly-day-header">
+                                <span>Wednesday</span>
+                                <time></time>
+                            </div>
+                            <div class="weekly-day-header">
+                                <span>Thursday</span>
+                                <time></time>
+                            </div>
+                            <div class="weekly-day-header">
+                                <span>Friday</span>
+                                <time></time>
+                            </div>
+                            <div class="weekly-day-header">
+                                <span>Saturday</span>
+                                <time></time>
+                            </div>
+                            <div class="weekly-day-header">
+                                <span>Sunday</span>
+                                <time></time>
+                            </div>
+
                             <div id="calendar-time-column" class="calendar-time-column" aria-hidden="true"></div>
+
                             <div class="weekly-day-column" data-day-index="0" aria-label="Monday schedule"></div>
                             <div class="weekly-day-column" data-day-index="1" aria-label="Tuesday schedule"></div>
                             <div class="weekly-day-column" data-day-index="2" aria-label="Wednesday schedule"></div>
@@ -210,8 +136,267 @@
                             <div class="weekly-day-column" data-day-index="6" aria-label="Sunday schedule"></div>
                         </div>
                     </div>
+
                     <p id="planner-status" class="planner-status" aria-live="polite"></p>
-                </section>
+                </details>
+
+
+                <!-- STUDY TIMER -->
+                <details class="main-card timer-card" open>
+                    <summary class="study-ratios-summary">
+                        <div>
+                            <div class="eyebrow">FOCUS, THEN RECHARGE</div>
+                            <h2>Study Timer</h2>
+                            <p id="timer-session-label">Pomodoro Technique · Work session</p>
+                        </div>
+                        <span class="study-ratios-toggle">Show timer</span>
+                    </summary>
+
+                    <div class="timer-readout" id="timer-readout" role="timer" aria-live="off">25:00</div>
+
+                    <div class="timer-controls" aria-label="Timer controls">
+                        <button id="timer-start" class="timer-button timer-button-primary" type="button">
+                            Start
+                        </button>
+                        <button id="timer-pause" class="timer-button" type="button" disabled>
+                            Pause
+                        </button>
+                        <button id="timer-reset" class="timer-button" type="button">
+                            Reset
+                        </button>
+                    </div>
+
+                    <p class="timer-status" id="timer-status" aria-live="polite">
+                        Ready when you are.
+                    </p>
+
+                    <div class="preset-heading">
+                        <h3>Choose a study rhythm</h3>
+                        <p>Select a preset to set the work-session timer.</p>
+                    </div>
+
+                    <div class="preset-grid" role="group" aria-label="Study and break presets">
+                        <button
+                            class="preset-button"
+                            type="button"
+                            data-work="15"
+                            data-break="3"
+                            data-name="Power Session"
+                        >
+                            <span class="preset-time">15m / 3m</span>
+                            <strong>Power Session</strong>
+                            <span>Quick review / flashcards</span>
+                        </button>
+
+                        <button
+                            class="preset-button is-active"
+                            type="button"
+                            data-work="25"
+                            data-break="5"
+                            data-name="Pomodoro Technique"
+                            aria-pressed="true"
+                        >
+                            <span class="preset-time">25m / 5m</span>
+                            <strong>Pomodoro Technique</strong>
+                            <span>Procrastination buster</span>
+                        </button>
+
+                        <button
+                            class="preset-button"
+                            type="button"
+                            data-work="45"
+                            data-break="15"
+                            data-name="School Block"
+                        >
+                            <span class="preset-time">45m / 15m</span>
+                            <strong>School Block</strong>
+                            <span>Standard class rhythm</span>
+                        </button>
+
+                        <button
+                            class="preset-button"
+                            type="button"
+                            data-work="50"
+                            data-break="10"
+                            data-name="Deep Focus"
+                        >
+                            <span class="preset-time">50m / 10m</span>
+                            <strong>Deep Focus</strong>
+                            <span>Essays &amp; complex problems</span>
+                        </button>
+
+                        <button
+                            class="preset-button"
+                            type="button"
+                            data-work="52"
+                            data-break="17"
+                            data-name="Peak Productivity"
+                        >
+                            <span class="preset-time">52m / 17m</span>
+                            <strong>Peak Productivity</strong>
+                            <span>Based on Draugiem Group study</span>
+                        </button>
+
+                        <button
+                            class="preset-button"
+                            type="button"
+                            data-work="90"
+                            data-break="20"
+                            data-name="Ultradian Cycle"
+                        >
+                            <span class="preset-time">90m / 20m</span>
+                            <strong>Ultradian Cycle</strong>
+                            <span>Advanced deep-work blocks</span>
+                        </button>
+                    </div>
+
+                    <form id="custom-preset-form" class="custom-preset-form">
+                        <div class="custom-preset-copy">
+                            <h3>Make your own timer</h3>
+                            <p>Choose the study and break lengths that work for you.</p>
+                        </div>
+
+                        <label>
+                            <span>Study minutes</span>
+                            <input
+                                id="custom-work-minutes"
+                                name="workMinutes"
+                                type="number"
+                                min="1"
+                                max="180"
+                                step="1"
+                                value="10"
+                                required
+                            >
+                        </label>
+
+                        <label>
+                            <span>Break minutes</span>
+                            <input
+                                id="custom-break-minutes"
+                                name="breakMinutes"
+                                type="number"
+                                min="1"
+                                max="60"
+                                step="1"
+                                value="5"
+                                required
+                            >
+                        </label>
+
+                        <button class="timer-button timer-button-primary" type="submit">
+                            Use custom times
+                        </button>
+                    </form>
+
+                    <p class="timer-note">
+                        The timer counts down the work session. Use the paired break length
+                        as a reminder to step away and recharge.
+                    </p>
+                </details>
+
+
+                <!-- STUDY SESSION GUIDE - KEPT AT THE VERY BOTTOM -->
+                <details class="main-card study-ratios-card">
+                    <summary class="study-ratios-summary">
+                        <div>
+                            <div class="eyebrow">FIND YOUR RHYTHM</div>
+                            <h2 id="study-ratios-heading">
+                                Which study session should I choose?
+                            </h2>
+                            <p>
+                                Compare work-and-break rhythms to find a pace that fits your task.
+                            </p>
+                        </div>
+                        <span class="study-ratios-toggle">Show guide</span>
+                    </summary>
+
+                    <div class="ratio-guide-grid">
+                        <article class="ratio-guide">
+                            <h3>50 Minutes Study / 10 Minutes Break</h3>
+                            <p>
+                                <strong>Best for:</strong>
+                                Deep focus, essay writing, and complex problem-solving.
+                            </p>
+                            <p>
+                                <strong>Why it works:</strong>
+                                A focused block of about 45–50 minutes gives you time to
+                                settle into demanding work. A 10-minute break offers a chance
+                                to reset before the next block.
+                            </p>
+                        </article>
+
+                        <article class="ratio-guide">
+                            <h3>25 Minutes Study / 5 Minutes Break</h3>
+                            <p>
+                                <strong>Best for:</strong>
+                                Beating procrastination, quick review sessions, and heavy memorization.
+                            </p>
+                            <p>
+                                <strong>Why it works:</strong>
+                                Short work intervals can make it easier to get started and
+                                sustain attention. After four sessions, take a longer
+                                15–30 minute break.
+                            </p>
+                        </article>
+
+                        <article class="ratio-guide">
+                            <h3>15 Minutes Study / 3 Minutes Break</h3>
+                            <p>
+                                <strong>Best for:</strong>
+                                Flashcards, quick review, or starting a task that feels overwhelming.
+                            </p>
+                            <p>
+                                <strong>Why it works:</strong>
+                                A short, clearly bounded session lowers the barrier to beginning
+                                and makes review easy to fit between other activities.
+                            </p>
+                        </article>
+
+                        <article class="ratio-guide">
+                            <h3>45 Minutes Study / 15 Minutes Break</h3>
+                            <p>
+                                <strong>Best for:</strong>
+                                Homework sessions, textbook reading, and a class-like study block.
+                            </p>
+                            <p>
+                                <strong>Why it works:</strong>
+                                A moderate work period leaves enough time to make progress,
+                                while a full 15-minute pause creates room to move, hydrate,
+                                or reset.
+                            </p>
+                        </article>
+
+                        <article class="ratio-guide">
+                            <h3>52 Minutes Study / 17 Minutes Break</h3>
+                            <p>
+                                <strong>Best for:</strong>
+                                A structured focus block when you have a longer study window.
+                            </p>
+                            <p>
+                                <strong>Why it works:</strong>
+                                This work-and-rest ratio is inspired by a Draugiem Group
+                                workplace productivity study. Treat it as one option to try;
+                                the best rhythm can vary from person to person.
+                            </p>
+                        </article>
+
+                        <article class="ratio-guide">
+                            <h3>90 Minutes Study / 20 Minutes Break</h3>
+                            <p>
+                                <strong>Best for:</strong>
+                                Advanced deep-work blocks when you are rested and already
+                                comfortable sustaining focus.
+                            </p>
+                            <p>
+                                <strong>Why it works:</strong>
+                                Some people prefer a longer uninterrupted block followed
+                                by a substantial pause. If your focus fades sooner, choose
+                                a shorter preset instead.
+                            </p>
+                        </article>
+                    </div>
+                </details>
 
             </section>
         </main>
@@ -219,34 +404,61 @@
 
     <nav class="mobile-navigation" aria-label="Mobile navigation">
         <a href="{{ url_for('home') }}" class="mobile-link">
-            <span>▦</span><small>Home</small>
+            <span>▦</span>
+            <small>Home</small>
         </a>
         <a href="{{ url_for('resources') }}" class="mobile-link">
-            <span>📚</span><small>Resources</small>
+            <span>📚</span>
+            <small>Resources</small>
         </a>
         <a href="{{ url_for('noise_songs') }}" class="mobile-link">
-            <span>♫</span><small>Sounds</small>
+            <span>♫</span>
+            <small>Sounds</small>
         </a>
         <a href="{{ url_for('time_management') }}" class="mobile-link active" aria-current="page">
-            <span>✓</span><small>Schedule</small>
+            <span>✓</span>
+            <small>Schedule</small>
         </a>
         <a href="{{ url_for('support') }}" class="mobile-link">
-            <span>♡</span><small>Support</small>
+            <span>♡</span>
+            <small>Support</small>
         </a>
     </nav>
 
-    <dialog id="planner-dialog" class="schedule-dialog" aria-labelledby="planner-dialog-title" aria-modal="false">
+    <dialog
+        id="planner-dialog"
+        class="schedule-dialog"
+        aria-labelledby="planner-dialog-title"
+        aria-modal="false"
+    >
         <form id="planner-form" class="schedule-dialog-form">
             <header class="schedule-dialog-header">
                 <div>
                     <h2 id="planner-dialog-title">Add to calendar</h2>
                 </div>
-                <button id="planner-dialog-close" class="planner-action" type="button" aria-label="Close event editor">×</button>
+
+                <button
+                    id="planner-dialog-close"
+                    class="planner-action"
+                    type="button"
+                    aria-label="Close event editor"
+                >
+                    ×
+                </button>
             </header>
+
             <label class="schedule-dialog-field">
                 <span>Name</span>
-                <input id="planner-title" name="title" type="text" maxlength="120" required placeholder="e.g. Biology homework">
+                <input
+                    id="planner-title"
+                    name="title"
+                    type="text"
+                    maxlength="120"
+                    required
+                    placeholder="e.g. Biology homework"
+                >
             </label>
+
             <div class="schedule-dialog-row">
                 <label class="schedule-dialog-field">
                     <span>Type</span>
@@ -258,38 +470,101 @@
                         <option value="rest">Rest/Break</option>
                     </select>
                 </label>
+
                 <label class="schedule-dialog-field">
                     <span>Starts</span>
                     <input id="planner-time" name="time" type="time" required>
                 </label>
+
                 <label class="schedule-dialog-field">
                     <span>Ends</span>
                     <input id="planner-end-time" name="end_time" type="time" required>
                 </label>
             </div>
+
             <div class="schedule-dialog-field">
                 <div class="date-picker-label-row">
                     <span id="planner-date-label">Date</span>
-                    <button id="date-picker-toggle" class="planner-action date-picker-toggle" type="button">Change date</button>
+                    <button
+                        id="date-picker-toggle"
+                        class="planner-action date-picker-toggle"
+                        type="button"
+                    >
+                        Change date
+                    </button>
                 </div>
+
                 <input id="planner-date" name="date" type="hidden">
+
                 <div class="date-picker" id="date-picker" hidden>
                     <div class="date-picker-header">
-                        <button id="date-picker-previous" class="planner-action" type="button" aria-label="Previous month">‹</button>
+                        <button
+                            id="date-picker-previous"
+                            class="planner-action"
+                            type="button"
+                            aria-label="Previous month"
+                        >
+                            ‹
+                        </button>
+
                         <strong id="date-picker-month"></strong>
-                        <button id="date-picker-next" class="planner-action" type="button" aria-label="Next month">›</button>
+
+                        <button
+                            id="date-picker-next"
+                            class="planner-action"
+                            type="button"
+                            aria-label="Next month"
+                        >
+                            ›
+                        </button>
                     </div>
+
                     <div class="date-picker-weekdays" aria-hidden="true">
-                        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                        <span>Mon</span>
+                        <span>Tue</span>
+                        <span>Wed</span>
+                        <span>Thu</span>
+                        <span>Fri</span>
+                        <span>Sat</span>
+                        <span>Sun</span>
                     </div>
-                    <div id="date-picker-days" class="date-picker-days" role="group" aria-labelledby="planner-date-label"></div>
+
+                    <div
+                        id="date-picker-days"
+                        class="date-picker-days"
+                        role="group"
+                        aria-labelledby="planner-date-label"
+                    ></div>
                 </div>
             </div>
+
             <p id="planner-dialog-error" class="chat-dialog-error" role="alert"></p>
+
             <footer class="schedule-dialog-actions">
-                <button id="planner-dialog-delete" class="timer-button planner-delete" type="button" hidden>Delete</button>
-                <button id="planner-dialog-cancel" class="timer-button" type="button">Cancel</button>
-                <button class="timer-button timer-button-primary" id="planner-submit" type="submit">Save event</button>
+                <button
+                    id="planner-dialog-delete"
+                    class="timer-button planner-delete"
+                    type="button"
+                    hidden
+                >
+                    Delete
+                </button>
+
+                <button
+                    id="planner-dialog-cancel"
+                    class="timer-button"
+                    type="button"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    class="timer-button timer-button-primary"
+                    id="planner-submit"
+                    type="submit"
+                >
+                    Save event
+                </button>
             </footer>
         </form>
     </dialog>
@@ -302,10 +577,13 @@
             const startButton = document.getElementById("timer-start");
             const pauseButton = document.getElementById("timer-pause");
             const resetButton = document.getElementById("timer-reset");
-            const presetButtons = Array.from(document.querySelectorAll(".preset-button"));
+            const presetButtons = Array.from(
+                document.querySelectorAll(".preset-button")
+            );
             const customPresetForm = document.getElementById("custom-preset-form");
             const customWorkInput = document.getElementById("custom-work-minutes");
             const customBreakInput = document.getElementById("custom-break-minutes");
+
             const plannerForm = document.getElementById("planner-form");
             const plannerTitle = document.getElementById("planner-title");
             const plannerType = document.getElementById("planner-type");
@@ -317,41 +595,67 @@
             const plannerDialog = document.getElementById("planner-dialog");
             const plannerDialogTitle = document.getElementById("planner-dialog-title");
             const plannerDialogError = document.getElementById("planner-dialog-error");
+
             const datePickerMonth = document.getElementById("date-picker-month");
             const datePickerDays = document.getElementById("date-picker-days");
             const datePicker = document.getElementById("date-picker");
             const datePickerToggle = document.getElementById("date-picker-toggle");
+
             const calendarWeekRange = document.getElementById("calendar-week-range");
             const calendarTimeColumn = document.getElementById("calendar-time-column");
             const weeklyGrid = document.getElementById("weekly-grid");
-            const weeklyDays = Array.from(document.querySelectorAll(".weekly-day-column"));
-            const weeklyDayHeaders = Array.from(document.querySelectorAll(".weekly-day-header"));
+
+            const weeklyDays = Array.from(
+                document.querySelectorAll(".weekly-day-column")
+            );
+            const weeklyDayHeaders = Array.from(
+                document.querySelectorAll(".weekly-day-header")
+            );
+
             const calendarPrevious = document.getElementById("calendar-previous");
             const calendarNext = document.getElementById("calendar-next");
             const calendarToday = document.getElementById("calendar-today");
+
             const datePickerPrevious = document.getElementById("date-picker-previous");
             const datePickerNext = document.getElementById("date-picker-next");
+
             const plannerDialogClose = document.getElementById("planner-dialog-close");
             const plannerDialogCancel = document.getElementById("planner-dialog-cancel");
             const plannerDialogDelete = document.getElementById("planner-dialog-delete");
-            const eventStorageKey = "studytool_time_management_events_v1";
 
-            let selectedPreset = { work: 25, rest: 5, name: "Pomodoro Technique" };
+            const eventStorageKey =
+                "studytool_time_management_events_v1";
+
+            let selectedPreset = {
+                work: 25,
+                rest: 5,
+                name: "Pomodoro Technique"
+            };
+
             let sessionPhase = "work";
             let remainingSeconds = selectedPreset.work * 60;
             let timerInterval;
+
             let events = [];
             let eventsReady = false;
             let saveQueue = Promise.resolve(true);
+
             let weekOffset = 0;
             let pickerMonth = new Date();
             let editingEventId = null;
             let editorAnchor = null;
+
             plannerSubmitButton.disabled = true;
 
             function formatTime(totalSeconds) {
-                const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
-                const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+                const minutes = Math.floor(totalSeconds / 60)
+                    .toString()
+                    .padStart(2, "0");
+
+                const seconds = (totalSeconds % 60)
+                    .toString()
+                    .padStart(2, "0");
+
                 return `${minutes}:${seconds}`;
             }
 
@@ -360,13 +664,19 @@
             }
 
             function renderSessionLabel() {
-                const phaseLabel = sessionPhase === "work" ? "Work session" : "Break";
-                timerLabel.textContent = `${selectedPreset.name} · ${phaseLabel} (${selectedPreset.work} min work / ${selectedPreset.rest} min break)`;
+                const phaseLabel =
+                    sessionPhase === "work" ? "Work session" : "Break";
+
+                timerLabel.textContent =
+                    `${selectedPreset.name} · ${phaseLabel} ` +
+                    `(${selectedPreset.work} min work / ` +
+                    `${selectedPreset.rest} min break)`;
             }
 
             function stopTimer() {
                 window.clearInterval(timerInterval);
                 timerInterval = undefined;
+
                 startButton.disabled = false;
                 pauseButton.disabled = true;
             }
@@ -375,30 +685,45 @@
                 if (timerInterval || remainingSeconds <= 0) {
                     return;
                 }
-                timerStatus.textContent = `${selectedPreset.name} ${sessionPhase === "work" ? "study" : "break"} session in progress.`;
+
+                timerStatus.textContent =
+                    `${selectedPreset.name} ` +
+                    `${sessionPhase === "work" ? "study" : "break"} session in progress.`;
+
                 startButton.disabled = true;
                 pauseButton.disabled = false;
+
                 timerInterval = window.setInterval(() => {
                     remainingSeconds -= 1;
                     renderTimer();
+
                     if (remainingSeconds <= 0) {
                         remainingSeconds = 0;
                         renderTimer();
+
                         if (sessionPhase === "work") {
                             sessionPhase = "break";
                             remainingSeconds = selectedPreset.rest * 60;
+
                             renderSessionLabel();
                             renderTimer();
-                            timerStatus.textContent = "Study session complete. Your break has started.";
+
+                            timerStatus.textContent =
+                                "Study session complete. Your break has started.";
+
                             return;
                         }
 
                         stopTimer();
+
                         sessionPhase = "work";
                         remainingSeconds = selectedPreset.work * 60;
+
                         renderSessionLabel();
                         renderTimer();
-                        timerStatus.textContent = "Break complete. Start your next study session when you are ready.";
+
+                        timerStatus.textContent =
+                            "Break complete. Start your next study session when you are ready.";
                     }
                 }, 1000);
             }
@@ -407,17 +732,25 @@
                 if (!timerInterval) {
                     return;
                 }
+
                 stopTimer();
-                timerStatus.textContent = `Timer paused during your ${sessionPhase === "work" ? "study session" : "break"}.`;
+
+                timerStatus.textContent =
+                    `Timer paused during your ` +
+                    `${sessionPhase === "work" ? "study session" : "break"}.`;
             }
 
             function resetTimer() {
                 stopTimer();
+
                 sessionPhase = "work";
                 remainingSeconds = selectedPreset.work * 60;
+
                 renderSessionLabel();
                 renderTimer();
-                timerStatus.textContent = "Timer reset. Ready when you are.";
+
+                timerStatus.textContent =
+                    "Timer reset. Ready when you are.";
             }
 
             presetButtons.forEach((button) => {
@@ -426,20 +759,25 @@
                         preset.classList.remove("is-active");
                         preset.setAttribute("aria-pressed", "false");
                     });
+
                     customPresetForm.classList.remove("is-active");
+
                     button.classList.add("is-active");
                     button.setAttribute("aria-pressed", "true");
+
                     selectedPreset = {
                         work: Number(button.dataset.work),
                         rest: Number(button.dataset.break),
                         name: button.dataset.name
                     };
+
                     resetTimer();
                 });
             });
 
             customPresetForm.addEventListener("submit", (submitEvent) => {
                 submitEvent.preventDefault();
+
                 if (!customPresetForm.reportValidity()) {
                     return;
                 }
@@ -448,69 +786,107 @@
                     preset.classList.remove("is-active");
                     preset.setAttribute("aria-pressed", "false");
                 });
+
                 customPresetForm.classList.add("is-active");
+
                 selectedPreset = {
                     work: Number(customWorkInput.value),
                     rest: Number(customBreakInput.value),
                     name: "Custom Session"
                 };
+
                 resetTimer();
-                timerStatus.textContent = "Custom study and break times applied.";
+
+                timerStatus.textContent =
+                    "Custom study and break times applied.";
             });
 
             startButton.addEventListener("click", startTimer);
             pauseButton.addEventListener("click", pauseTimer);
             resetButton.addEventListener("click", resetTimer);
+
             renderTimer();
 
             function validEvents(candidate) {
                 if (!Array.isArray(candidate)) {
                     throw new Error("Saved planner data must be a list.");
                 }
-                return candidate.filter((event) =>
-                    event
-                    && typeof event.id === "string"
-                    && typeof event.title === "string"
-                    && typeof event.date === "string"
-                    && typeof event.type === "string"
-                    && typeof event.done === "boolean"
-                    && (!event.time || typeof event.time === "string")
-                ).map((event) => {
-                    const startTime = event.time || "09:00";
-                    let endTime = event.end_time;
-                    if (!endTime) {
-                        const duration = Number(event.duration_minutes) || 60;
-                        const [hours, minutes] = startTime.split(":").map(Number);
-                        const endMinutes = Math.min(hours * 60 + minutes + duration, 1439);
-                        endTime = `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:${String(endMinutes % 60).padStart(2, "0")}`;
-                    }
-                    const { duration_minutes: _legacyDuration, ...savedFields } = event;
-                    return {
-                        ...savedFields,
-                        time: startTime,
-                        end_time: endTime
-                    };
-                });
+
+                return candidate
+                    .filter((event) =>
+                        event &&
+                        typeof event.id === "string" &&
+                        typeof event.title === "string" &&
+                        typeof event.date === "string" &&
+                        typeof event.type === "string" &&
+                        typeof event.done === "boolean" &&
+                        (!event.time || typeof event.time === "string")
+                    )
+                    .map((event) => {
+                        const startTime = event.time || "09:00";
+
+                        let endTime = event.end_time;
+
+                        if (!endTime) {
+                            const duration =
+                                Number(event.duration_minutes) || 60;
+
+                            const [hours, minutes] =
+                                startTime.split(":").map(Number);
+
+                            const endMinutes = Math.min(
+                                hours * 60 + minutes + duration,
+                                1439
+                            );
+
+                            endTime =
+                                `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:` +
+                                `${String(endMinutes % 60).padStart(2, "0")}`;
+                        }
+
+                        const {
+                            duration_minutes: _legacyDuration,
+                            ...savedFields
+                        } = event;
+
+                        return {
+                            ...savedFields,
+                            time: startTime,
+                            end_time: endTime
+                        };
+                    });
             }
 
             async function loadEvents() {
                 try {
-                    const response = await fetch("/api/preferences/schedule");
+                    const response =
+                        await fetch("/api/preferences/schedule");
+
                     if (!response.ok) {
-                        throw new Error(`Schedule request failed with status ${response.status}.`);
+                        throw new Error(
+                            `Schedule request failed with status ${response.status}.`
+                        );
                     }
+
                     const data = await response.json();
+
                     events = validEvents(data.events);
                     eventsReady = true;
 
                     let migrationComplete = false;
+
                     try {
-                        migrationComplete = window.localStorage.getItem(
-                            "studytool_time_management_account_migrated_v1"
-                        ) === "complete";
+                        migrationComplete =
+                            window.localStorage.getItem(
+                                "studytool_time_management_account_migrated_v1"
+                            ) === "complete";
                     } catch (error) {
-                        console.warn("Schedule migration state could not be read.", error);
+                        console.warn(
+                            "Schedule migration state could not be read.",
+                            error
+                        );
                     }
+
                     if (events.length > 0 && !migrationComplete) {
                         try {
                             window.localStorage.setItem(
@@ -518,48 +894,92 @@
                                 "complete"
                             );
                         } catch (error) {
-                            console.warn("Schedule migration state could not be saved.", error);
+                            console.warn(
+                                "Schedule migration state could not be saved.",
+                                error
+                            );
                         }
-                    } else if (events.length === 0 && !migrationComplete) {
+                    } else if (
+                        events.length === 0 &&
+                        !migrationComplete
+                    ) {
                         let migrationSaveFailed = false;
+
                         try {
-                            const legacyEvents = window.localStorage.getItem(eventStorageKey);
+                            const legacyEvents =
+                                window.localStorage.getItem(eventStorageKey);
+
                             if (legacyEvents) {
-                                const importedEvents = validEvents(JSON.parse(legacyEvents));
+                                const importedEvents =
+                                    validEvents(JSON.parse(legacyEvents));
+
                                 if (importedEvents.length > 0) {
-                                    const importResponse = await fetch("/api/preferences/schedule", {
-                                        method: "PUT",
-                                        headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify({ events: importedEvents })
-                                    });
+                                    const importResponse =
+                                        await fetch(
+                                            "/api/preferences/schedule",
+                                            {
+                                                method: "PUT",
+                                                headers: {
+                                                    "Content-Type":
+                                                        "application/json"
+                                                },
+                                                body: JSON.stringify({
+                                                    events: importedEvents
+                                                })
+                                            }
+                                        );
+
                                     if (!importResponse.ok) {
                                         migrationSaveFailed = true;
                                         eventsReady = false;
-                                        throw new Error(`Schedule migration failed with status ${importResponse.status}.`);
+
+                                        throw new Error(
+                                            `Schedule migration failed with status ${importResponse.status}.`
+                                        );
                                     }
-                                    const importedData = await importResponse.json();
-                                    events = validEvents(importedData.events);
+
+                                    const importedData =
+                                        await importResponse.json();
+
+                                    events =
+                                        validEvents(importedData.events);
                                 }
                             }
+
                             window.localStorage.setItem(
                                 "studytool_time_management_account_migrated_v1",
                                 "complete"
                             );
                         } catch (error) {
                             if (migrationSaveFailed) {
-                                plannerStatus.textContent = "Your existing schedule could not be migrated. Refresh the page or try again before editing it.";
+                                plannerStatus.textContent =
+                                    "Your existing schedule could not be migrated. " +
+                                    "Refresh the page or try again before editing it.";
                             }
-                            console.warn("Existing browser schedule could not be migrated.", error);
+
+                            console.warn(
+                                "Existing browser schedule could not be migrated.",
+                                error
+                            );
                         }
                     }
+
                     if (eventsReady) {
-                        plannerStatus.textContent = "Your schedule is loaded from your account.";
+                        plannerStatus.textContent =
+                            "Your schedule is loaded from your account.";
                     }
                 } catch (error) {
-                    plannerStatus.textContent = "Your schedule could not be loaded. Refresh the page or try again later.";
-                    console.error("Planner items could not be loaded from your account.", error);
+                    plannerStatus.textContent =
+                        "Your schedule could not be loaded. " +
+                        "Refresh the page or try again later.";
+
+                    console.error(
+                        "Planner items could not be loaded from your account.",
+                        error
+                    );
                 } finally {
                     plannerSubmitButton.disabled = !eventsReady;
+
                     renderScheduleEvents();
                     renderCurrentTimeIndicator();
                 }
@@ -569,206 +989,585 @@
                 if (!eventsReady) {
                     return Promise.resolve(false);
                 }
-                const snapshot = events.map((event) => ({ ...event }));
-                plannerStatus.textContent = "Saving your schedule to your account...";
-                saveQueue = saveQueue.then(async () => {
-                    const response = await fetch("/api/preferences/schedule", {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ events: snapshot })
+
+                const snapshot =
+                    events.map((event) => ({ ...event }));
+
+                plannerStatus.textContent =
+                    "Saving your schedule to your account...";
+
+                saveQueue = saveQueue
+                    .then(async () => {
+                        const response =
+                            await fetch("/api/preferences/schedule", {
+                                method: "PUT",
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({
+                                    events: snapshot
+                                })
+                            });
+
+                        if (!response.ok) {
+                            throw new Error(
+                                `Schedule save failed with status ${response.status}.`
+                            );
+                        }
+
+                        plannerStatus.textContent =
+                            "Your schedule is saved to your account.";
+
+                        return true;
+                    })
+                    .catch((error) => {
+                        plannerStatus.textContent =
+                            "Your changes could not be saved to your account. " +
+                            "Please try again.";
+
+                        console.error(
+                            "Planner items could not be saved to your account.",
+                            error
+                        );
+
+                        return false;
                     });
-                    if (!response.ok) {
-                        throw new Error(`Schedule save failed with status ${response.status}.`);
-                    }
-                    plannerStatus.textContent = "Your schedule is saved to your account.";
-                    return true;
-                }).catch((error) => {
-                    plannerStatus.textContent = "Your changes could not be saved to your account. Please try again.";
-                    console.error("Planner items could not be saved to your account.", error);
-                    return false;
-                });
+
                 return saveQueue;
             }
 
             function formatDateKey(date) {
                 const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, "0");
-                const day = String(date.getDate()).padStart(2, "0");
+                const month =
+                    String(date.getMonth() + 1).padStart(2, "0");
+                const day =
+                    String(date.getDate()).padStart(2, "0");
+
                 return `${year}-${month}-${day}`;
             }
 
             function parseDateKey(dateKey) {
-                const [year, month, day] = dateKey.split("-").map(Number);
+                const [year, month, day] =
+                    dateKey.split("-").map(Number);
+
                 return new Date(year, month - 1, day);
             }
 
             function defaultEndTime(startTime) {
-                const [hours, minutes] = startTime.split(":").map(Number);
-                const endMinutes = Math.min(hours * 60 + minutes + 60, 1439);
-                return `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:${String(endMinutes % 60).padStart(2, "0")}`;
+                const [hours, minutes] =
+                    startTime.split(":").map(Number);
+
+                const endMinutes = Math.min(
+                    hours * 60 + minutes + 60,
+                    1439
+                );
+
+                return (
+                    `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:` +
+                    `${String(endMinutes % 60).padStart(2, "0")}`
+                );
             }
 
             function renderCalendarDates() {
                 const today = new Date();
-                const weekStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
-                weekStart.setDate(weekStart.getDate() + weekOffset * 7);
+
+                const weekStart =
+                    new Date(
+                        today.getFullYear(),
+                        today.getMonth(),
+                        today.getDate()
+                    );
+
+                weekStart.setDate(
+                    weekStart.getDate() -
+                    ((weekStart.getDay() + 6) % 7)
+                );
+
+                weekStart.setDate(
+                    weekStart.getDate() + weekOffset * 7
+                );
+
                 const weekEnd = new Date(weekStart);
-                weekEnd.setDate(weekStart.getDate() + 6);
-                const rangeOptions = { month: "short", day: "numeric" };
-                calendarWeekRange.textContent = `${weekStart.toLocaleDateString(undefined, rangeOptions)} – ${weekEnd.toLocaleDateString(undefined, { ...rangeOptions, year: "numeric" })}`;
+
+                weekEnd.setDate(
+                    weekStart.getDate() + 6
+                );
+
+                const rangeOptions = {
+                    month: "short",
+                    day: "numeric"
+                };
+
+                calendarWeekRange.textContent =
+                    `${weekStart.toLocaleDateString(
+                        undefined,
+                        rangeOptions
+                    )} – ${weekEnd.toLocaleDateString(
+                        undefined,
+                        {
+                            ...rangeOptions,
+                            year: "numeric"
+                        }
+                    )}`;
 
                 calendarTimeColumn.replaceChildren();
+
                 for (let hour = 0; hour < 24; hour += 1) {
                     const label = document.createElement("span");
-                    label.className = "calendar-hour-label";
+
+                    label.className =
+                        "calendar-hour-label";
+
                     if (hour !== 0) {
-                        label.textContent = `${String(hour).padStart(2, "0")}:00`;
+                        label.textContent =
+                            `${String(hour).padStart(2, "0")}:00`;
                     }
+
                     calendarTimeColumn.append(label);
                 }
 
                 weeklyDays.forEach((dayColumn, index) => {
                     const date = new Date(weekStart);
-                    date.setDate(weekStart.getDate() + index);
-                    const dateKey = formatDateKey(date);
-                    dayColumn.dataset.calendarDate = dateKey;
-                    const header = weeklyDayHeaders[index];
-                    const weekdayLabel = header.querySelector("span");
-                    const dateLabel = header.querySelector("time");
-                    weekdayLabel.textContent = date.toLocaleDateString(undefined, { weekday: "short" });
-                    dateLabel.dateTime = dateKey;
-                    dateLabel.textContent = date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-                    const isToday = dateKey === formatDateKey(today);
-                    header.classList.toggle("is-today", isToday);
-                    dayColumn.classList.toggle("is-today", isToday);
+
+                    date.setDate(
+                        weekStart.getDate() + index
+                    );
+
+                    const dateKey =
+                        formatDateKey(date);
+
+                    dayColumn.dataset.calendarDate =
+                        dateKey;
+
+                    const header =
+                        weeklyDayHeaders[index];
+
+                    const weekdayLabel =
+                        header.querySelector("span");
+
+                    const dateLabel =
+                        header.querySelector("time");
+
+                    weekdayLabel.textContent =
+                        date.toLocaleDateString(
+                            undefined,
+                            { weekday: "short" }
+                        );
+
+                    dateLabel.dateTime =
+                        dateKey;
+
+                    dateLabel.textContent =
+                        date.toLocaleDateString(
+                            undefined,
+                            {
+                                month: "short",
+                                day: "numeric"
+                            }
+                        );
+
+                    const isToday =
+                        dateKey ===
+                        formatDateKey(today);
+
+                    header.classList.toggle(
+                        "is-today",
+                        isToday
+                    );
+
+                    dayColumn.classList.toggle(
+                        "is-today",
+                        isToday
+                    );
+
                     dayColumn.setAttribute(
                         "aria-label",
-                        `${date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} schedule`
+                        `${date.toLocaleDateString(
+                            undefined,
+                            {
+                                weekday: "long",
+                                month: "long",
+                                day: "numeric"
+                            }
+                        )} schedule`
                     );
+
                     if (isToday) {
-                        header.setAttribute("aria-current", "date");
+                        header.setAttribute(
+                            "aria-current",
+                            "date"
+                        );
                     } else {
-                        header.removeAttribute("aria-current");
+                        header.removeAttribute(
+                            "aria-current"
+                        );
                     }
 
                     dayColumn.replaceChildren();
-                    for (let hour = 0; hour < 24; hour += 1) {
-                        const slot = document.createElement("button");
+
+                    for (
+                        let hour = 0;
+                        hour < 24;
+                        hour += 1
+                    ) {
+                        const slot =
+                            document.createElement("button");
+
                         slot.type = "button";
-                        slot.className = "weekly-hour-slot";
-                        slot.dataset.hour = String(hour);
+                        slot.className =
+                            "weekly-hour-slot";
+
+                        slot.dataset.hour =
+                            String(hour);
+
                         slot.setAttribute(
                             "aria-label",
-                            `Add to ${dayColumn.getAttribute("aria-label")} at ${String(hour).padStart(2, "0")}:00`
+                            `Add to ${dayColumn.getAttribute(
+                                "aria-label"
+                            )} at ${String(hour).padStart(
+                                2,
+                                "0"
+                            )}:00`
                         );
+
                         dayColumn.append(slot);
                     }
-                    const eventLayer = document.createElement("div");
-                    eventLayer.className = "weekly-event-layer";
-                    eventLayer.setAttribute("aria-label", "Scheduled events");
+
+                    const eventLayer =
+                        document.createElement("div");
+
+                    eventLayer.className =
+                        "weekly-event-layer";
+
+                    eventLayer.setAttribute(
+                        "aria-label",
+                        "Scheduled events"
+                    );
+
                     dayColumn.append(eventLayer);
                 });
+
                 renderScheduleEvents();
                 renderCurrentTimeIndicator();
             }
 
             function renderScheduleEvents() {
                 weeklyDays.forEach((dayColumn) => {
-                    const dayDate = dayColumn.dataset.calendarDate;
-                    const eventLayer = dayColumn.querySelector(".weekly-event-layer");
+                    const dayDate =
+                        dayColumn.dataset.calendarDate;
+
+                    const eventLayer =
+                        dayColumn.querySelector(
+                            ".weekly-event-layer"
+                        );
+
                     if (!eventLayer) {
                         return;
                     }
+
                     eventLayer.replaceChildren();
 
-                    events.filter((event) => event.date === dayDate).forEach((event) => {
-                        const block = document.createElement("button");
-                        block.type = "button";
-                        block.className = `schedule-block user-schedule-block schedule-${event.type}${event.done ? " is-done" : ""}`;
-                        const startMinutes = (Number(event.time?.slice(0, 2) || 0) * 60)
-                            + Number(event.time?.slice(3, 5) || 0);
-                        const endParts = (event.end_time || "10:00").split(":").map(Number);
-                        const endMinutes = endParts[0] * 60 + endParts[1];
-                        const hourHeight = dayColumn.querySelector(".weekly-hour-slot")?.getBoundingClientRect().height || 18;
-                        block.style.top = `${startMinutes * hourHeight / 60 + 1}px`;
-                        block.style.height = `${Math.max(13, (endMinutes - startMinutes) * hourHeight / 60 - 2)}px`;
-                        block.setAttribute("aria-label", `${event.title}, ${event.time || "00:00"} to ${event.end_time || "10:00"}`);
-                        const title = document.createElement("strong");
-                        title.textContent = event.title;
-                        block.append(title);
-                        block.addEventListener("click", () => openEventEditor(
-                            dayDate,
-                            event.time || "00:00",
-                            event,
-                            block
-                        ));
-                        eventLayer.append(block);
-                    });
+                    events
+                        .filter(
+                            (event) =>
+                                event.date === dayDate
+                        )
+                        .forEach((event) => {
+                            const block =
+                                document.createElement("button");
+
+                            block.type = "button";
+
+                            block.className =
+                                `schedule-block user-schedule-block ` +
+                                `schedule-${event.type}` +
+                                `${event.done ? " is-done" : ""}`;
+
+                            const startMinutes =
+                                (
+                                    Number(
+                                        event.time?.slice(
+                                            0,
+                                            2
+                                        ) || 0
+                                    ) * 60
+                                ) +
+                                Number(
+                                    event.time?.slice(
+                                        3,
+                                        5
+                                    ) || 0
+                                );
+
+                            const endParts =
+                                (
+                                    event.end_time ||
+                                    "10:00"
+                                )
+                                    .split(":")
+                                    .map(Number);
+
+                            const endMinutes =
+                                endParts[0] * 60 +
+                                endParts[1];
+
+                            const hourHeight =
+                                dayColumn
+                                    .querySelector(
+                                        ".weekly-hour-slot"
+                                    )
+                                    ?.getBoundingClientRect()
+                                    .height || 18;
+
+                            block.style.top =
+                                `${startMinutes * hourHeight / 60 + 1}px`;
+
+                            block.style.height =
+                                `${Math.max(
+                                    13,
+                                    (endMinutes - startMinutes) *
+                                        hourHeight /
+                                        60 -
+                                        2
+                                )}px`;
+
+                            block.setAttribute(
+                                "aria-label",
+                                `${event.title}, ` +
+                                `${event.time || "00:00"} to ` +
+                                `${event.end_time || "10:00"}`
+                            );
+
+                            const title =
+                                document.createElement(
+                                    "strong"
+                                );
+
+                            title.textContent =
+                                event.title;
+
+                            block.append(title);
+
+                            block.addEventListener(
+                                "click",
+                                () =>
+                                    openEventEditor(
+                                        dayDate,
+                                        event.time ||
+                                            "00:00",
+                                        event,
+                                        block
+                                    )
+                            );
+
+                            eventLayer.append(block);
+                        });
                 });
             }
 
             function renderCurrentTimeIndicator() {
                 weeklyDays.forEach((dayColumn) => {
-                    dayColumn.querySelector(".current-time-indicator")?.remove();
+                    dayColumn
+                        .querySelector(
+                            ".current-time-indicator"
+                        )
+                        ?.remove();
                 });
 
-                const todayKey = formatDateKey(new Date());
-                const todayColumn = weeklyDays.find(
-                    (dayColumn) => dayColumn.dataset.calendarDate === todayKey
-                );
+                const todayKey =
+                    formatDateKey(new Date());
+
+                const todayColumn =
+                    weeklyDays.find(
+                        (dayColumn) =>
+                            dayColumn.dataset
+                                .calendarDate ===
+                            todayKey
+                    );
+
                 if (!todayColumn) {
                     return;
                 }
 
                 const now = new Date();
-                const hourHeight = todayColumn.querySelector(".weekly-hour-slot")
-                    ?.getBoundingClientRect().height || 18;
-                const indicator = document.createElement("div");
-                indicator.className = "current-time-indicator";
-                indicator.setAttribute("role", "img");
+
+                const hourHeight =
+                    todayColumn
+                        .querySelector(
+                            ".weekly-hour-slot"
+                        )
+                        ?.getBoundingClientRect()
+                        .height || 18;
+
+                const indicator =
+                    document.createElement("div");
+
+                indicator.className =
+                    "current-time-indicator";
+
+                indicator.setAttribute(
+                    "role",
+                    "img"
+                );
+
                 indicator.setAttribute(
                     "aria-label",
-                    `Current time ${now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+                    `Current time ${now.toLocaleTimeString(
+                        [],
+                        {
+                            hour: "2-digit",
+                            minute: "2-digit"
+                        }
+                    )}`
                 );
-                indicator.style.top = `${(now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60) * hourHeight / 60}px`;
-                todayColumn.querySelector(".weekly-event-layer").append(indicator);
+
+                indicator.style.top =
+                    `${(
+                        (
+                            now.getHours() * 60 +
+                            now.getMinutes() +
+                            now.getSeconds() / 60
+                        ) *
+                        hourHeight /
+                        60
+                    )}px`;
+
+                todayColumn
+                    .querySelector(
+                        ".weekly-event-layer"
+                    )
+                    .append(indicator);
             }
 
             function renderDatePicker() {
-                datePickerMonth.textContent = pickerMonth.toLocaleDateString(undefined, {
-                    month: "long",
-                    year: "numeric"
-                });
+                datePickerMonth.textContent =
+                    pickerMonth.toLocaleDateString(
+                        undefined,
+                        {
+                            month: "long",
+                            year: "numeric"
+                        }
+                    );
+
                 datePickerDays.replaceChildren();
-                const firstOfMonth = new Date(pickerMonth.getFullYear(), pickerMonth.getMonth(), 1);
-                const gridStart = new Date(firstOfMonth);
-                gridStart.setDate(1 - ((firstOfMonth.getDay() + 6) % 7));
-                for (let index = 0; index < 42; index += 1) {
-                    const day = new Date(gridStart);
-                    day.setDate(gridStart.getDate() + index);
-                    const dateKey = formatDateKey(day);
-                    const dayButton = document.createElement("button");
+
+                const firstOfMonth =
+                    new Date(
+                        pickerMonth.getFullYear(),
+                        pickerMonth.getMonth(),
+                        1
+                    );
+
+                const gridStart =
+                    new Date(firstOfMonth);
+
+                gridStart.setDate(
+                    1 -
+                    (
+                        (firstOfMonth.getDay() + 6) %
+                        7
+                    )
+                );
+
+                for (
+                    let index = 0;
+                    index < 42;
+                    index += 1
+                ) {
+                    const day =
+                        new Date(gridStart);
+
+                    day.setDate(
+                        gridStart.getDate() +
+                        index
+                    );
+
+                    const dateKey =
+                        formatDateKey(day);
+
+                    const dayButton =
+                        document.createElement(
+                            "button"
+                        );
+
                     dayButton.type = "button";
-                    dayButton.className = "date-picker-day";
-                    dayButton.textContent = String(day.getDate());
-                    dayButton.classList.toggle("is-outside-month", day.getMonth() !== pickerMonth.getMonth());
-                    dayButton.classList.toggle("is-selected", dateKey === plannerDate.value);
-                    dayButton.classList.toggle("is-today", dateKey === formatDateKey(new Date()));
-                    dayButton.setAttribute("aria-pressed", String(dateKey === plannerDate.value));
-                    dayButton.setAttribute("aria-label", day.toLocaleDateString(undefined, {
-                        weekday: "long",
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric"
-                    }));
-                    dayButton.addEventListener("click", () => {
-                        plannerDate.value = dateKey;
-                        pickerMonth = new Date(day.getFullYear(), day.getMonth(), 1);
-                        datePickerToggle.textContent = `Date: ${day.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
-                        renderDatePicker();
-                    });
-                    datePickerDays.append(dayButton);
+                    dayButton.className =
+                        "date-picker-day";
+
+                    dayButton.textContent =
+                        String(day.getDate());
+
+                    dayButton.classList.toggle(
+                        "is-outside-month",
+                        day.getMonth() !==
+                            pickerMonth.getMonth()
+                    );
+
+                    dayButton.classList.toggle(
+                        "is-selected",
+                        dateKey ===
+                            plannerDate.value
+                    );
+
+                    dayButton.classList.toggle(
+                        "is-today",
+                        dateKey ===
+                            formatDateKey(
+                                new Date()
+                            )
+                    );
+
+                    dayButton.setAttribute(
+                        "aria-pressed",
+                        String(
+                            dateKey ===
+                                plannerDate.value
+                        )
+                    );
+
+                    dayButton.setAttribute(
+                        "aria-label",
+                        day.toLocaleDateString(
+                            undefined,
+                            {
+                                weekday: "long",
+                                month: "long",
+                                day: "numeric",
+                                year: "numeric"
+                            }
+                        )
+                    );
+
+                    dayButton.addEventListener(
+                        "click",
+                        () => {
+                            plannerDate.value =
+                                dateKey;
+
+                            pickerMonth =
+                                new Date(
+                                    day.getFullYear(),
+                                    day.getMonth(),
+                                    1
+                                );
+
+                            datePickerToggle.textContent =
+                                `Date: ${day.toLocaleDateString(
+                                    undefined,
+                                    {
+                                        month: "short",
+                                        day: "numeric",
+                                        year: "numeric"
+                                    }
+                                )}`;
+
+                            renderDatePicker();
+                        }
+                    );
+
+                    datePickerDays.append(
+                        dayButton
+                    );
                 }
             }
 
@@ -776,191 +1575,484 @@
                 if (!anchor) {
                     return;
                 }
-                const rect = anchor.getBoundingClientRect();
-                const editorRect = plannerDialog.getBoundingClientRect();
+
+                const rect =
+                    anchor.getBoundingClientRect();
+
+                const editorRect =
+                    plannerDialog.getBoundingClientRect();
+
                 const gap = 8;
-                let left = rect.right + gap;
-                if (left + editorRect.width > window.innerWidth - 8) {
-                    left = rect.left - editorRect.width - gap;
+
+                let left =
+                    rect.right + gap;
+
+                if (
+                    left + editorRect.width >
+                    window.innerWidth - 8
+                ) {
+                    left =
+                        rect.left -
+                        editorRect.width -
+                        gap;
                 }
-                left = Math.max(8, Math.min(left, window.innerWidth - editorRect.width - 8));
-                const top = Math.max(8, Math.min(
-                    rect.top,
-                    window.innerHeight - editorRect.height - 8
-                ));
-                plannerDialog.style.left = `${left}px`;
-                plannerDialog.style.top = `${top}px`;
+
+                left = Math.max(
+                    8,
+                    Math.min(
+                        left,
+                        window.innerWidth -
+                            editorRect.width -
+                            8
+                    )
+                );
+
+                const top = Math.max(
+                    8,
+                    Math.min(
+                        rect.top,
+                        window.innerHeight -
+                            editorRect.height -
+                            8
+                    )
+                );
+
+                plannerDialog.style.left =
+                    `${left}px`;
+
+                plannerDialog.style.top =
+                    `${top}px`;
             }
 
-            function openEventEditor(dateKey, time, event = null, anchor = null) {
+            function openEventEditor(
+                dateKey,
+                time,
+                event = null,
+                anchor = null
+            ) {
                 if (!eventsReady) {
-                    plannerStatus.textContent = "Wait for your saved schedule to load before adding events.";
+                    plannerStatus.textContent =
+                        "Wait for your saved schedule to load before adding events.";
                     return;
                 }
-                editingEventId = event?.id || null;
+
+                editingEventId =
+                    event?.id || null;
+
                 editorAnchor = anchor;
+
                 plannerForm.reset();
-                plannerDialogError.textContent = "";
-                plannerDialogTitle.textContent = event ? "Edit item" : "Add item";
-                plannerSubmitButton.textContent = event ? "Save changes" : "Save event";
-                plannerDialogDelete.hidden = !event;
-                plannerTitle.value = event?.title || "";
-                plannerType.value = event?.type || "to-do";
-                plannerDate.value = event?.date || dateKey;
-                plannerTime.value = event?.time || time || "09:00";
-                plannerEndTime.value = event?.end_time || defaultEndTime(plannerTime.value);
-                pickerMonth = parseDateKey(plannerDate.value);
+
+                plannerDialogError.textContent =
+                    "";
+
+                plannerDialogTitle.textContent =
+                    event
+                        ? "Edit item"
+                        : "Add item";
+
+                plannerSubmitButton.textContent =
+                    event
+                        ? "Save changes"
+                        : "Save event";
+
+                plannerDialogDelete.hidden =
+                    !event;
+
+                plannerTitle.value =
+                    event?.title || "";
+
+                plannerType.value =
+                    event?.type || "to-do";
+
+                plannerDate.value =
+                    event?.date || dateKey;
+
+                plannerTime.value =
+                    event?.time || time || "09:00";
+
+                plannerEndTime.value =
+                    event?.end_time ||
+                    defaultEndTime(
+                        plannerTime.value
+                    );
+
+                pickerMonth =
+                    parseDateKey(
+                        plannerDate.value
+                    );
+
                 datePicker.hidden = true;
-                datePickerToggle.textContent = `Date: ${parseDateKey(plannerDate.value).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
+
+                datePickerToggle.textContent =
+                    `Date: ${parseDateKey(
+                        plannerDate.value
+                    ).toLocaleDateString(
+                        undefined,
+                        {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric"
+                        }
+                    )}`;
+
                 renderDatePicker();
+
                 plannerDialog.show();
+
                 positionEventEditor(anchor);
+
                 plannerTitle.focus();
             }
 
             function closeEventEditor() {
                 plannerDialog.close();
+
                 editingEventId = null;
                 editorAnchor = null;
-                plannerDialogError.textContent = "";
+
+                plannerDialogError.textContent =
+                    "";
             }
 
-            weeklyGrid.addEventListener("click", (clickEvent) => {
-                const slot = clickEvent.target.closest(".weekly-hour-slot");
-                if (!slot || !eventsReady) {
-                    return;
+            weeklyGrid.addEventListener(
+                "click",
+                (clickEvent) => {
+                    const slot =
+                        clickEvent.target.closest(
+                            ".weekly-hour-slot"
+                        );
+
+                    if (
+                        !slot ||
+                        !eventsReady
+                    ) {
+                        return;
+                    }
+
+                    const dayColumn =
+                        slot.closest(
+                            ".weekly-day-column"
+                        );
+
+                    openEventEditor(
+                        dayColumn.dataset
+                            .calendarDate,
+                        `${String(
+                            Number(slot.dataset.hour)
+                        ).padStart(2, "0")}:00`,
+                        null,
+                        slot
+                    );
                 }
-                const dayColumn = slot.closest(".weekly-day-column");
-                openEventEditor(
-                    dayColumn.dataset.calendarDate,
-                    `${String(Number(slot.dataset.hour)).padStart(2, "0")}:00`,
-                    null,
-                    slot
-                );
-            });
-            datePickerToggle.addEventListener("click", () => {
-                datePicker.hidden = !datePicker.hidden;
-                datePickerToggle.textContent = datePicker.hidden
-                    ? `Date: ${parseDateKey(plannerDate.value).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`
-                    : "Hide calendar";
-                window.requestAnimationFrame(() => positionEventEditor(editorAnchor));
-            });
-            plannerDialogClose.addEventListener("click", closeEventEditor);
-            plannerDialogCancel.addEventListener("click", closeEventEditor);
-            plannerDialogDelete.addEventListener("click", async () => {
-                if (!editingEventId) {
-                    return;
+            );
+
+            datePickerToggle.addEventListener(
+                "click",
+                () => {
+                    datePicker.hidden =
+                        !datePicker.hidden;
+
+                    datePickerToggle.textContent =
+                        datePicker.hidden
+                            ? `Date: ${parseDateKey(
+                                plannerDate.value
+                            ).toLocaleDateString(
+                                undefined,
+                                {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric"
+                                }
+                            )}`
+                            : "Hide calendar";
+
+                    window.requestAnimationFrame(
+                        () =>
+                            positionEventEditor(
+                                editorAnchor
+                            )
+                    );
                 }
-                const originalEvents = events.map((event) => ({ ...event }));
-                events = events.filter((event) => event.id !== editingEventId);
-                const saved = await saveEvents();
-                if (!saved) {
-                    events = originalEvents;
-                    plannerDialogError.textContent = "Could not delete this calendar item. Please try again.";
+            );
+
+            plannerDialogClose.addEventListener(
+                "click",
+                closeEventEditor
+            );
+
+            plannerDialogCancel.addEventListener(
+                "click",
+                closeEventEditor
+            );
+
+            plannerDialogDelete.addEventListener(
+                "click",
+                async () => {
+                    if (!editingEventId) {
+                        return;
+                    }
+
+                    const originalEvents =
+                        events.map((event) => ({
+                            ...event
+                        }));
+
+                    events =
+                        events.filter(
+                            (event) =>
+                                event.id !==
+                                editingEventId
+                        );
+
+                    const saved =
+                        await saveEvents();
+
+                    if (!saved) {
+                        events =
+                            originalEvents;
+
+                        plannerDialogError.textContent =
+                            "Could not delete this calendar item. Please try again.";
+
+                        renderCalendarDates();
+
+                        return;
+                    }
+
+                    plannerStatus.textContent =
+                        "Calendar item deleted.";
+
+                    closeEventEditor();
+
                     renderCalendarDates();
-                    return;
                 }
-                plannerStatus.textContent = "Calendar item deleted.";
-                closeEventEditor();
-                renderCalendarDates();
-            });
-            plannerDialog.addEventListener("click", (clickEvent) => {
-                clickEvent.stopPropagation();
-            });
-            document.addEventListener("pointerdown", (pointerEvent) => {
-                if (plannerDialog.open && !plannerDialog.contains(pointerEvent.target)) {
-                    closeEventEditor();
-                }
-            });
-            window.addEventListener("resize", () => {
-                if (plannerDialog.open) {
-                    positionEventEditor(editorAnchor);
-                }
-            });
-            datePickerPrevious.addEventListener("click", () => {
-                pickerMonth = new Date(pickerMonth.getFullYear(), pickerMonth.getMonth() - 1, 1);
-                renderDatePicker();
-            });
-            datePickerNext.addEventListener("click", () => {
-                pickerMonth = new Date(pickerMonth.getFullYear(), pickerMonth.getMonth() + 1, 1);
-                renderDatePicker();
-            });
-            calendarPrevious.addEventListener("click", () => {
-                weekOffset -= 1;
-                renderCalendarDates();
-            });
-            calendarNext.addEventListener("click", () => {
-                weekOffset += 1;
-                renderCalendarDates();
-            });
-            calendarToday.addEventListener("click", () => {
-                weekOffset = 0;
-                renderCalendarDates();
-            });
+            );
 
-            plannerForm.addEventListener("submit", async (submitEvent) => {
-                submitEvent.preventDefault();
-                if (!eventsReady) {
-                    return;
+            plannerDialog.addEventListener(
+                "click",
+                (clickEvent) => {
+                    clickEvent.stopPropagation();
                 }
-                if (!plannerForm.reportValidity()) {
-                    return;
-                }
+            );
 
-                const title = plannerTitle.value.trim();
-                if (!title) {
-                    plannerTitle.setCustomValidity("Enter a name for this event or to-do.");
-                    plannerTitle.reportValidity();
-                    return;
+            document.addEventListener(
+                "pointerdown",
+                (pointerEvent) => {
+                    if (
+                        plannerDialog.open &&
+                        !plannerDialog.contains(
+                            pointerEvent.target
+                        )
+                    ) {
+                        closeEventEditor();
+                    }
                 }
-                plannerTitle.setCustomValidity("");
-                if (!plannerDate.value) {
-                    plannerDialogError.textContent = "Choose a date from the calendar.";
-                    return;
-                }
-                plannerDialogError.textContent = "";
-                if (plannerEndTime.value <= plannerTime.value) {
-                    plannerDialogError.textContent = "Choose an end time later than the start time.";
-                    return;
-                }
+            );
 
-                const originalEvents = events.map((event) => ({ ...event }));
-                const existingEvent = events.find((event) => event.id === editingEventId);
-                const savedEvent = {
-                    id: editingEventId || window.crypto.randomUUID(),
-                    title,
-                    type: plannerType.value,
-                    date: plannerDate.value,
-                    time: plannerTime.value,
-                    end_time: plannerEndTime.value,
-                    done: existingEvent?.done || false
-                };
-                if (editingEventId) {
-                    events = events.map((event) => event.id === editingEventId ? savedEvent : event);
-                } else {
-                    events.push(savedEvent);
+            window.addEventListener(
+                "resize",
+                () => {
+                    if (plannerDialog.open) {
+                        positionEventEditor(
+                            editorAnchor
+                        );
+                    }
                 }
+            );
 
-                const saved = await saveEvents();
-                plannerStatus.textContent = saved
-                    ? `${editingEventId ? "Updated" : "Added"} and saved to your account.`
-                    : "Your change could not be saved to your account.";
-                if (saved) {
-                    closeEventEditor();
-                } else {
-                    events = originalEvents;
-                    plannerDialogError.textContent = "Could not save this calendar item. Please try again.";
+            datePickerPrevious.addEventListener(
+                "click",
+                () => {
+                    pickerMonth =
+                        new Date(
+                            pickerMonth.getFullYear(),
+                            pickerMonth.getMonth() - 1,
+                            1
+                        );
+
+                    renderDatePicker();
                 }
-                renderCalendarDates();
-            });
+            );
 
-            plannerTitle.addEventListener("input", () => plannerTitle.setCustomValidity(""));
-            plannerDialog.addEventListener("close", () => {
-                plannerDialog.style.left = "";
-                plannerDialog.style.top = "";
-            });
+            datePickerNext.addEventListener(
+                "click",
+                () => {
+                    pickerMonth =
+                        new Date(
+                            pickerMonth.getFullYear(),
+                            pickerMonth.getMonth() + 1,
+                            1
+                        );
+
+                    renderDatePicker();
+                }
+            );
+
+            calendarPrevious.addEventListener(
+                "click",
+                () => {
+                    weekOffset -= 1;
+                    renderCalendarDates();
+                }
+            );
+
+            calendarNext.addEventListener(
+                "click",
+                () => {
+                    weekOffset += 1;
+                    renderCalendarDates();
+                }
+            );
+
+            calendarToday.addEventListener(
+                "click",
+                () => {
+                    weekOffset = 0;
+                    renderCalendarDates();
+                }
+            );
+
+            plannerForm.addEventListener(
+                "submit",
+                async (submitEvent) => {
+                    submitEvent.preventDefault();
+
+                    if (!eventsReady) {
+                        return;
+                    }
+
+                    if (!plannerForm.reportValidity()) {
+                        return;
+                    }
+
+                    const title =
+                        plannerTitle.value.trim();
+
+                    if (!title) {
+                        plannerTitle.setCustomValidity(
+                            "Enter a name for this event or to-do."
+                        );
+
+                        plannerTitle.reportValidity();
+
+                        return;
+                    }
+
+                    plannerTitle.setCustomValidity("");
+
+                    if (!plannerDate.value) {
+                        plannerDialogError.textContent =
+                            "Choose a date from the calendar.";
+
+                        return;
+                    }
+
+                    plannerDialogError.textContent =
+                        "";
+
+                    if (
+                        plannerEndTime.value <=
+                        plannerTime.value
+                    ) {
+                        plannerDialogError.textContent =
+                            "Choose an end time later than the start time.";
+
+                        return;
+                    }
+
+                    const originalEvents =
+                        events.map((event) => ({
+                            ...event
+                        }));
+
+                    const existingEvent =
+                        events.find(
+                            (event) =>
+                                event.id ===
+                                editingEventId
+                        );
+
+                    const savedEvent = {
+                        id:
+                            editingEventId ||
+                            window.crypto.randomUUID(),
+
+                        title,
+
+                        type:
+                            plannerType.value,
+
+                        date:
+                            plannerDate.value,
+
+                        time:
+                            plannerTime.value,
+
+                        end_time:
+                            plannerEndTime.value,
+
+                        done:
+                            existingEvent?.done ||
+                            false
+                    };
+
+                    if (editingEventId) {
+                        events =
+                            events.map(
+                                (event) =>
+                                    event.id ===
+                                    editingEventId
+                                        ? savedEvent
+                                        : event
+                            );
+                    } else {
+                        events.push(savedEvent);
+                    }
+
+                    const saved =
+                        await saveEvents();
+
+                    plannerStatus.textContent =
+                        saved
+                            ? `${editingEventId ? "Updated" : "Added"} and saved to your account.`
+                            : "Your change could not be saved to your account.";
+
+                    if (saved) {
+                        closeEventEditor();
+                    } else {
+                        events =
+                            originalEvents;
+
+                        plannerDialogError.textContent =
+                            "Could not save this calendar item. Please try again.";
+                    }
+
+                    renderCalendarDates();
+                }
+            );
+
+            plannerTitle.addEventListener(
+                "input",
+                () =>
+                    plannerTitle.setCustomValidity("")
+            );
+
+            plannerDialog.addEventListener(
+                "close",
+                () => {
+                    plannerDialog.style.left = "";
+                    plannerDialog.style.top = "";
+                }
+            );
+
             renderCalendarDates();
-            window.setInterval(renderCurrentTimeIndicator, 30000);
+
+            window.setInterval(
+                renderCurrentTimeIndicator,
+                30000
+            );
+
             void loadEvents();
         })();
     </script>
