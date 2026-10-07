@@ -35,7 +35,6 @@
             item.className = "notebook-list-item";
             item.type = "button";
             item.textContent = notebook.name;
-            item.setAttribute("role", "listitem");
             item.setAttribute(
                 "aria-current",
                 String(notebook.id === notebookData.active_id)
@@ -43,6 +42,7 @@
             item.addEventListener("click", () => {
                 notebookData.active_id = notebook.id;
                 render();
+                scheduleSave();
             });
             list.append(item);
         });
