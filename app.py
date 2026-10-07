@@ -830,5 +830,6 @@ if __name__ == "__main__":
 
 
 @app.route('/notes')
+@login_required
 def notes():
     return render_template('notes.html')
