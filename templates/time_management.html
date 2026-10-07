@@ -36,11 +36,11 @@
             text-align: left;
             cursor: pointer;
             overflow: hidden;
-            color: inherit;
+            color: var(--text);
             background:
                 radial-gradient(circle at 90% 10%, rgba(99, 102, 241, 0.12), transparent 34%),
-                var(--card-bg, #ffffff);
-            box-shadow: 0 12px 35px rgba(20, 25, 50, 0.07);
+                linear-gradient(180deg, var(--white), var(--soft-surface));
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
             transition:
                 transform 180ms ease,
                 box-shadow 180ms ease,
@@ -61,13 +61,13 @@
         .management-launcher.scheduler-launcher {
             background:
                 radial-gradient(circle at 90% 5%, rgba(59, 130, 246, 0.15), transparent 35%),
-                var(--card-bg, #ffffff);
+                linear-gradient(180deg, var(--white), var(--soft-surface));
         }
 
         .management-launcher.timer-launcher {
             background:
                 radial-gradient(circle at 90% 5%, rgba(139, 92, 246, 0.15), transparent 35%),
-                var(--card-bg, #ffffff);
+                linear-gradient(180deg, var(--white), var(--soft-surface));
         }
 
         .launcher-icon {
@@ -93,7 +93,7 @@
             font-size: 0.72rem;
             font-weight: 800;
             letter-spacing: 0.12em;
-            color: #7c83a1;
+            color: var(--muted);
         }
 
         .management-launcher h2 {
@@ -106,7 +106,7 @@
             max-width: 540px;
             margin: 0;
             line-height: 1.55;
-            color: #737991;
+            color: var(--muted);
         }
 
         .launcher-arrow {
@@ -114,13 +114,13 @@
             right: 28px;
             bottom: 24px;
             font-size: 1.35rem;
-            color: #9aa0b7;
+            color: var(--muted);
             transition: transform 180ms ease, color 180ms ease;
         }
 
         .management-launcher:hover .launcher-arrow {
             transform: translateX(4px);
-            color: #6366f1;
+            color: var(--purple);
         }
 
         .expanded-management-panel {
@@ -150,8 +150,8 @@
             border: 1px solid rgba(120, 130, 160, 0.18);
             border-radius: 999px;
             padding: 8px 14px;
-            background: var(--card-bg, #ffffff);
-            color: #737991;
+            background: linear-gradient(180deg, var(--white), var(--soft-surface));
+            color: var(--text);
             font: inherit;
             font-size: 0.88rem;
             font-weight: 700;
@@ -160,9 +160,9 @@
         }
 
         .management-close-button:hover {
-            background: rgba(99, 102, 241, 0.08);
+            background: var(--purple-light);
             border-color: rgba(99, 102, 241, 0.25);
-            color: #6366f1;
+            color: var(--purple);
         }
 
         .management-section-hidden {
