@@ -13,34 +13,11 @@
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 16px;
+            align-items: start;
         }
 
-        .peer-pressure-tile {
-            padding: 22px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            background: var(--white);
-        }
-
-        .peer-pressure-tile h2 {
-            margin-bottom: 12px;
-            font-size: 20px;
-        }
-
-        .peer-pressure-tile p,
-        .peer-pressure-tile li {
-            color: var(--muted);
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .peer-pressure-tile p + p,
-        .peer-pressure-tile li + li {
-            margin-top: 8px;
-        }
-
-        .peer-pressure-tile ul {
-            padding-left: 20px;
+        .peer-pressure-tile .grounding-steps {
+            grid-template-columns: 1fr;
         }
 
         @media (max-width: 700px) {
@@ -106,42 +83,76 @@
             </header>
 
             <section class="dashboard peer-pressure-grid" aria-label="Peer pressure and boundaries topics">
-                <section class="peer-pressure-tile" aria-labelledby="scripts-title">
+                <section class="main-card grounding-card peer-pressure-tile" aria-labelledby="scripts-title">
+                    <div class="eyebrow">SAY NO AND STAY SAFE</div>
                     <h2 id="scripts-title">Practical Refusal Scripts &amp; Exit Strategies</h2>
-                    <p><strong>Direct refusals:</strong> “Nah, that’s not really my thing” or “I’m good, thanks.”</p>
-                    <p><strong>External excuses:</strong> “My parents track my location and test me” or “I have an early game tomorrow and can’t risk it.”</p>
-                    <p><strong>Delay or pivot:</strong> “I’m starving, let’s grab food first” or “Let’s talk about this later.”</p>
-                    <p><strong>Safety text:</strong> Agree on an emoji or code phrase with a trusted person that means you need an immediate, no-questions-asked pickup.</p>
+                    <p class="grounding-intro">Short responses and simple plans can help you leave pressure behind.</p>
+                    <ul class="grounding-steps">
+                        <li><span><strong>Direct refusal:</strong> “Nah, that’s not really my thing” or “I’m good, thanks.”</span></li>
+                        <li><span><strong>External excuse:</strong> “My parents track my location and test me” or “I have an early game tomorrow and can’t risk it.”</span></li>
+                        <li><span><strong>Delay or pivot:</strong> “I’m starving, let’s grab food first” or “Let’s talk about this later.”</span></li>
+                        <li><span><strong>Safety text:</strong> Agree on an emoji or code phrase with a trusted person that means you need an immediate, no-questions-asked pickup.</span></li>
+                    </ul>
                 </section>
 
-                <section class="peer-pressure-tile" aria-labelledby="pressure-types-title">
+                <section class="main-card grounding-card peer-pressure-tile" aria-labelledby="pressure-types-title">
+                    <div class="eyebrow">NOTICE THE PRESSURE</div>
                     <h2 id="pressure-types-title">Types of Pressure &amp; Recognizing Them</h2>
-                    <p><strong>Direct:</strong> Explicit demands, dares, or repeated requests.</p>
-                    <p><strong>Indirect:</strong> FOMO, social cues, or feeling like “everyone else is doing it.”</p>
-                    <p><strong>Digital boundaries:</strong> You can set limits on location sharing, instant replies, private photos, and group-chat drama.</p>
-                    <p><strong>Academic pressure:</strong> You can refuse to share homework, allow copying, or join group cheating while still being respectful to friends.</p>
+                    <p class="grounding-intro">Pressure can be obvious or subtle, in person, online, or at school.</p>
+                    <ul class="grounding-steps">
+                        <li><span><strong>Direct:</strong> Explicit demands, dares, or repeated requests.</span></li>
+                        <li><span><strong>Indirect:</strong> FOMO, social cues, or feeling like “everyone else is doing it.”</span></li>
+                        <li><span><strong>Digital boundaries:</strong> Set limits on location sharing, instant replies, private photos, and group-chat drama.</span></li>
+                        <li><span><strong>Academic pressure:</strong> Refuse to share homework, allow copying, or join group cheating while still being respectful to friends.</span></li>
+                    </ul>
                 </section>
 
-                <section class="peer-pressure-tile" aria-labelledby="boundaries-title">
+                <section class="main-card grounding-card peer-pressure-tile" aria-labelledby="boundaries-title">
+                    <div class="eyebrow">KNOW YOUR LIMITS</div>
                     <h2 id="boundaries-title">Boundary-Setting Frameworks</h2>
-                    <p><strong>Traffic light limits:</strong> Green means comfortable; yellow means you need time or have conditions; red means a hard no.</p>
-                    <p><strong>Clear communication:</strong> “I’m okay with [X], but I’m not comfortable with [Y].”</p>
-                    <p><strong>When someone pushes back:</strong> Repeat your boundary calmly, avoid getting pulled into a debate, and leave or ask for support if the pressure continues.</p>
+                    <p class="grounding-intro">Decide what feels okay to you and practice saying it clearly.</p>
+                    <ul class="grounding-steps">
+                        <li><span><strong>Green:</strong> Comfortable with it.</span></li>
+                        <li><span><strong>Yellow:</strong> Need time to think or want conditions.</span></li>
+                        <li><span><strong>Red:</strong> A hard, non-negotiable limit.</span></li>
+                        <li><span><strong>Say it clearly:</strong> “I’m okay with [X], but I’m not comfortable with [Y].”</span></li>
+                        <li><span><strong>Handle pushback:</strong> Repeat your boundary calmly, avoid a debate, and leave or ask for support if pressure continues.</span></li>
+                    </ul>
                 </section>
 
-                <section class="peer-pressure-tile" aria-labelledby="tools-title">
+                <section class="main-card grounding-card peer-pressure-tile" aria-labelledby="tools-title">
+                    <div class="eyebrow">TOOLS TO BUILD NEXT</div>
                     <h2 id="tools-title">Interactive Tools &amp; Downloads</h2>
-                    <p><strong>Scenario simulator:</strong> Choose a response to a realistic situation and see possible outcomes.</p>
-                    <p><strong>Script cards:</strong> Saveable phone wallpaper cheat-sheets with quick scripts for party, digital, or school situations.</p>
-                    <p><strong>Friendship check-in:</strong> A brief self-assessment to consider whether your social circle respects your choices.</p>
+                    <p class="grounding-intro">Ideas for practical resources students can use and save.</p>
+                    <ul class="grounding-steps">
+                        <li><span><strong>Scenario simulator:</strong> Choose a response to a realistic situation and see possible outcomes.</span></li>
+                        <li><span><strong>Script cards:</strong> Saveable phone wallpaper cheat-sheets with quick scripts for party, digital, or school situations.</span></li>
+                        <li><span><strong>Friendship check-in:</strong> A brief self-assessment to consider whether your social circle respects your choices.</span></li>
+                    </ul>
                 </section>
 
-                <section class="peer-pressure-tile" aria-labelledby="friendships-title">
+                <section class="main-card grounding-card peer-pressure-tile" aria-labelledby="friendships-title">
+                    <div class="eyebrow">FRIENDSHIPS AND SUPPORT</div>
                     <h2 id="friendships-title">Healthy Friendships &amp; Getting Help</h2>
-                    <p><strong>Green flags:</strong> Supportive friends accept “no,” respect your privacy, and do not punish you for making your own choices.</p>
-                    <p><strong>Red flags:</strong> Friends use guilt, threats, repeated pressure, or private information to get their way.</p>
-                    <p><strong>Stepping back:</strong> Spend less time with pressuring people, keep plans simple, and lean on other supportive friends without starting a confrontation.</p>
-                    <p><strong>Get help:</strong> Talk to a counselor, trusted adult, or peer advisor if pressure becomes harassment or you feel unsafe.</p>
+                    <p class="grounding-intro">Healthy friends respect your choices and help you feel safe.</p>
+                    <ul class="grounding-steps">
+                        <li><span><strong>Green flags:</strong> Friends accept “no,” respect your privacy, and do not punish you for making your own choices.</span></li>
+                        <li><span><strong>Red flags:</strong> Guilt, threats, repeated pressure, or using private information to get their way.</span></li>
+                        <li><span><strong>Step back:</strong> Spend less time with pressuring people, keep plans simple, and lean on supportive friends without starting a confrontation.</span></li>
+                        <li><span><strong>Get help:</strong> Talk to a counselor, trusted adult, or peer advisor if pressure becomes harassment or you feel unsafe.</span></li>
+                    </ul>
+                </section>
+
+                <section class="main-card grounding-card peer-pressure-tile" aria-labelledby="take-time-title">
+                    <div class="eyebrow">YOU CAN TAKE TIME TO DECIDE</div>
+                    <h2 id="take-time-title">You Can Take Time to Decide</h2>
+                    <p class="grounding-intro">You do not have to agree right away. A short, clear response is enough.</p>
+                    <ul class="grounding-steps">
+                        <li><span><strong>Pause:</strong> Give yourself a moment before answering.</span></li>
+                        <li><span><strong>Be clear:</strong> Say, “No thanks, that is not for me.”</span></li>
+                        <li><span><strong>Repeat:</strong> Calmly repeat your answer without explaining more.</span></li>
+                        <li><span><strong>Get support:</strong> Reach out to someone you trust if you feel unsafe or pressured.</span></li>
+                    </ul>
                 </section>
             </section>
         </main>
