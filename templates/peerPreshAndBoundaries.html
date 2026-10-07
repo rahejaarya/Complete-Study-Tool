@@ -8,6 +8,47 @@
     <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
     <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
     <script src="{{ url_for('static', filename='global_search.js') }}" defer></script>
+    <style>
+        .peer-pressure-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .peer-pressure-tile {
+            padding: 22px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--white);
+        }
+
+        .peer-pressure-tile h2 {
+            margin-bottom: 12px;
+            font-size: 20px;
+        }
+
+        .peer-pressure-tile p,
+        .peer-pressure-tile li {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .peer-pressure-tile p + p,
+        .peer-pressure-tile li + li {
+            margin-top: 8px;
+        }
+
+        .peer-pressure-tile ul {
+            padding-left: 20px;
+        }
+
+        @media (max-width: 700px) {
+            .peer-pressure-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="app">
@@ -64,18 +105,43 @@
                 </div>
             </header>
 
-            <section class="dashboard">
-                <section class="main-card grounding-card" aria-labelledby="peer-pressure-title">
-                    <div class="eyebrow">YOU CAN TAKE TIME TO DECIDE</div>
-                    <h2 id="peer-pressure-title">A clear response is enough</h2>
-                    <p class="grounding-intro">You do not have to agree right away or explain yourself. Give yourself a moment, then choose the words that feel comfortable and safe.</p>
-                    <ul class="grounding-steps">
-                        <li><span><strong>Pause:</strong> Take a breath and give yourself a moment before answering.</span></li>
-                        <li><span><strong>Be clear:</strong> Try, “No thanks, that is not for me.”</span></li>
-                        <li><span><strong>Repeat:</strong> Calmly repeat your answer if someone keeps asking.</span></li>
-                        <li><span><strong>Make an exit:</strong> Move toward a safe place or a person you trust if you feel pressured.</span></li>
-                        <li><span><strong>Get support:</strong> Talk with a trusted adult, counselor, or friend if you feel unsafe.</span></li>
-                    </ul>
+            <section class="dashboard peer-pressure-grid" aria-label="Peer pressure and boundaries topics">
+                <section class="peer-pressure-tile" aria-labelledby="scripts-title">
+                    <h2 id="scripts-title">Practical Refusal Scripts &amp; Exit Strategies</h2>
+                    <p><strong>Direct refusals:</strong> “Nah, that’s not really my thing” or “I’m good, thanks.”</p>
+                    <p><strong>External excuses:</strong> “My parents track my location and test me” or “I have an early game tomorrow and can’t risk it.”</p>
+                    <p><strong>Delay or pivot:</strong> “I’m starving, let’s grab food first” or “Let’s talk about this later.”</p>
+                    <p><strong>Safety text:</strong> Agree on an emoji or code phrase with a trusted person that means you need an immediate, no-questions-asked pickup.</p>
+                </section>
+
+                <section class="peer-pressure-tile" aria-labelledby="pressure-types-title">
+                    <h2 id="pressure-types-title">Types of Pressure &amp; Recognizing Them</h2>
+                    <p><strong>Direct:</strong> Explicit demands, dares, or repeated requests.</p>
+                    <p><strong>Indirect:</strong> FOMO, social cues, or feeling like “everyone else is doing it.”</p>
+                    <p><strong>Digital boundaries:</strong> You can set limits on location sharing, instant replies, private photos, and group-chat drama.</p>
+                    <p><strong>Academic pressure:</strong> You can refuse to share homework, allow copying, or join group cheating while still being respectful to friends.</p>
+                </section>
+
+                <section class="peer-pressure-tile" aria-labelledby="boundaries-title">
+                    <h2 id="boundaries-title">Boundary-Setting Frameworks</h2>
+                    <p><strong>Traffic light limits:</strong> Green means comfortable; yellow means you need time or have conditions; red means a hard no.</p>
+                    <p><strong>Clear communication:</strong> “I’m okay with [X], but I’m not comfortable with [Y].”</p>
+                    <p><strong>When someone pushes back:</strong> Repeat your boundary calmly, avoid getting pulled into a debate, and leave or ask for support if the pressure continues.</p>
+                </section>
+
+                <section class="peer-pressure-tile" aria-labelledby="tools-title">
+                    <h2 id="tools-title">Interactive Tools &amp; Downloads</h2>
+                    <p><strong>Scenario simulator:</strong> Choose a response to a realistic situation and see possible outcomes.</p>
+                    <p><strong>Script cards:</strong> Saveable phone wallpaper cheat-sheets with quick scripts for party, digital, or school situations.</p>
+                    <p><strong>Friendship check-in:</strong> A brief self-assessment to consider whether your social circle respects your choices.</p>
+                </section>
+
+                <section class="peer-pressure-tile" aria-labelledby="friendships-title">
+                    <h2 id="friendships-title">Healthy Friendships &amp; Getting Help</h2>
+                    <p><strong>Green flags:</strong> Supportive friends accept “no,” respect your privacy, and do not punish you for making your own choices.</p>
+                    <p><strong>Red flags:</strong> Friends use guilt, threats, repeated pressure, or private information to get their way.</p>
+                    <p><strong>Stepping back:</strong> Spend less time with pressuring people, keep plans simple, and lean on other supportive friends without starting a confrontation.</p>
+                    <p><strong>Get help:</strong> Talk to a counselor, trusted adult, or peer advisor if pressure becomes harassment or you feel unsafe.</p>
                 </section>
             </section>
         </main>
