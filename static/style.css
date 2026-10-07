@@ -2,6 +2,9 @@
    BASIC RESET
 ================================ */
 
+/* This section resets browser defaults so the app has a consistent starting point
+   across different browsers and devices before custom styles are applied. */
+
 * {
     margin: 0;
     padding: 0;
@@ -401,6 +404,8 @@ body {
    MAIN APP
 ================================ */
 
+/* The app shell sets up the full-page layout with the sidebar and main content columns. */
+
 .app {
     min-height: 100vh;
     display: flex;
@@ -410,6 +415,8 @@ body {
 /* ================================
    SIDEBAR
 ================================ */
+
+/* The sidebar creates the left navigation column and controls the main app navigation styling. */
 
 .sidebar {
     position: fixed;
@@ -535,6 +542,8 @@ body {
    MAIN CONTENT
 ================================ */
 
+/* The main content area holds the page-specific content and keeps the layout flexible for dashboards, support pages, and study resources. */
+
 .main-content {
     width: calc(100% - 245px);
 
@@ -575,6 +584,8 @@ body {
 /* ================================
    TOP BAR
 ================================ */
+
+/* The top bar styles the welcome header, search trigger, and action buttons at the top of the main content area. */
 
 .topbar {
     max-width: 1200px;
@@ -926,6 +937,8 @@ body {
    DASHBOARD
 ================================ */
 
+/* Dashboard styles control the cards and spacing used on the home screen and support-style overview pages. */
+
 .dashboard {
     max-width: 1200px;
 
@@ -1242,6 +1255,8 @@ body {
 /* ================================
    FEATURE CARDS
 ================================ */
+
+/* Feature-card styles create the clickable study and support tiles used throughout the dashboard and support pages. */
 
 .feature-grid {
     display: grid;

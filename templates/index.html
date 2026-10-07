@@ -12,9 +12,11 @@
 
 <body>
 
+    <!-- This is the main dashboard layout. It contains the sidebar, the welcome bar,
+         the quick-access cards, and the notebook area for the user home page. -->
     <div class="app">
 
-        <!-- Sidebar -->
+        <!-- Sidebar navigation for the main app sections. -->
         <aside class="sidebar">
 
             <div class="logo">
@@ -73,10 +75,10 @@
         </aside>
 
 
-        <!-- Main Content -->
+        <!-- Main content area where the dashboard and page-specific content are rendered. -->
         <main class="main-content">
 
-            <!-- Top Bar -->
+            <!-- Top bar with the welcome message, global search, and logout action. -->
             <header class="topbar">
 
                 <button class="mobile-menu">☰</button>
@@ -108,10 +110,10 @@
             </header>
 
 
-            <!-- Dashboard -->
+            <!-- Dashboard section containing the primary study cards and quick actions. -->
             <section class="dashboard">
 
-                <!-- Study Header Card -->
+                <!-- Hero card at the top of the dashboard to encourage the user to start studying. -->
                 <div class="main-card study-card">
 
                     <div class="eyebrow">
@@ -136,7 +138,7 @@
                 </div>
 
 
-                <!-- Quick Start -->
+                <!-- Quick-start shortcut cards for the most-used study tools. -->
                 <div class="section-heading">
                     <h2>Quick Start</h2>
                 </div>
@@ -246,7 +248,7 @@
                 </div>
 
 
-                <!-- Lower Cards -->
+                <!-- Secondary content cards for the notebook workspace and other lower-level tools. -->
                 <div class="lower-grid">
 
                     <!-- Notebook & Notes -->
@@ -362,6 +364,7 @@
 
     </div>
 
+    <!-- Global search overlay for jumping across the app without navigating manually. -->
     <div class="global-search-overlay" id="global-search-overlay" hidden>
         <section class="global-search-dialog" id="global-search-dialog" role="dialog" aria-modal="true" aria-labelledby="global-search-title">
             <h2 class="visually-hidden" id="global-search-title">Search StudyTool</h2>
@@ -382,7 +385,7 @@
     <script src="{{ url_for('static', filename='dashboard_notebooks.js') }}" defer></script>
 
 
-    <!-- Mobile Bottom Navigation -->
+    <!-- Mobile navigation keeps the same major app destinations available on smaller screens. -->
     <nav class="mobile-navigation">
 
         <a href="{{ url_for('home') }}" class="mobile-link active">

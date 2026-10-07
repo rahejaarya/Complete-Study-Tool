@@ -43,6 +43,9 @@ VALID_THEMES = {
     "dark-mocha",
 }
 
+# -----------------------------------------------------------------------------
+# App setup and shared database helpers
+# -----------------------------------------------------------------------------
 
 def get_db():
     conn = sqlite3.connect(app.config["DATABASE"])
@@ -149,6 +152,10 @@ def load_user_memory(user_dir):
         "facts": clean_facts(facts),
     }
 
+
+# -----------------------------------------------------------------------------
+# User account, theme, and schedule storage setup
+# -----------------------------------------------------------------------------
 
 def init_db():
     conn = get_db()
@@ -259,6 +266,10 @@ def login_required(view):
 
     return wrapped_view
 
+
+# -----------------------------------------------------------------------------
+# User preference APIs: theme and calendar data are loaded and saved here.
+# -----------------------------------------------------------------------------
 
 @app.route("/api/preferences/theme", methods=["GET", "PUT"])
 @login_required
@@ -395,6 +406,10 @@ def user_schedule_preference():
         return jsonify({"error": "Could not save your schedule to your account."}), 500
 
 
+# -----------------------------------------------------------------------------
+# Notebook data validation and persistence
+# -----------------------------------------------------------------------------
+
 def clean_notebook_data(data):
     notebooks = data.get("notebooks")
     active_id = data.get("active_id")
@@ -504,6 +519,10 @@ def load_resources():
     return []
 
 
+# -----------------------------------------------------------------------------
+# Authentication flows and public app pages
+# -----------------------------------------------------------------------------
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     error = None
@@ -564,6 +583,10 @@ def signup():
                 conn.close()
 
     return render_template("signup.html", error=error)
+
+# -----------------------------------------------------------------------------
+# AI chat endpoints: create, load, rename, delete conversations, and stream replies
+# -----------------------------------------------------------------------------
 
 @app.route("/api/ai", methods=["POST"])
 @login_required
@@ -809,6 +832,10 @@ def logout():
     session.clear()
     return redirect(url_for("login"))
 
+
+# -----------------------------------------------------------------------------
+# Main dashboard and feature pages
+# -----------------------------------------------------------------------------
 
 @app.route("/")
 @login_required

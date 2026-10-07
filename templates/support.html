@@ -11,9 +11,11 @@
 
 <body>
 
+    <!-- The student-support page groups wellbeing resources, emergency information,
+         and practical advice into a single help area. -->
     <div class="app">
 
-        <!-- Sidebar -->
+        <!-- Sidebar navigation for the support section and core app pages. -->
         <aside class="sidebar">
             <div class="logo">
                 <div class="logo-mark">✦</div>
@@ -56,7 +58,7 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
+        <!-- Support page main content includes the emergency section and advice categories. -->
         <main class="main-content">
 
             <a href="{{ url_for('home') }}" class="back-link">
@@ -76,6 +78,7 @@
 
             <section class="dashboard">
 
+                <!-- Emergency help card with crisis resources and immediate support contacts. -->
                 <section class="main-card support-emergency" aria-labelledby="emergency-title">
                     <div class="emergency-heading">
                         <span class="emergency-icon" aria-hidden="true">!</span>
@@ -101,6 +104,7 @@
                     </div>
                 </section>
 
+                <!-- The support topic grid lets students browse different wellbeing and study-related topics. -->
                 <div class="section-heading support-section-heading">
                     <h2>What would you like help with?</h2>
                     <p>Explore practical, judgment-free guidance for school and life.</p>
@@ -164,6 +168,7 @@
 
                 </div>
 
+                <!-- Quick grounding exercise to help a student reset when feeling overwhelmed. -->
                 <section class="main-card grounding-card" aria-labelledby="grounding-title">
                     <div class="eyebrow">A QUICK RESET</div>
                     <h2 id="grounding-title">5-4-3-2-1 Sensory Grounding Technique</h2>
@@ -183,7 +188,7 @@
 
     </div>
 
-    <!-- Mobile Bottom Navigation -->
+    <!-- Mobile navigation keeps support accessible on smaller screens while preserving app context. -->
     <nav class="mobile-navigation">
         <a href="{{ url_for('home') }}" class="mobile-link">
             <span>▦</span>
