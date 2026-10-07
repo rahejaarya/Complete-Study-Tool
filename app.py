@@ -395,6 +395,97 @@ def user_schedule_preference():
         return jsonify({"error": "Could not save your schedule to your account."}), 500
 
 
+def clean_notebook_data(data):
+    notebooks = data.get("notebooks")
+    active_id = data.get("active_id")
+    if not isinstance(notebooks, list) or not notebooks:
+        raise ValueError("Add at least one notebook.")
+    if not isinstance(active_id, str):
+        raise ValueError("Choose an active notebook.")
+
+    clean_notebooks = []
+    seen_ids = set()
+    for notebook in notebooks:
+        if not isinstance(notebook, dict):
+            raise ValueError("Each notebook must be an object.")
+        notebook_id = notebook.get("id")
+        name = notebook.get("name")
+        content = notebook.get("content")
+        quick_note = notebook.get("quick_note", "")
+        if (
+            not isinstance(notebook_id, str)
+            or not re.fullmatch(r"[A-Za-z0-9_-]{1,36}", notebook_id)
+            or notebook_id in seen_ids
+            or not isinstance(name, str)
+            or not name.strip()
+            or len(name.strip()) > 80
+            or not isinstance(content, str)
+            or len(content) > 200_000
+            or not isinstance(quick_note, str)
+            or len(quick_note) > 20_000
+        ):
+            raise ValueError("A notebook contains invalid fields.")
+        seen_ids.add(notebook_id)
+        clean_notebooks.append({
+            "id": notebook_id,
+            "name": name.strip(),
+            "content": content,
+            "quick_note": quick_note,
+        })
+
+    if active_id not in seen_ids:
+        raise ValueError("The active notebook could not be found.")
+    return {"notebooks": clean_notebooks, "active_id": active_id}
+
+
+@app.route("/api/notebooks", methods=["GET", "PUT"])
+@login_required
+def user_notebooks():
+    notebooks_path = (
+        user_save_directory(session["user_id"])
+        / "Notebooks"
+        / "notebooks.json"
+    )
+    if request.method == "GET":
+        try:
+            if notebooks_path.exists():
+                with notebooks_path.open("r", encoding="utf-8") as notebooks_file:
+                    saved_data = json.load(notebooks_file)
+                if not isinstance(saved_data, dict):
+                    raise ValueError("Saved notebooks must be an object.")
+                return jsonify(clean_notebook_data(saved_data))
+
+            first_notebook = {
+                "id": uuid.uuid4().hex,
+                "name": "My Notebook",
+                "content": "",
+                "quick_note": "",
+            }
+            data = {
+                "notebooks": [first_notebook],
+                "active_id": first_notebook["id"],
+            }
+            write_json_atomically(notebooks_path, data)
+            return jsonify(data)
+        except (sqlite3.Error, OSError, json.JSONDecodeError, ValueError) as error:
+            app.logger.exception("Could not load user notebooks: %s", error)
+            return jsonify({"error": "Could not load your notebooks."}), 500
+
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "Notebook data must be an object."}), 400
+    try:
+        clean_data = clean_notebook_data(data)
+    except (TypeError, ValueError) as error:
+        return jsonify({"error": str(error)}), 400
+    try:
+        write_json_atomically(notebooks_path, clean_data)
+        return jsonify(clean_data)
+    except (sqlite3.Error, OSError, ValueError) as error:
+        app.logger.exception("Could not save user notebooks: %s", error)
+        return jsonify({"error": "Could not save your notebooks to your account."}), 500
+
+
 def safe_next_url(target):
     if not target:
         return url_for("home")
@@ -809,6 +900,12 @@ def legacy_time_management():
 @login_required
 def support():
     return render_template("support.html")
+
+
+@app.route("/peer-pressure-boundaries")
+@login_required
+def peer_pressure_boundaries():
+    return render_template("peerPreshAndBoundaries.html")
 
 
 @app.route("/procrastination-focus")

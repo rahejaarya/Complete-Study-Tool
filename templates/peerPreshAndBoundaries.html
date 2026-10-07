@@ -9,5 +9,76 @@
     <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
     <script src="{{ url_for('static', filename='global_search.js') }}" defer></script>
 </head>
-<body></body>
-<p> test with a t </p>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-mark">✦</div>
+                <span>StudyTool</span>
+            </div>
+            <nav class="navigation">
+                <a href="{{ url_for('home') }}" class="nav-link">
+                    <span class="nav-icon">▦</span>
+                    Dashboard
+                </a>
+                <a href="{{ url_for('resources') }}" class="nav-link">
+                    <span class="nav-icon">⌕</span>
+                    Study Resources
+                </a>
+                <a href="{{ url_for('noise_songs') }}" class="nav-link">
+                    <span class="nav-icon">♫</span>
+                    Noise &amp; Songs
+                </a>
+                <a href="{{ url_for('time_management') }}" class="nav-link">
+                    <span class="nav-icon">✓</span>
+                    Time Management
+                </a>
+                <a href="{{ url_for('support') }}" class="nav-link active">
+                    <span class="nav-icon">♡</span>
+                    Student Support
+                </a>
+                {% include "_ai_nav.html" %}
+            </nav>
+            <div class="sidebar-bottom">
+                <a href="{{ url_for('settings') }}" class="nav-link">
+                    <span class="nav-icon">⚙</span>
+                    Settings
+                </a>
+                <a href="{{ url_for('support') }}" class="nav-link">
+                    <span class="nav-icon">?</span>
+                    Help
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <a href="{{ url_for('support') }}" class="back-link">&larr; Back to Student Support</a>
+            <header class="topbar">
+                <button class="mobile-menu">☰</button>
+                <div class="welcome">
+                    <div class="welcome-icon">♡</div>
+                    <div>
+                        <h1>Peer Pressure &amp; Boundaries</h1>
+                        <p>Practical ways to speak up for what feels right to you</p>
+                    </div>
+                </div>
+            </header>
+
+            <section class="dashboard">
+                <section class="main-card grounding-card" aria-labelledby="peer-pressure-title">
+                    <div class="eyebrow">YOU CAN TAKE TIME TO DECIDE</div>
+                    <h2 id="peer-pressure-title">A clear response is enough</h2>
+                    <p class="grounding-intro">You do not have to agree right away or explain yourself. Give yourself a moment, then choose the words that feel comfortable and safe.</p>
+                    <ul class="grounding-steps">
+                        <li><span><strong>Pause:</strong> Take a breath and give yourself a moment before answering.</span></li>
+                        <li><span><strong>Be clear:</strong> Try, “No thanks, that is not for me.”</span></li>
+                        <li><span><strong>Repeat:</strong> Calmly repeat your answer if someone keeps asking.</span></li>
+                        <li><span><strong>Make an exit:</strong> Move toward a safe place or a person you trust if you feel pressured.</span></li>
+                        <li><span><strong>Get support:</strong> Talk with a trusted adult, counselor, or friend if you feel unsafe.</span></li>
+                    </ul>
+                </section>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

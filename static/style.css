@@ -1414,6 +1414,159 @@ body {
     margin-bottom: 18px;
 }
 
+.notebook-card {
+    min-width: 0;
+    min-height: 245px;
+    padding: 27px;
+}
+
+.notebook-toggle {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.notebook-quick-label,
+.notebook-name-label,
+.notebook-content-label {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.notebook-quick-label {
+    margin-top: 20px;
+    margin-bottom: 8px;
+}
+
+.notebook-textarea,
+.notebook-name {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--soft-surface);
+    color: var(--text);
+    font: inherit;
+}
+
+.notebook-textarea {
+    display: block;
+    padding: 12px 14px;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+.notebook-textarea::placeholder,
+.notebook-name::placeholder {
+    color: var(--muted);
+    opacity: 0.8;
+}
+
+.notebook-quick-note {
+    min-height: 58px;
+    max-height: 150px;
+}
+
+.notebook-save-status {
+    min-height: 18px;
+    margin-top: 7px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.notebook-expanded {
+    grid-template-columns: minmax(145px, 0.35fr) minmax(0, 1fr);
+    gap: 18px;
+    margin-top: 14px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+}
+
+.notebook-expanded:not([hidden]) {
+    display: grid;
+}
+
+.notebook-sidebar {
+    min-width: 0;
+}
+
+.notebook-sidebar-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.notebook-sidebar-heading h3 {
+    font-size: 14px;
+}
+
+.notebook-add {
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--soft-surface);
+    color: var(--text);
+    font: inherit;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.notebook-list {
+    display: grid;
+    gap: 6px;
+}
+
+.notebook-list-item {
+    overflow: hidden;
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.notebook-list-item:hover,
+.notebook-list-item[aria-current="true"] {
+    border-color: var(--border);
+    background: var(--soft-surface);
+    color: var(--text);
+}
+
+.notebook-name-label,
+.notebook-content-label {
+    margin-bottom: 7px;
+}
+
+.notebook-name {
+    height: 42px;
+    margin-bottom: 15px;
+    padding: 0 12px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.notebook-content {
+    min-height: 220px;
+}
+
+.notebook-card :disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
 
 /* ================================
    PROGRESS
@@ -3028,6 +3181,14 @@ body {
 
     .main-card {
         border-radius: 18px;
+    }
+
+    .notebook-card {
+        padding: 22px;
+    }
+
+    .notebook-expanded {
+        grid-template-columns: 1fr;
     }
 
 

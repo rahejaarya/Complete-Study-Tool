@@ -22,11 +22,11 @@
         .focus-page .support-emergency {
             position: relative;
             overflow: hidden;
-            padding: 28px 28px 24px;
-            margin-bottom: 30px;
-            border-radius: 20px;
+            padding: 24px 24px 20px;
+            margin-bottom: 24px;
+            border-radius: 16px;
             border: 1px solid var(--border);
-            background: linear-gradient(180deg, var(--white), var(--control-bg));
+            background: var(--white);
             box-shadow: none;
         }
 
@@ -36,23 +36,27 @@
         }
 
         .focus-page .emergency-icon {
-            width: 52px;
-            height: 52px;
-            min-width: 52px;
-            border-radius: 16px;
-            background: linear-gradient(135deg, #bb3d5a, #8d2947);
-            box-shadow: 0 12px 22px rgba(163, 52, 80, 0.2);
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            border-radius: 10px;
+            background: var(--control-bg);
+            box-shadow: none;
+            display: grid;
+            place-items: center;
         }
 
         .focus-page .support-emergency .eyebrow {
-            color: #a33450;
-            letter-spacing: 0.18em;
+            color: var(--muted);
+            letter-spacing: 0.12em;
+            font-weight: 700;
         }
 
         .focus-page .support-emergency h2 {
-            font-size: clamp(1.8rem, 2vw, 2.3rem);
-            line-height: 1.2;
+            font-size: clamp(1.7rem, 2vw, 2rem);
+            line-height: 1.25;
             letter-spacing: -0.04em;
+            margin-top: 6px;
         }
 
         .focus-page .emergency-intro {
@@ -70,17 +74,20 @@
         .focus-page .feature-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 18px;
+            gap: 16px;
             margin-bottom: 28px;
         }
 
         .focus-page .feature-card {
-            min-height: 136px;
-            padding: 20px 18px;
-            border-radius: 16px;
+            min-height: 128px;
+            padding: 16px 16px 14px;
+            border-radius: 12px;
             background: var(--white);
             border: 1px solid var(--border);
             box-shadow: none;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
             transition: border-color 0.2s ease, transform 0.15s ease;
         }
 
@@ -90,21 +97,24 @@
         }
 
         .focus-page .feature-icon {
-            width: 48px;
-            height: 48px;
-            min-width: 48px;
-            border-radius: 12px;
-            font-size: 22px;
+            width: 42px;
+            height: 42px;
+            min-width: 42px;
+            border-radius: 10px;
+            font-size: 20px;
             box-shadow: none;
             background: var(--control-bg);
+            display: grid;
+            place-items: center;
         }
 
         .focus-page .feature-content {
-            padding-right: 22px;
+            padding-right: 8px;
+            flex: 1;
         }
 
         .focus-page .feature-content h3 {
-            font-size: 1.06rem;
+            font-size: 1rem;
             margin-bottom: 5px;
             letter-spacing: -0.02em;
         }
@@ -119,38 +129,39 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            background: var(--control-bg);
+            width: 20px;
+            height: 20px;
+            border-radius: 999px;
+            background: transparent;
             color: var(--purple);
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 500;
+            margin-left: auto;
         }
 
         .focus-page .grounding-card {
-            padding: 24px 22px;
-            border-radius: 18px;
+            padding: 20px 18px;
+            border-radius: 14px;
             background: var(--white);
         }
 
         .focus-page .grounding-steps {
-            margin-top: 20px;
+            margin-top: 16px;
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 12px;
+            gap: 10px;
         }
 
         .focus-page .grounding-steps label {
-            min-height: 82px;
-            padding: 12px 12px;
+            min-height: 62px;
+            padding: 10px 10px;
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: 10px;
             background: var(--control-bg);
             box-shadow: none;
-            align-items: flex-start;
+            align-items: center;
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
         .focus-page .grounding-steps input {
