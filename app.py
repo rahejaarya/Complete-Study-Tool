@@ -823,13 +823,13 @@ def ai_help():
     return render_template("ai.html")
 
 
+@app.route("/notes")
+@login_required
+def notes():
+    return redirect(url_for("home") + "#notes-card")
+
+
 init_db()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8000)), debug=False)
-
-
-@app.route('/notes')
-@login_required
-def notes():
-    return render_template('notes.html')
