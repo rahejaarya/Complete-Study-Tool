@@ -281,17 +281,25 @@ shows the category copy and default “Newton’s Laws” result heading.
   can create new chats, load saved chats, rename, and delete conversations.
 - Requests stream from `/api/ai` as newline-delimited JSON events:
   `chat`, zero or more `resource`, `token`, optional `memory_error`, and `done`.
-- Chat history and metadata are saved in JSON files under the user's
-  `static/SaveData/<username>/chats/`.
-- The last 20 role/content entries are considered for context, then bounded by
-  per-entry and total-character limits; history is kept in complete pairs.
+- Full chronological chat transcripts (including web-resource results) and
+  metadata are saved in JSON files under the user's
+  `static/SaveData/<username>/chats/`. Each user's chat files are separate.
+- The most recent 20 transcript entries, bounded by per-entry and
+  total-character limits, are sent as immediate context. Older entries are
+  compacted into a persistent per-chat summary; the full transcript remains
+  available when a saved conversation is reopened.
+- Web-search follow-ups use the recent conversation and its summary to resolve
+  references, and search results are placed between the triggering user message
+  and assistant reply in the saved transcript and model context.
 - `static/ai.py` uses `MODEL = "qwen3.5:2b"`. Simple greetings, farewells,
   thanks, and known personal questions are answered without calling Ollama.
 - Request text matching can trigger search/recommendations via `ddgs`; web
   result cards are streamed separately from the answer.
-- Study-related user memory is stored in a file named `memory` in the user's
-  data directory. Memory update prompt limits facts and excludes sensitive
-  traits, health, finances, identity attributes, and secrets.
+- Long-term study-related user memory remains separate in a file named
+  `memory` in the user's data directory. Memory updates receive conversation
+  context but keep their bounded facts separate from each chat transcript.
+  Memory update prompts exclude sensitive traits, health, finances, identity
+  attributes, and secrets.
 - AI response formatting escapes HTML before translating basic headings, bold,
   italic, inline code, and bullet lists to safe display markup.
 - The four “AI Features” cards (Text Summarizer, Flashcard Generator, Problem

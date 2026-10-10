@@ -19,6 +19,15 @@
             gap: 22px;
         }
 
+        .schedule-dashboard.is-management-open {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-areas:
+                "active active"
+                "launcher guide";
+            align-items: stretch;
+        }
+
         .management-launchers {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -128,6 +137,20 @@
             order: 2;
         }
 
+        .schedule-dashboard.is-management-open .expanded-management-panel {
+            grid-area: active;
+        }
+
+        .schedule-dashboard.is-management-open .management-launchers {
+            grid-area: launcher;
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .schedule-dashboard.is-management-open .study-ratios-card {
+            grid-area: guide;
+            align-self: stretch;
+        }
+
         .expanded-management-panel:not(.is-open) {
             display: none;
         }
@@ -138,23 +161,22 @@
         }
 
         .management-close-row {
-            display: flex;
-            justify-content: flex-end;
             margin-bottom: 12px;
         }
 
         .management-close-button {
-            display: inline-flex;
+            width: 100%;
+            display: flex;
             align-items: center;
-            gap: 7px;
-            border: 1px solid rgba(120, 130, 160, 0.18);
-            border-radius: 999px;
-            padding: 8px 14px;
+            justify-content: space-between;
+            gap: 20px;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 20px 24px;
             background: linear-gradient(180deg, var(--white), var(--soft-surface));
             color: var(--text);
             font: inherit;
-            font-size: 0.88rem;
-            font-weight: 700;
+            text-align: left;
             cursor: pointer;
             transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
         }
@@ -162,18 +184,45 @@
         .management-close-button:hover {
             background: var(--purple-light);
             border-color: rgba(99, 102, 241, 0.25);
+        }
+
+        .management-close-button:focus-visible {
+            outline: 3px solid rgba(99, 102, 241, 0.35);
+            outline-offset: 3px;
+        }
+
+        .management-close-title {
+            display: block;
+            margin-top: 5px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .management-close-action {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             color: var(--purple);
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .management-close-action::after {
+            content: "−";
+            width: 32px;
+            height: 32px;
+            display: grid;
+            place-items: center;
+            flex: 0 0 32px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            font-size: 20px;
+            line-height: 1;
         }
 
         .management-section-hidden {
             display: none !important;
-        }
-
-        .management-launcher.management-section-hidden {
-            display: block !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            pointer-events: none;
         }
 
         /* Make the expanded cards feel like the original full-size panels. */
@@ -193,6 +242,28 @@
         /* Scheduler expanded view */
         .expanded-management-panel .weekly-schedule-card {
             min-height: 0;
+        }
+
+        .expanded-management-panel .weekly-grid {
+            --calendar-hour-height: 36px;
+        }
+
+        .expanded-management-panel .calendar-hour-label {
+            padding-right: 5px;
+            font-size: 10px;
+        }
+
+        .expanded-management-panel .schedule-block {
+            min-height: 20px;
+            padding: 3px 4px;
+        }
+
+        .expanded-management-panel .schedule-block strong {
+            font-size: 11px;
+        }
+
+        .expanded-management-panel .schedule-block span {
+            font-size: 10px;
         }
 
         /* The study-ratio guide stays underneath the launcher/expanded area. */
@@ -236,6 +307,22 @@
             .launcher-arrow {
                 right: 18px;
                 bottom: 15px;
+            }
+
+            .schedule-dashboard.is-management-open {
+                grid-template-columns: minmax(0, 1fr);
+                grid-template-areas:
+                    "active"
+                    "launcher"
+                    "guide";
+            }
+
+            .management-close-button {
+                padding: 17px 19px;
+            }
+
+            .management-close-title {
+                font-size: 20px;
             }
         }
 
@@ -340,10 +427,13 @@
                             id="management-close"
                             class="management-close-button"
                             type="button"
-                            aria-label="Close open section"
+                            aria-expanded="true"
                         >
-                            <span aria-hidden="true">×</span>
-                            Close
+                            <span>
+                                <span class="eyebrow">ACTIVE TOOL</span>
+                                <span id="management-close-title" class="management-close-title"></span>
+                            </span>
+                            <span class="management-close-action">Hide</span>
                         </button>
                     </div>
 
@@ -760,12 +850,17 @@
             const schedulerLauncher = document.getElementById("scheduler-launcher");
             const timerLauncher = document.getElementById("timer-launcher");
             const managementClose = document.getElementById("management-close");
+            const managementCloseTitle = document.getElementById("management-close-title");
+            const scheduleDashboard = document.querySelector(".schedule-dashboard");
+            const studyRatiosCard = document.querySelector(".study-ratios-card");
+            const studyRatiosSummary = studyRatiosCard.querySelector("summary");
 
             let activeManagementSection = null;
 
             function closeManagementSection() {
                 activeManagementSection = null;
 
+                scheduleDashboard.classList.remove("is-management-open");
                 expandedPanel.classList.remove("is-open");
                 expandedTimer.classList.add("management-section-hidden");
                 expandedScheduler.classList.add("management-section-hidden");
@@ -776,15 +871,23 @@
                 schedulerLauncher.setAttribute("aria-expanded", "false");
                 timerLauncher.setAttribute("aria-expanded", "false");
 
+                managementClose.setAttribute("aria-expanded", "false");
                 managementClose.hidden = true;
             }
 
             function openManagementSection(section) {
+                if (activeManagementSection === section) {
+                    closeManagementSection();
+                    return;
+                }
+
                 /*
                  * If another section is open, this immediately replaces it.
                  * There is no second click required.
                  */
+                scheduleDashboard.classList.add("is-management-open");
                 expandedPanel.classList.add("is-open");
+                studyRatiosCard.open = false;
 
                 expandedTimer.classList.add("management-section-hidden");
                 expandedScheduler.classList.add("management-section-hidden");
@@ -800,6 +903,14 @@
                     timerLauncher.setAttribute("aria-expanded", "false");
 
                     activeManagementSection = "scheduler";
+                    managementCloseTitle.textContent = "Scheduler";
+                    managementClose.setAttribute("aria-controls", "expanded-scheduler");
+                    managementClose.setAttribute("aria-label", "Close Scheduler");
+
+                    window.requestAnimationFrame(() => {
+                        renderScheduleEvents();
+                        renderCurrentTimeIndicator();
+                    });
                 }
 
                 if (section === "timer") {
@@ -810,8 +921,12 @@
                     schedulerLauncher.setAttribute("aria-expanded", "false");
 
                     activeManagementSection = "timer";
+                    managementCloseTitle.textContent = "Study Timer";
+                    managementClose.setAttribute("aria-controls", "expanded-timer");
+                    managementClose.setAttribute("aria-label", "Close Study Timer");
                 }
 
+                managementClose.setAttribute("aria-expanded", "true");
                 managementClose.hidden = false;
 
                 window.requestAnimationFrame(() => {
@@ -830,10 +945,15 @@
                 openManagementSection("timer");
             });
 
+            studyRatiosSummary.addEventListener("click", () => {
+                if (activeManagementSection) {
+                    closeManagementSection();
+                }
+            });
+
             managementClose.addEventListener("click", closeManagementSection);
 
             managementClose.hidden = true;
-
             const hashTarget = window.location.hash
                 ? document.getElementById(window.location.hash.slice(1))
                 : null;
@@ -1361,9 +1481,9 @@
 
                     label.className = "calendar-hour-label";
 
-                    if (hour !== 0) {
+                    if (hour % 3 === 0) {
                         label.textContent =
-                            `${String(hour).padStart(2, "0")}:00`;
+                            `${hour}:00`;
                     }
 
                     calendarTimeColumn.append(label);

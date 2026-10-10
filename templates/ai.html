@@ -417,14 +417,31 @@ function formatAIResponse(text) {
 }
 
 
-function addMessage(message, sender, displayOrder = null) {
+function insertChatEntry(entry, beforeElement = null) {
+    const reference = beforeElement?.parentElement === chatMessages
+        ? beforeElement
+        : null;
+    const insertionIndex = reference
+        ? Array.prototype.indexOf.call(chatMessages.children, reference)
+        : chatMessages.childElementCount;
+
+    chatMessages.insertBefore(entry, reference);
+    Array.from(chatMessages.children)
+        .slice(insertionIndex)
+        .forEach((child, index) => {
+            child.style.order = String(insertionIndex + index);
+        });
+}
+
+function scrollChatToLatest() {
+    chatMessages.lastElementChild?.scrollIntoView({ block: "end" });
+}
+
+function addMessage(message, sender) {
 
     const messageDiv = document.createElement("div");
 
     messageDiv.className = `chat-message ${sender}`;
-    if (displayOrder !== null) {
-        messageDiv.style.order = String(displayOrder);
-    }
 
     const bubble = document.createElement("div");
 
@@ -439,26 +456,22 @@ function addMessage(message, sender, displayOrder = null) {
     }
 
     messageDiv.appendChild(bubble);
-    chatMessages.appendChild(messageDiv);
+    insertChatEntry(messageDiv);
 
     chatMessages.style.display = "flex";
     aiDashboard.classList.add("has-active-chat");
 
-    chatMessages.scrollTop =
-        chatMessages.scrollHeight;
+    scrollChatToLatest();
 
     return bubble;
 }
 
 
-function addResourceCard(resource, displayOrder = null) {
+function addResourceCard(resource, beforeElement = null) {
 
     const card = document.createElement("a");
 
     card.className = "ai-resource-card";
-    if (displayOrder !== null) {
-        card.style.order = String(displayOrder);
-    }
     card.href = resource.url;
     card.target = "_blank";
     card.rel = "noopener noreferrer";
@@ -475,7 +488,7 @@ function addResourceCard(resource, displayOrder = null) {
         const warning = document.createElement("div");
         warning.className = "ai-memory-warning";
         warning.textContent = message;
-        chatMessages.appendChild(warning);
+        insertChatEntry(warning);
     }
 
     const content = document.createElement("div");
@@ -506,11 +519,14 @@ function addResourceCard(resource, displayOrder = null) {
     }
     card.appendChild(content);
 
-    chatMessages.appendChild(card);
+    if (beforeElement) {
+        insertChatEntry(card, beforeElement);
+    } else {
+        insertChatEntry(card);
+    }
     aiDashboard.classList.add("has-active-chat");
 
-    chatMessages.scrollTop =
-        chatMessages.scrollHeight;
+    scrollChatToLatest();
 }
 
 function clearConversationView() {
@@ -521,13 +537,13 @@ function clearConversationView() {
     sectionHeading.style.display = "";
 }
 
-function renderSavedMessage(message, displayOrder) {
+function renderSavedMessage(message) {
     if (message.role === "user") {
-        addMessage(message.content, "user", displayOrder);
+        addMessage(message.content, "user");
     } else if (message.role === "assistant") {
-        addMessage(message.content, "ai", displayOrder);
+        addMessage(message.content, "ai");
     } else if (message.role === "resource" && message.resource) {
-        addResourceCard(message.resource, displayOrder);
+        addResourceCard(message.resource);
     }
 }
 
@@ -631,11 +647,10 @@ async function openSavedChat(chatId) {
     currentChatId = chat.id;
     clearConversationView();
 
-    let displayOrder = 0;
     for (const message of chat.messages) {
-        renderSavedMessage(message, displayOrder);
-        displayOrder += 1;
+        renderSavedMessage(message);
     }
+    scrollChatToLatest();
     if (chat.messages.length) {
         featureGrid.style.display = "none";
         sectionHeading.style.display = "none";
@@ -869,7 +884,10 @@ async function sendMessage() {
 
                 else if (event.type === "resource") {
 
-                    addResourceCard(event.resource);
+                    addResourceCard(
+                        event.resource,
+                        thinkingBubble.parentElement
+                    );
 
                 }
 
@@ -884,8 +902,7 @@ async function sendMessage() {
 
                 }
 
-                chatMessages.scrollTop =
-                    chatMessages.scrollHeight;
+                scrollChatToLatest();
             }
         }
 

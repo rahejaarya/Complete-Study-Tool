@@ -9,9 +9,12 @@ from unittest.mock import patch
 from app import app, init_db
 from static.ai import (
     ask_ai,
+    bound_conversation_history,
     conversational_reply,
     find_resources,
+    normalize_conversation_history,
     should_recommend_resources,
+    summarize_conversation,
     update_user_memory,
 )
 
@@ -72,6 +75,81 @@ class StudyAssistantTests(unittest.TestCase):
         self.assertIn("Default to a short, direct answer", messages[0]["content"])
         self.assertIn("Never add filler", messages[0]["content"])
 
+    def test_tool_results_follow_the_current_question_without_duplicating_it(self):
+        response_chunk = {"message": {"content": "Here is the explanation."}}
+        history = [
+            {"role": "user", "content": "What is photosynthesis?"},
+            {"role": "assistant", "content": "Plants convert light into energy."},
+        ]
+        resource = {
+            "type": "Article",
+            "title": "Photosynthesis guide",
+            "url": "https://example.com/photosynthesis",
+            "description": "An overview of the process.",
+        }
+        with patch("static.ai.ollama.chat", return_value=[response_chunk]) as ollama_chat:
+            list(ask_ai(
+                "Can you explain that with sources?",
+                conversation_history=history,
+                conversation_summary="The user is learning about photosynthesis.",
+                tool_results=[resource],
+            ))
+
+        messages = ollama_chat.call_args.kwargs["messages"]
+        self.assertEqual(messages[1:3], history)
+        self.assertEqual(messages[3], {
+            "role": "user",
+            "content": "Can you explain that with sources?",
+        })
+        self.assertEqual(messages[4]["role"], "tool")
+        self.assertEqual(messages[4]["tool_name"], "web_search")
+        self.assertIn("Photosynthesis guide", messages[4]["content"])
+        self.assertEqual(
+            sum(
+                entry.get("content") == "Can you explain that with sources?"
+                for entry in messages
+            ),
+            1,
+        )
+        self.assertIn("The user is learning about photosynthesis.", messages[0]["content"])
+
+    def test_saved_resource_results_are_restored_in_chronological_order(self):
+        saved_messages = [
+            {"role": "user", "content": "Explain photosynthesis."},
+            {"role": "assistant", "content": "Plants convert light into energy."},
+            {
+                "role": "resource",
+                "resource": {
+                    "title": "Photosynthesis guide",
+                    "url": "https://example.com/photosynthesis",
+                },
+            },
+            {"role": "user", "content": "What did that source say?"},
+        ]
+
+        history = normalize_conversation_history(saved_messages)
+
+        self.assertEqual([message["role"] for message in history], [
+            "user",
+            "tool",
+            "assistant",
+            "user",
+        ])
+        self.assertIn("Photosynthesis guide", history[1]["content"])
+
+    def test_bounded_history_retains_recent_context_and_reports_compacted_prefix(self):
+        messages = [
+            {"role": "user", "content": f"Earlier question {index}"}
+            for index in range(24)
+        ]
+
+        recent, start_index, complete_history = bound_conversation_history(messages)
+
+        self.assertEqual(len(complete_history), 24)
+        self.assertEqual(len(recent), 20)
+        self.assertEqual(recent[-1]["content"], "Earlier question 23")
+        self.assertEqual(start_index, 4)
+
     def test_saved_user_memory_is_available_in_the_system_prompt(self):
         response_chunk = {"message": {"content": "Let's practice algebra."}}
         with patch("static.ai.ollama.chat", return_value=[response_chunk]) as ollama_chat:
@@ -111,6 +189,11 @@ class StudyAssistantTests(unittest.TestCase):
             memory = update_user_memory(
                 {"facts": ["Previous fact"]},
                 "I am studying algebra and like diagrams.",
+                conversation_history=[
+                    {"role": "user", "content": "I have a chemistry exam."},
+                    {"role": "assistant", "content": "Let's make a review plan."},
+                ],
+                conversation_summary="The user is preparing for chemistry.",
             )
 
         self.assertLessEqual(len(memory["facts"]), 12)
@@ -127,7 +210,84 @@ class StudyAssistantTests(unittest.TestCase):
         self.assertIn("Do not store sensitive traits", prompt)
         self.assertIn("direct statements", prompt)
         supplied_content = ollama_chat.call_args.kwargs["messages"][1]["content"]
+        supplied_context = json.loads(supplied_content)
         self.assertNotIn("assistant_response", supplied_content)
+        self.assertEqual(supplied_context["conversation_summary"],
+                         "The user is preparing for chemistry.")
+        self.assertEqual(len(supplied_context["conversation_history"]), 3)
+        self.assertEqual(
+            supplied_context["conversation_history"][-1],
+            {
+                "role": "user",
+                "content": "I am studying algebra and like diagrams.",
+            },
+        )
+        self.assertEqual(
+            sum(
+                entry["content"] == "I am studying algebra and like diagrams."
+                for entry in supplied_context["conversation_history"]
+            ),
+            1,
+        )
+
+    def test_conversation_summary_call_receives_existing_summary_and_old_turns(self):
+        with patch(
+            "static.ai.ollama.chat",
+            return_value={
+                "message": {
+                    "content": "The user is learning biology and has reviewed cells."
+                }
+            },
+        ) as ollama_chat:
+            summary = summarize_conversation(
+                "The user is learning biology.",
+                [
+                    {"role": "user", "content": "Explain cells."},
+                    {"role": "assistant", "content": "Cells are life's basic units."},
+                ],
+            )
+
+        self.assertIn("reviewed cells", summary)
+        summary_input = json.loads(
+            ollama_chat.call_args.kwargs["messages"][1]["content"]
+        )
+        self.assertEqual(summary_input["existing_summary"],
+                         "The user is learning biology.")
+        self.assertEqual(len(summary_input["conversation_history"]), 2)
+
+    def test_user_memory_history_does_not_duplicate_the_current_turn(self):
+        with patch(
+            "static.ai.ollama.chat",
+            return_value={
+                "message": {
+                    "content": json.dumps({
+                        "explicit_facts": [],
+                        "facts": [],
+                    })
+                }
+            },
+        ) as ollama_chat:
+            update_user_memory(
+                {},
+                "Continue with the next step.",
+                conversation_history=[
+                    {"role": "user", "content": "Continue with the next step."},
+                    {"role": "assistant", "content": "The next step is to simplify."},
+                ],
+                current_message_in_history=True,
+            )
+
+        memory_history = json.loads(
+            ollama_chat.call_args.kwargs["messages"][1]["content"]
+        )["conversation_history"]
+        self.assertEqual(
+            sum(
+                entry["role"] == "user"
+                and entry["content"] == "Continue with the next step."
+                for entry in memory_history
+            ),
+            1,
+        )
 
     def test_find_resources_returns_video_and_relevant_articles(self):
         video = {
@@ -217,6 +377,24 @@ class StudyAssistantTests(unittest.TestCase):
         search_web.assert_called_once_with("climate research")
         self.assertEqual(resources[0]["title"], "Climate research")
 
+    def test_resource_search_uses_prior_context_for_a_follow_up(self):
+        history = [
+            {"role": "user", "content": "Explain the Krebs cycle."},
+            {"role": "assistant", "content": "It is a process in cellular respiration."},
+        ]
+
+        with patch("static.ai.DDGS") as ddgs, patch(
+            "static.ai.search_web",
+            return_value=[],
+        ):
+            ddgs.return_value.videos.return_value = []
+            find_resources(
+                "Can you recommend another video about it?",
+                history,
+            )
+
+        self.assertIn("Krebs cycle", ddgs.return_value.videos.call_args.args[0])
+
     def test_greetings_do_not_search_for_resources(self):
         with patch("static.ai.DDGS") as ddgs, patch("static.ai.search_web") as search_web:
             self.assertEqual(find_resources("Hi!"), [])
@@ -245,11 +423,24 @@ class StudyAssistantApiTests(unittest.TestCase):
         with self.client.session_transaction() as user_session:
             user_session["user_id"] = 1
             user_session["username"] = "admin"
+
+        def preserve_memory(
+            memory,
+            _user_message,
+            *,
+            conversation_history=None,
+            conversation_summary="",
+            current_message_in_history=False,
+        ):
+            del _user_message
+            del conversation_history, conversation_summary, current_message_in_history
+            return memory
+
         self.memory_update_patch = patch(
             "app.update_user_memory",
-            side_effect=lambda memory, _: memory,
+            side_effect=preserve_memory,
         )
-        self.memory_update_patch.start()
+        self.memory_update_mock = self.memory_update_patch.start()
         self.addCleanup(self.memory_update_patch.stop)
 
     def create_saved_chat(self, messages, title="Earlier conversation"):
@@ -608,26 +799,23 @@ class StudyAssistantApiTests(unittest.TestCase):
         ])
         self.assertEqual(ask.call_args.args, (
             "Explain this topic.",
-            "\n\n".join(
-                f"Type: {resource['type']}\nTitle: {resource['title']}\n"
-                f"URL: {resource['url']}\nDescription: {resource['description']}"
-                for resource in resources
-            ),
+            "",
             [
                 {"role": "user", "content": "What is the topic?"},
                 {"role": "assistant", "content": "It is a study topic."},
             ],
             {"explicit_facts": [], "facts": []},
         ))
+        self.assertEqual(ask.call_args.kwargs["tool_results"], resources)
         saved_chat = json.loads(next(
             (Path(self.temp_dir.name) / "admin" / "chats").glob(f"*-{chat_id}.json")
         ).read_text(encoding="utf-8"))
-        self.assertEqual(saved_chat["messages"][-3], {
+        self.assertEqual(saved_chat["messages"][-1], {
             "role": "assistant",
             "content": "Here is an explanation.",
         })
         self.assertEqual(
-            saved_chat["messages"][-2:],
+            saved_chat["messages"][-3:-1],
             [
                 {"role": "resource", "resource": resources[0]},
                 {"role": "resource", "resource": resources[1]},
@@ -635,7 +823,7 @@ class StudyAssistantApiTests(unittest.TestCase):
         )
         self.assertEqual(
             [entry["role"] for entry in saved_chat["messages"]],
-            ["user", "assistant", "user", "assistant", "resource", "resource"],
+            ["user", "assistant", "user", "resource", "resource", "assistant"],
         )
 
     def test_chat_endpoint_rejects_unknown_chat_id(self):
@@ -666,8 +854,20 @@ class StudyAssistantApiTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual([event["type"] for event in events], ["chat", "token", "done"])
-        self.assertIn("no usable web sources", ask.call_args.args[1])
-        self.assertIn("not verified by web search", ask.call_args.args[1])
+        self.assertEqual(
+            ask.call_args.kwargs["tool_results"],
+            ["Web search was requested, but no usable sources were returned."],
+        )
+        chat_id = events[0]["chat"]["id"]
+        chat_path = next(
+            (Path(self.temp_dir.name) / "admin" / "chats").glob(f"*-{chat_id}.json")
+        )
+        saved_chat = json.loads(chat_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            [entry["role"] for entry in saved_chat["messages"]],
+            ["user", "tool", "assistant"],
+        )
+        self.assertEqual(saved_chat["messages"][1]["tool_name"], "web_search")
 
     def test_chat_listing_loading_and_rename_are_persistent_and_user_scoped(self):
         chat_id, old_path = self.create_saved_chat([
@@ -736,6 +936,149 @@ class StudyAssistantApiTests(unittest.TestCase):
             "explicit_facts": [],
             "facts": ["The user is studying biology."],
         })
+
+    def test_chat_history_and_search_results_survive_a_new_client(self):
+        resource = {
+            "type": "Article",
+            "title": "Photosynthesis guide",
+            "url": "https://example.com/photosynthesis",
+            "description": "A source about photosynthesis.",
+            "image": "",
+        }
+        with patch("app.should_recommend_resources", return_value=True), patch(
+            "app.find_resources",
+            return_value=[resource],
+        ), patch("app.ask_ai", return_value=iter(["Plants convert light into energy."])):
+            first_response = self.client.post(
+                "/api/ai",
+                json={"message": "Explain photosynthesis."},
+            )
+            first_events = [
+                json.loads(line)
+                for line in first_response.get_data(as_text=True).splitlines()
+            ]
+
+        chat_id = first_events[0]["chat"]["id"]
+        chat_path = next(
+            (Path(self.temp_dir.name) / "admin" / "chats").glob(f"*-{chat_id}.json")
+        )
+        saved = json.loads(chat_path.read_text(encoding="utf-8"))
+        self.assertEqual([entry["role"] for entry in saved["messages"]], [
+            "user",
+            "resource",
+            "assistant",
+        ])
+
+        restarted_client = app.test_client()
+        with restarted_client.session_transaction() as user_session:
+            user_session["user_id"] = 1
+            user_session["username"] = "admin"
+        with patch("app.should_recommend_resources", return_value=False), patch(
+            "app.ask_ai",
+            return_value=iter(["The source describes how plants use light."]),
+        ) as ask:
+            second_response = restarted_client.post(
+                "/api/ai",
+                json={
+                    "message": "What did that source say?",
+                    "chat_id": chat_id,
+                },
+            )
+            list(second_response.response)
+
+        self.assertEqual(second_response.status_code, 200)
+        self.assertEqual(ask.call_args.args[2], [
+            {"role": "user", "content": "Explain photosynthesis."},
+            {
+                "role": "tool",
+                "tool_name": "web_search",
+                "content": json.dumps(resource, ensure_ascii=False),
+            },
+            {"role": "assistant", "content": "Plants convert light into energy."},
+        ])
+        memory_history = self.memory_update_mock.call_args.kwargs[
+            "conversation_history"
+        ]
+        self.assertEqual(
+            sum(
+                entry["role"] == "user"
+                and entry["content"] == "What did that source say?"
+                for entry in memory_history
+            ),
+            1,
+        )
+
+    def test_long_chat_persists_a_rolling_summary_without_deleting_history(self):
+        messages = []
+        for index in range(14):
+            messages.extend([
+                {"role": "user", "content": f"Question {index}"},
+                {"role": "assistant", "content": f"Answer {index}"},
+            ])
+        chat_id, chat_path = self.create_saved_chat(messages)
+
+        with patch(
+            "app.summarize_conversation",
+            side_effect=[
+                "Earlier conversation covered questions 0 through 3.",
+                "Earlier conversation also covered questions 4 and 5.",
+            ],
+        ) as summarize, patch(
+            "app.should_recommend_resources",
+            return_value=False,
+        ), patch(
+            "app.ask_ai",
+            return_value=iter(["Continuing from the earlier discussion."]),
+        ) as ask:
+            response = self.client.post(
+                "/api/ai",
+                json={"message": "Continue.", "chat_id": chat_id},
+            )
+            list(response.response)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(summarize.call_args.args[1]), 8)
+        self.assertEqual(ask.call_args.kwargs["conversation_summary"],
+                         "Earlier conversation covered questions 0 through 3.")
+        saved_chat = json.loads(chat_path.read_text(encoding="utf-8"))
+        self.assertEqual(saved_chat["summary_through"], 8)
+        self.assertEqual(len(saved_chat["messages"]), 30)
+        self.assertEqual(saved_chat["messages"][:2], messages[:2])
+
+        restarted_client = app.test_client()
+        with restarted_client.session_transaction() as user_session:
+            user_session["user_id"] = 1
+            user_session["username"] = "admin"
+        with patch(
+            "app.summarize_conversation",
+            return_value="Earlier conversation also covered questions 4 and 5.",
+        ) as resumed_summary, patch(
+            "app.should_recommend_resources",
+            return_value=False,
+        ), patch(
+            "app.ask_ai",
+            return_value=iter(["We reviewed questions 0 through 5."]),
+        ) as resumed_ask:
+            resumed_response = restarted_client.post(
+                "/api/ai",
+                json={"message": "What did we discuss?", "chat_id": chat_id},
+            )
+            list(resumed_response.response)
+
+        self.assertEqual(resumed_response.status_code, 200)
+        self.assertEqual(resumed_summary.call_count, 1)
+        self.assertEqual(
+            resumed_summary.call_args.args[0],
+            "Earlier conversation covered questions 0 through 3.",
+        )
+        self.assertEqual(len(resumed_summary.call_args.args[1]), 2)
+        self.assertEqual(
+            resumed_ask.call_args.kwargs["conversation_summary"],
+            "Earlier conversation also covered questions 4 and 5.",
+        )
+        resumed_chat = json.loads(chat_path.read_text(encoding="utf-8"))
+        self.assertEqual(resumed_chat["summary_through"], 10)
+        self.assertEqual(len(resumed_chat["messages"]), 32)
 
     def test_chat_load_preserves_saved_user_resource_and_assistant_order(self):
         messages = [

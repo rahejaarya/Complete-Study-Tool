@@ -14,9 +14,25 @@ from flask import Flask, Response, redirect, render_template, request, session, 
 from werkzeug.security import check_password_hash, generate_password_hash
 
 try:
-    from static.ai import ask_ai, find_resources, search_web, should_recommend_resources, update_user_memory  # type: ignore[reportMissingImports]
+    from static.ai import (  # type: ignore[reportMissingImports]
+        ask_ai,
+        bound_conversation_history,
+        find_resources,
+        search_web,
+        should_recommend_resources,
+        summarize_conversation,
+        update_user_memory,
+    )
 except ModuleNotFoundError:  # pragma: no cover
-    from app.static.ai import ask_ai, find_resources, search_web, should_recommend_resources, update_user_memory # type: ignore
+    from app.static.ai import (  # type: ignore
+        ask_ai,
+        bound_conversation_history,
+        find_resources,
+        search_web,
+        should_recommend_resources,
+        summarize_conversation,
+        update_user_memory,
+    )
 
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -612,6 +628,8 @@ def ai_chat():
                 "title": title,
                 "created_at": datetime.now(timezone.utc).isoformat(),
                 "updated_at": datetime.now(timezone.utc).isoformat(),
+                "summary": "",
+                "summary_through": 0,
                 "messages": [],
             }
             chat_path = (
@@ -627,46 +645,80 @@ def ai_chat():
             if not isinstance(chat, dict) or not isinstance(chat.get("messages"), list):
                 return jsonify({"error": "Saved conversation data is invalid."}), 500
 
-        conversation_history = [
-            {"role": entry["role"], "content": entry["content"]}
-            for entry in chat["messages"]
-            if isinstance(entry, dict)
-            and entry.get("role") in {"user", "assistant"}
-            and isinstance(entry.get("content"), str)
-        ][-20:]
-        if len(conversation_history) % 2:
-            conversation_history = conversation_history[1:]
-        history_char_count = 0
-        bounded_history = []
-        for entry in reversed(conversation_history):
-            content = entry["content"]
-            if len(content) > 4000 or history_char_count + len(content) > 12000:
-                break
-            bounded_history.insert(0, entry)
-            history_char_count += len(content)
-        conversation_history = bounded_history
-        memory = load_user_memory(user_dir)
-
-        lookup_requested = should_recommend_resources(message)
-        resources = find_resources(message) if lookup_requested else []
-        web_context = "\n\n".join(
-            f"Type: {item['type']}\n"
-            f"Title: {item['title']}\n"
-            f"URL: {item['url']}\n"
-            f"Description: {item['description']}"
-            for item in resources
+        conversation_history, context_start, full_history = (
+            bound_conversation_history(chat["messages"])
         )
-        if lookup_requested and not resources:
-            web_context = (
-                "Web search was requested, but no usable web sources were "
-                "returned. Tell the user that clearly. You may still provide "
-                "a general-knowledge answer, but label it as not verified by "
-                "web search."
+        conversation_summary = chat.get("summary", "")
+        if not isinstance(conversation_summary, str):
+            conversation_summary = ""
+        conversation_summary = conversation_summary[:2500]
+        try:
+            summary_through = max(0, int(chat.get("summary_through", 0)))
+        except (TypeError, ValueError):
+            summary_through = 0
+        summary_through = min(summary_through, context_start)
+        if summary_through < context_start:
+            conversation_summary = summarize_conversation(
+                conversation_summary,
+                full_history[summary_through:context_start],
             )
+            chat["summary"] = conversation_summary
+            chat["summary_through"] = context_start
+            write_json_atomically(chat_path, chat)
+
+        memory = load_user_memory(user_dir)
 
         chat["messages"].append({"role": "user", "content": message})
         chat["updated_at"] = datetime.now(timezone.utc).isoformat()
         write_json_atomically(chat_path, chat)
+
+        lookup_requested = should_recommend_resources(message)
+        resources = (
+            find_resources(
+                message,
+                conversation_history,
+                conversation_summary,
+            )
+            if lookup_requested
+            else []
+        )
+        if resources:
+            chat["messages"].extend(
+                {"role": "resource", "resource": resource}
+                for resource in resources
+            )
+            tool_results = resources
+        elif lookup_requested:
+            tool_results = [
+                "Web search was requested, but no usable sources were returned."
+            ]
+            chat["messages"].append({
+                "role": "tool",
+                "tool_name": "web_search",
+                "content": tool_results[0],
+            })
+        else:
+            tool_results = []
+
+        write_json_atomically(chat_path, chat)
+        turn_context = [
+            *conversation_history,
+            {"role": "user", "content": message},
+        ]
+        turn_context.extend(
+            {
+                "role": "tool",
+                "tool_name": "web_search",
+                "content": json.dumps(resource, ensure_ascii=False),
+            }
+            for resource in resources
+        )
+        if lookup_requested and not resources:
+            turn_context.append({
+                "role": "tool",
+                "tool_name": "web_search",
+                "content": tool_results[0],
+            })
 
         def generate():
             current_memory = memory
@@ -687,9 +739,11 @@ def ai_chat():
             full_response = ""
             for chunk in ask_ai(
                 message,
-                web_context,
+                "",
                 conversation_history,
                 current_memory,
+                conversation_summary=conversation_summary,
+                tool_results=tool_results,
             ):
                 full_response += chunk
                 yield json.dumps({
@@ -702,16 +756,18 @@ def ai_chat():
                     "role": "assistant",
                     "content": full_response,
                 })
-                chat["messages"].extend(
-                    {"role": "resource", "resource": resource}
-                    for resource in resources
-                )
                 chat["updated_at"] = datetime.now(timezone.utc).isoformat()
                 write_json_atomically(chat_path, chat)
                 try:
                     current_memory = update_user_memory(
                         current_memory,
                         message,
+                        conversation_history=turn_context + [{
+                            "role": "assistant",
+                            "content": full_response,
+                        }],
+                        conversation_summary=conversation_summary,
+                        current_message_in_history=True,
                     )
                     write_json_atomically(user_dir / "memory", current_memory)
                 except Exception as memory_error:
