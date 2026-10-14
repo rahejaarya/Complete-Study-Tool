@@ -1,0 +1,18 @@
+{
+  "id": "bd436e77a5184c32866fba0f9acbab2b",
+  "title": "hello",
+  "created_at": "2026-10-14T17:20:25.191440+00:00",
+  "updated_at": "2026-10-14T17:20:25.194429+00:00",
+  "summary": "",
+  "summary_through": 0,
+  "messages": [
+    {
+      "role": "user",
+      "content": "hello"
+    },
+    {
+      "role": "assistant",
+      "content": "Hello! What would you like help studying today?"
+    }
+  ]
+}

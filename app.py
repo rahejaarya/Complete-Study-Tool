@@ -487,6 +487,12 @@ def user_notebooks():
                     raise ValueError("Saved notebooks must be an object.")
                 return jsonify(clean_notebook_data(saved_data))
 
+            quick_notes_notebook = {
+                "id": uuid.uuid4().hex,
+                "name": "Quick Notes",
+                "content": "",
+                "quick_note": "",
+            }
             first_notebook = {
                 "id": uuid.uuid4().hex,
                 "name": "My Notebook",
@@ -494,8 +500,8 @@ def user_notebooks():
                 "quick_note": "",
             }
             data = {
-                "notebooks": [first_notebook],
-                "active_id": first_notebook["id"],
+                "notebooks": [quick_notes_notebook, first_notebook],
+                "active_id": quick_notes_notebook["id"],
             }
             write_json_atomically(notebooks_path, data)
             return jsonify(data)

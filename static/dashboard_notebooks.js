@@ -32,6 +32,27 @@
         card.classList.toggle("is-expanded", isExpanded);
     }
 
+    function ensureQuickNotesNotebook() {
+        const quickNotesNotebook = notebookData.notebooks.find(
+            (notebook) => notebook.name.trim().toLowerCase() === "quick notes"
+        );
+        if (quickNotesNotebook) {
+            if (!notebookData.active_id) {
+                notebookData.active_id = quickNotesNotebook.id;
+            }
+            return;
+        }
+
+        const notebook = {
+            id: crypto.randomUUID(),
+            name: "Quick Notes",
+            content: "",
+            quick_note: ""
+        };
+        notebookData.notebooks.unshift(notebook);
+        notebookData.active_id = notebook.id;
+    }
+
     function renderList() {
         list.replaceChildren();
         notebookData.notebooks.forEach((notebook) => {
@@ -100,6 +121,7 @@
                 throw new Error("The saved notebooks response is invalid.");
             }
             notebookData = payload;
+            ensureQuickNotesNotebook();
             render();
             card.querySelectorAll("textarea, input, button").forEach((control) => {
                 control.disabled = false;
