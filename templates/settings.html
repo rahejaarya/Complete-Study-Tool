@@ -40,19 +40,19 @@
                     <a class="logout-btn" href="{{ url_for('logout') }}">Log out ➔</a>
                 </section>
 
-                <!-- 2. Appearance & Themes (Between Profile & Danger Zone) -->
+                <!-- Appearance & Themes Section -->
                 <section class="settings-card appearance-wrapper flex-fill">
-                    <details class="appearance-details">
+                    <details class="appearance-details" open>
                         <summary>
-                            <div class="summary-header">
-                                <h2>Appearance & Themes</h2>
-                                <p>Select a light or dark theme palette.</p>
-                            </div>
-                            <span class="chevron-icon">▼</span>
-                        </summary>
-                        <div class="appearance-content-inner">
-                            {% include "_appearance_settings.html" %}
-                        </div>
+                         <div class="summary-header">
+                             <h2>Appearance & Themes</h2>
+                               <p>Select a light or dark theme palette.</p>
+                           </div>
+                           <span class="chevron-icon">▼</span>
+                      </summary>
+                      <div class="appearance-content-inner scrollable-appearance">
+                          {% include "_appearance_settings.html" %}
+                      </div>
                     </details>
                 </section>
 

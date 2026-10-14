@@ -121,7 +121,9 @@
     });
 
     quickNoteInput.addEventListener("input", () => {
-        setExpanded(true);
+        if (window.location.pathname === "/notes") {
+            setExpanded(true);
+        }
         activeNotebook().quick_note = quickNoteInput.value;
         scheduleSave();
     });
