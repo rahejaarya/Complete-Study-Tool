@@ -1839,58 +1839,6 @@ body {
     margin: 0 auto;
 }
 
-.notes-taskbar {
-    position: fixed;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 14px 10px;
-    border-radius: 999px;
-    background: rgba(18, 22, 37, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
-    z-index: 40;
-    backdrop-filter: blur(10px);
-}
-
-.notes-taskbar-item {
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: transform 0.2s ease, background 0.2s ease;
-    font-size: 1.1rem;
-}
-
-.notes-taskbar-item:hover,
-.notes-taskbar-item:focus-visible,
-.notes-taskbar-item.active {
-    background: var(--accent-soft);
-    border-color: transparent;
-    transform: translateY(-1px);
-}
-
-@media (max-width: 900px) {
-    .notes-taskbar {
-        position: static;
-        transform: none;
-        flex-direction: row;
-        justify-content: center;
-        width: fit-content;
-        margin: 0 auto 18px;
-        border-radius: 999px;
-    }
-}
-
 /* Student Support Hub */
 
 .support-emergency {
