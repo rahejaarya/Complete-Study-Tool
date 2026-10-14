@@ -951,6 +951,10 @@ body {
     align-items: center;
 }
 
+.ai-dashboard:not(.has-active-chat) .ai-prompt-intro {
+    transform: translateY(2em);
+}
+
 
 /* ================================
    GENERAL CARDS

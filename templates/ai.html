@@ -97,7 +97,7 @@
             <!-- Dashboard / Tools Section -->
             <section class="dashboard ai-dashboard">
 
-                    <div style="
+                    <div class="ai-prompt-intro" style="
                         width: 100%;
                         max-width: 850px;
                         margin: 0 auto 30px auto;
@@ -375,68 +375,78 @@ warning.textContent = String(message || "Memory could not be updated.");
 insertChatEntry(warning);
 }
 
-#
+
 function addResourceCard(resource, beforeElement = null) {
+if (!resource || typeof resource !== "object") {
+return;
+}
 
-    const card = document.createElement("a");
+let parsedUrl;
 
-    card.className = "ai-resource-card";
-    card.href = resource.url;
-    card.target = "_blank";
-    card.rel = "noopener noreferrer";
+try {
+parsedUrl = new URL(resource.url);
+} catch {
+return;
+}
 
-    let image = null;
-    if (resource.image) {
-        image = document.createElement("img");
-        image.className = "ai-resource-image";
-        image.src = resource.image;
-        image.alt = "";
-    }
+if (!["https:", "http:"].includes(parsedUrl.protocol)) {
+return;
+}
 
-    const content = document.createElement("div");
+const card = document.createElement("a");
+card.className = "ai-resource-card";
+card.href = parsedUrl.href;
+card.target = "_blank";
+card.rel = "noopener noreferrer";
 
-    content.className = "ai-resource-content";
+if (typeof resource.image === "string" && resource.image) {
+try {
+const imageUrl = new URL(resource.image);
 
-    const type = document.createElement("div");
+if (["https:", "http:"].includes(imageUrl.protocol)) {
+const image = document.createElement("img");
+image.className = "ai-resource-image";
+image.src = imageUrl.href;
+image.alt = "";
+image.loading = "lazy";
+card.appendChild(image);
+}
+} catch {
+// Skip invalid image URLs.
+}
+}
 
-    type.className = "ai-resource-type";
-    type.textContent = resource.type || "Resource";
+const content = document.createElement("div");
+content.className = "ai-resource-content";
 
-    const title = document.createElement("div");
+const type = document.createElement("div");
+type.className = "ai-resource-type";
+type.textContent = resource.type || "Resource";
 
-    title.className = "ai-resource-title";
-    title.textContent = resource.title;
+const title = document.createElement("div");
+title.className = "ai-resource-title";
+title.textContent = resource.title || "Recommended resource";
 
-    const description = document.createElement("div");
+const description = document.createElement("div");
+description.className = "ai-resource-description";
+description.textContent = resource.description || "";
 
-    description.className = "ai-resource-description";
-    description.textContent = resource.description;
+content.append(type, title, description);
+card.appendChild(content);
 
-    content.appendChild(type);
-    content.appendChild(title);
-    content.appendChild(description);
+insertChatEntry(card, beforeElement || null);
 
-    if (image) {
-        card.appendChild(image);
-    }
-    card.appendChild(content);
-
-    if (beforeElement) {
-        insertChatEntry(card, beforeElement);
-    } else {
-        insertChatEntry(card);
-    }
-    aiDashboard.classList.add("has-active-chat");
-
-    scrollChatToLatest();
+aiDashboard?.classList.add("has-active-chat");
+scrollChatToLatest();
 }
 
 function clearConversationView() {
-    chatMessages.replaceChildren();
-    chatMessages.style.display = "none";
-    aiDashboard.classList.remove("has-active-chat");
-    featureGrid.style.display = "";
-    sectionHeading.style.display = "";
+chatMessages.replaceChildren();
+chatMessages.style.display = "none";
+aiDashboard?.classList.remove("has-active-chat");
+
+if (featureGrid) featureGrid.style.display = "";
+if (sectionHeading) sectionHeading.style.display = "";
 }
 
 function renderSavedMessage(message) {
@@ -450,6 +460,9 @@ function renderSavedMessage(message) {
 }
 
 async function loadChatList() {
+    if (!chatList) {
+        return;
+    }
     const response = await fetch("/api/ai/chats");
     if (!response.ok) {
         throw new Error("Could not load saved conversations.");
