@@ -1,4 +1,8 @@
 <div class="ai-nav-section">
+    <a href="{{ url_for('notes') }}" class="nav-link{% if request.endpoint == 'notes' %} active{% endif %}"{% if request.endpoint == 'notes' %} aria-current="page"{% endif %}>
+        <span class="nav-icon">✎</span>
+        Notes
+    </a>
     <div class="ai-nav-row{% if request.endpoint == 'ai_help' %} active{% endif %}">
         <a href="{{ url_for('ai_help') }}" class="nav-link{% if request.endpoint == 'ai_help' %} active{% endif %}"{% if request.endpoint == 'ai_help' %} aria-current="page"{% endif %}>
             <span class="nav-icon">✦</span>

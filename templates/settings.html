@@ -26,9 +26,9 @@
         {% endif %}
 
         <div class="settings-grid">
-            <!-- Left Column -->
-            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                <!-- Profile Avatar Card -->
+            <!-- Left Column: Profile, Appearance, Danger Zone -->
+            <div class="grid-column">
+                <!-- 1. Profile Card -->
                 <section class="settings-card profile-card">
                     <div class="avatar-wrapper">
                         <div class="avatar-circle">
@@ -40,7 +40,23 @@
                     <a class="logout-btn" href="{{ url_for('logout') }}">Log out ➔</a>
                 </section>
 
-                <!-- Danger Zone / Delete Account -->
+                <!-- 2. Appearance & Themes (Between Profile & Danger Zone) -->
+                <section class="settings-card appearance-wrapper flex-fill">
+                    <details class="appearance-details">
+                        <summary>
+                            <div class="summary-header">
+                                <h2>Appearance & Themes</h2>
+                                <p>Select a light or dark theme palette.</p>
+                            </div>
+                            <span class="chevron-icon">▼</span>
+                        </summary>
+                        <div class="appearance-content-inner">
+                            {% include "_appearance_settings.html" %}
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 3. Danger Zone (Aligned with Security & Password) -->
                 <section class="settings-card danger-card">
                     <h2 class="danger-title">Danger Zone</h2>
                     <p class="danger-desc">Deleting your account removes all saved notebooks, schedules, and study history permanently.</p>
@@ -58,9 +74,9 @@
                 </section>
             </div>
 
-            <!-- Right Column -->
-            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                <!-- Personal Information -->
+            <!-- Right Column: Personal Information, Security & Password -->
+            <div class="grid-column">
+                <!-- 1. Personal Information -->
                 <section class="settings-card">
                     <h2>Personal Information</h2>
                     <form method="POST" action="{{ url_for('settings') }}" class="settings-form">
@@ -80,7 +96,7 @@
                     </form>
                 </section>
 
-                <!-- Password & Security -->
+                <!-- 2. Security & Password -->
                 <section class="settings-card">
                     <h2>Security & Password</h2>
                     <form method="POST" action="{{ url_for('settings') }}" class="settings-form">
@@ -106,22 +122,6 @@
                 </section>
             </div>
         </div>
-
-        <!-- Collapsible Appearance Section -->
-        <section class="settings-card appearance-wrapper">
-            <details class="appearance-details">
-                <summary>
-                    <div class="summary-header">
-                        <h2>Appearance & Themes</h2>
-                        <p>Select a light or dark theme palette for your workspace.</p>
-                    </div>
-                    <span class="chevron-icon">▼</span>
-                </summary>
-                <div class="appearance-content-inner">
-                    {% include "_appearance_settings.html" %}
-                </div>
-            </details>
-        </section>
     </main>
 </body>
 </html>

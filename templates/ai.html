@@ -707,7 +707,7 @@ async function sendMessage() {
 
     isSendingMessage = true;
     aiSend.disabled = true;
-    newChatButton.disabled = true;
+    if (newChatButton) newChatButton.disabled = true;
     loadChatList();
 
     // Hide the four feature cards
@@ -759,67 +759,61 @@ async function sendMessage() {
         const decoder = new TextDecoder();
 
         let fullResponse = "";
-
         let buffer = "";
 
+        async function processStreamLine(line) {
+        if (!line.trim()) return;
+
+        let event;
+
+        try {
+        event = JSON.parse(line);
+        } catch {
+        console.warn("Ignoring invalid stream event:", line);
+        return;
+        }
+
+        if (event.type === "chat") {
+        currentChatId = event.chat.id;
+        await loadChatList();
+        } else if (event.type === "token") {
+        fullResponse += event.content || "";
+        thinkingBubble.innerHTML = formatAIResponse(fullResponse);
+        } else if (event.type === "resource") {
+        addResourceCard(
+        event.resource,
+        thinkingBubble.parentElement
+        );
+        } else if (event.type === "done") {
+        console.log("AI response complete.");
+        } else if (event.type === "memory_error") {
+        addMemoryWarning(event.message);
+        }
+
+        scrollChatToLatest();
+        }
+
         while (true) {
+        const { value, done } = await reader.read();
 
-            const { value, done } = await reader.read();
+        if (done) {
+        buffer += decoder.decode();
+        break;
+        }
 
-            if (done) break;
+        buffer += decoder.decode(value, { stream: true });
 
-            buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
 
-            const lines = buffer.split("\n");
+        for (const line of lines) {
+        await processStreamLine(line);
+        }
+        }
 
-            buffer = lines.pop();
-
-            for (const line of lines) {
-
-                if (!line.trim()) {
-                    continue;
-                }
-
-                const event = JSON.parse(line);
-
-                if (event.type === "chat") {
-
-                    currentChatId = event.chat.id;
-                    await loadChatList();
-
-                }
-
-                else if (event.type === "token") {
-
-                    fullResponse += event.content;
-
-                    thinkingBubble.innerHTML =
-                        formatAIResponse(fullResponse);
-
-                }
-
-                else if (event.type === "resource") {
-
-                    addResourceCard(
-                        event.resource,
-                        thinkingBubble.parentElement
-                    );
-
-                }
-
-                else if (event.type === "done") {
-
-                    console.log("AI response complete.");
-                }
-
-                else if (event.type === "memory_error") {
-
-                    addMemoryWarning(event.message);
-
-                }
-
-                scrollChatToLatest();
-            }
+        // Process any final event that wasn't terminated by a newline.
+        if (buffer.trim()) {
+        await processStreamLine(buffer);
         }
 
     } catch (error) {
@@ -874,25 +868,21 @@ const aiChatDropdown =
     document.getElementById("ai-chat-dropdown");
 
 
-aiChatsToggle.addEventListener("click", function () {
+aiChatsToggle?.addEventListener("click", function () {
+if (!aiChatDropdown) {
+return;
+}
 
-    const isOpen =
-        aiChatDropdown.classList.toggle("open");
+const isOpen = aiChatDropdown.classList.toggle("open");
 
-    aiChatsToggle.setAttribute(
-        "aria-expanded",
-        isOpen
-    );
-    aiChatsToggle.setAttribute(
-        "aria-label",
-        isOpen ? "Hide saved chats" : "Show saved chats"
-    );
+aiChatsToggle.setAttribute("aria-expanded", String(isOpen));
+aiChatsToggle.setAttribute(
+"aria-label",
+isOpen ? "Hide saved chats" : "Show saved chats"
+);
 
-    aiChatsToggle.textContent =
-        isOpen ? "▴" : "▾";
-
-    aiChatsToggle.title =
-        isOpen ? "Hide chats" : "Show chats";
+aiChatsToggle.textContent = isOpen ? "▴" : "▾";
+aiChatsToggle.title = isOpen ? "Hide chats" : "Show chats";
 });
 
 loadChatList().catch((error) => {
