@@ -169,5 +169,6 @@
         scheduleSave();
     });
 
+    setExpanded(window.location.pathname === "/notes");
     loadNotebooks();
 })();

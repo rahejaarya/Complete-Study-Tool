@@ -1,13 +1,4 @@
 {
-  "explicit_facts": [
-    "User values 'write it bro' phrases",
-    "User prefers writing about food insecurity",
-    "User connects mathematical topics to the concept of World Hunger",
-    "User has prior academic experience with inequality subjects"
-  ],
-  "facts": [
-    "User dislikes generic 'Hello! I'm doing well' responses.",
-    "User requires 5 paragraphs per response.",
-    "User is specifically interested in polynomials."
-  ]
+  "explicit_facts": [],
+  "facts": []
 }

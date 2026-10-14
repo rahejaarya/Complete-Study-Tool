@@ -95,9 +95,9 @@
 
 
             <!-- Dashboard / Tools Section -->
-            <section class="dashboard ai-dashboard">
+            <section class="dashboard">
 
-                    <div class="ai-prompt-intro" style="
+                    <div style="
                         width: 100%;
                         max-width: 850px;
                         margin: 0 auto 30px auto;
@@ -152,6 +152,111 @@
                         </div>
 
                     </div>
+
+                <!-- Quick Start AI Tools -->
+                <div class="section-heading">
+                    <h2>AI Features</h2>
+                </div>
+
+
+                <div class="feature-grid">
+
+                    <!-- Summarize -->
+                    <div class="feature-card">
+
+                        <div class="feature-icon resources-icon">
+                            📝
+                        </div>
+
+                        <div class="feature-content">
+
+                            <h3>Text Summarizer</h3>
+
+                            <p>
+                                Convert long readings into bulleted study points.
+                            </p>
+
+                        </div>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+
+                    <!-- Flashcard Generator -->
+                    <div class="feature-card">
+
+                        <div class="feature-icon focus-icon">
+                            🗂
+                        </div>
+
+                        <div class="feature-content">
+
+                            <h3>Flashcard Generator</h3>
+
+                            <p>
+                                Automatically generate flashcard decks from topics.
+                            </p>
+
+                        </div>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+
+                    <!-- Math Helper -->
+                    <div class="feature-card">
+
+                        <div class="feature-icon time-icon">
+                            📐
+                        </div>
+
+                        <div class="feature-content">
+
+                            <h3>Problem Solver</h3>
+
+                            <p>
+                                Step-by-step solutions for complex math equations.
+                            </p>
+
+                        </div>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+
+                    <!-- Quiz Generator -->
+                    <div class="feature-card">
+
+                        <div class="feature-icon support-icon">
+                            ❓
+                        </div>
+
+                        <div class="feature-content">
+
+                            <h3>Practice Quizzer</h3>
+
+                            <p>
+                                Generate practice questions to test your knowledge.
+                            </p>
+
+                        </div>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+                </div>
 
             </section>
 
@@ -238,85 +343,79 @@ let chatDialogAction = null;
  * Convert basic Markdown from the AI into
  * safe HTML for display.
  */
-
- 
 function formatAIResponse(text) {
-    // Escape HTML before interpreting Markdown.
-    let output = String(text ?? "").replace(/[&<>"']/g, char => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-    })[char]);
 
-    // Extract inline code first so its contents are not formatted as Markdown.
-    const codeBlocks = [];
+    // Escape HTML first for security
+    text = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 
-    output = output.replace(/`([^`\n]+)`/g, (_, code) => {
-        const token = `@@CODE${codeBlocks.length}@@`;
-        codeBlocks.push(`<code>${code}</code>`);
-        return token;
-    });
 
-    // Markdown links. Only allow safe HTTP(S) destinations.
-    output = output.replace(
-        /\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/g,
-        (match, label, url) => {
-            try {
-                const parsed = new URL(url);
-                if (!["http:", "https:"].includes(parsed.protocol)) {
-                    return label;
-                }
-
-                return `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`;
-            } catch {
-                return label;
-            }
-        }
+    // Headings
+    text = text.replace(
+        /^### (.+)$/gm,
+        "<h4>$1</h4>"
     );
 
-    // Headings.
-    output = output.replace(/^### (.+)$/gm, "<h4>$1</h4>");
-    output = output.replace(/^## (.+)$/gm, "<h3>$1</h3>");
-    output = output.replace(/^# (.+)$/gm, "<h2>$1</h2>");
-
-    // Bold and italic.
-    output = output.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-    output = output.replace(/(?<!\*)\*([^*\n]+?)\*(?!\*)/g, "<em>$1</em>");
-
-    // Restore inline code.
-    output = output.replace(/@@CODE(\d+)@@/g, (_, index) =>
-        codeBlocks[Number(index)] ?? ""
+    text = text.replace(
+        /^## (.+)$/gm,
+        "<h3>$1</h3>"
     );
 
-    // Convert consecutive bullet points to lists.
-    output = output.replace(
-        /(?:^(?:[-*•]) .+(?:\n|$))+/gm,
-        block => {
-            const items = block
-                .trim()
-                .split("\n")
-                .map(line => line.replace(/^[-*•] /, "").trim())
-                .filter(Boolean);
-
-            return "<ul>" +
-                items.map(item => `<li>${item}</li>`).join("") +
-                "</ul>\n";
-        }
+    text = text.replace(
+        /^# (.+)$/gm,
+        "<h2>$1</h2>"
     );
 
-    // Preserve line breaks without creating <br> tags inside list markup.
-    return output
-        .split(/(<\/?(?:h[2-4]|ul|li|code|strong|em|a)\b[^>]*>)/i)
-        .map(part => {
-            if (/^<\/?(?:h[2-4]|ul|li|code|strong|em|a)\b[^>]*>$/i.test(part)) {
-                return part;
-            }
-            return part.replace(/\n/g, "<br>");
-        })
-        .join("");
+
+    // Bold
+    text = text.replace(
+        /\*\*(.+?)\*\*/g,
+        "<strong>$1</strong>"
+    );
+
+
+    // Italic
+    text = text.replace(
+        /(?<!\*)\*([^*]+?)\*(?!\*)/g,
+        "<em>$1</em>"
+    );
+
+
+    // Inline code
+    text = text.replace(
+        /`([^`]+)`/g,
+        "<code>$1</code>"
+    );
+
+
+    // Bullet points
+    text = text.replace(
+        /^[-•] (.+)$/gm,
+        "<li>$1</li>"
+    );
+
+
+    // Turn groups of <li> elements into lists
+    text = text.replace(
+        /(<li>.*?<\/li>(?:\s*<li>.*?<\/li>)*)/gs,
+        "<ul>$1</ul>"
+    );
+
+
+    // Line breaks
+    text = text.replace(
+        /\n/g,
+        "<br>"
+    );
+
+
+    return text;
 }
+
 
 function insertChatEntry(entry, beforeElement = null) {
     const reference = beforeElement?.parentElement === chatMessages
@@ -367,86 +466,75 @@ function addMessage(message, sender) {
     return bubble;
 }
 
-function addMemoryWarning(message) {
-const warning = document.createElement("div");
-warning.className = "ai-memory-warning";
-warning.setAttribute("role", "status");
-warning.textContent = String(message || "Memory could not be updated.");
-insertChatEntry(warning);
-}
-
 
 function addResourceCard(resource, beforeElement = null) {
-if (!resource || typeof resource !== "object") {
-return;
-}
 
-let parsedUrl;
+    const card = document.createElement("a");
 
-try {
-parsedUrl = new URL(resource.url);
-} catch {
-return;
-}
+    card.className = "ai-resource-card";
+    card.href = resource.url;
+    card.target = "_blank";
+    card.rel = "noopener noreferrer";
 
-if (!["https:", "http:"].includes(parsedUrl.protocol)) {
-return;
-}
+    let image = null;
+    if (resource.image) {
+        image = document.createElement("img");
+        image.className = "ai-resource-image";
+        image.src = resource.image;
+        image.alt = "";
+    }
 
-const card = document.createElement("a");
-card.className = "ai-resource-card";
-card.href = parsedUrl.href;
-card.target = "_blank";
-card.rel = "noopener noreferrer";
+    function addMemoryWarning(message) {
+        const warning = document.createElement("div");
+        warning.className = "ai-memory-warning";
+        warning.textContent = message;
+        insertChatEntry(warning);
+    }
 
-if (typeof resource.image === "string" && resource.image) {
-try {
-const imageUrl = new URL(resource.image);
+    const content = document.createElement("div");
 
-if (["https:", "http:"].includes(imageUrl.protocol)) {
-const image = document.createElement("img");
-image.className = "ai-resource-image";
-image.src = imageUrl.href;
-image.alt = "";
-image.loading = "lazy";
-card.appendChild(image);
-}
-} catch {
-// Skip invalid image URLs.
-}
-}
+    content.className = "ai-resource-content";
 
-const content = document.createElement("div");
-content.className = "ai-resource-content";
+    const type = document.createElement("div");
 
-const type = document.createElement("div");
-type.className = "ai-resource-type";
-type.textContent = resource.type || "Resource";
+    type.className = "ai-resource-type";
+    type.textContent = resource.type || "Resource";
 
-const title = document.createElement("div");
-title.className = "ai-resource-title";
-title.textContent = resource.title || "Recommended resource";
+    const title = document.createElement("div");
 
-const description = document.createElement("div");
-description.className = "ai-resource-description";
-description.textContent = resource.description || "";
+    title.className = "ai-resource-title";
+    title.textContent = resource.title;
 
-content.append(type, title, description);
-card.appendChild(content);
+    const description = document.createElement("div");
 
-insertChatEntry(card, beforeElement || null);
+    description.className = "ai-resource-description";
+    description.textContent = resource.description;
 
-aiDashboard?.classList.add("has-active-chat");
-scrollChatToLatest();
+    content.appendChild(type);
+    content.appendChild(title);
+    content.appendChild(description);
+
+    if (image) {
+        card.appendChild(image);
+    }
+    card.appendChild(content);
+
+    if (beforeElement) {
+        insertChatEntry(card, beforeElement);
+    } else {
+        insertChatEntry(card);
+    }
+    aiDashboard.classList.add("has-active-chat");
+
+    scrollChatToLatest();
 }
 
 function clearConversationView() {
-chatMessages.replaceChildren();
-chatMessages.style.display = "none";
-aiDashboard?.classList.remove("has-active-chat");
-
-if (featureGrid) featureGrid.style.display = "";
-if (sectionHeading) sectionHeading.style.display = "";
+    chatMessages.replaceChildren();
+    chatMessages.style.display = "none";
+    aiDashboard.classList.remove("has-active-chat");
+    featureGrid.style.display = "";
+    sectionHeading.style.display = "";
 }
 
 function renderSavedMessage(message) {
@@ -460,9 +548,6 @@ function renderSavedMessage(message) {
 }
 
 async function loadChatList() {
-    if (!chatList) {
-        return;
-    }
     const response = await fetch("/api/ai/chats");
     if (!response.ok) {
         throw new Error("Could not load saved conversations.");
@@ -567,8 +652,8 @@ async function openSavedChat(chatId) {
     }
     scrollChatToLatest();
     if (chat.messages.length) {
-        if (featureGrid) featureGrid.style.display = "none";
-        if (sectionHeading) sectionHeading.style.display = "none";
+        featureGrid.style.display = "none";
+        sectionHeading.style.display = "none";
     }
     await loadChatList();
 }
@@ -686,14 +771,13 @@ chatDialogForm.addEventListener("submit", async (event) => {
     }
 });
 
-newChatButton?.addEventListener("click", function () {
-if (isSendingMessage) {
-return;
-}
-
-currentChatId = null;
-clearConversationView();
-loadChatList().catch(console.error);
+newChatButton.addEventListener("click", function () {
+    if (isSendingMessage) {
+        return;
+    }
+    currentChatId = null;
+    clearConversationView();
+    loadChatList();
 });
 
 
@@ -707,7 +791,7 @@ async function sendMessage() {
 
     isSendingMessage = true;
     aiSend.disabled = true;
-    if (newChatButton) newChatButton.disabled = true;
+    newChatButton.disabled = true;
     loadChatList();
 
     // Hide the four feature cards
@@ -759,61 +843,67 @@ async function sendMessage() {
         const decoder = new TextDecoder();
 
         let fullResponse = "";
+
         let buffer = "";
 
-        async function processStreamLine(line) {
-        if (!line.trim()) return;
-
-        let event;
-
-        try {
-        event = JSON.parse(line);
-        } catch {
-        console.warn("Ignoring invalid stream event:", line);
-        return;
-        }
-
-        if (event.type === "chat") {
-        currentChatId = event.chat.id;
-        await loadChatList();
-        } else if (event.type === "token") {
-        fullResponse += event.content || "";
-        thinkingBubble.innerHTML = formatAIResponse(fullResponse);
-        } else if (event.type === "resource") {
-        addResourceCard(
-        event.resource,
-        thinkingBubble.parentElement
-        );
-        } else if (event.type === "done") {
-        console.log("AI response complete.");
-        } else if (event.type === "memory_error") {
-        addMemoryWarning(event.message);
-        }
-
-        scrollChatToLatest();
-        }
-
         while (true) {
-        const { value, done } = await reader.read();
 
-        if (done) {
-        buffer += decoder.decode();
-        break;
-        }
+            const { value, done } = await reader.read();
 
-        buffer += decoder.decode(value, { stream: true });
+            if (done) break;
 
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
+            buffer += decoder.decode(value, { stream: true });
 
-        for (const line of lines) {
-        await processStreamLine(line);
-        }
-        }
+            const lines = buffer.split("\n");
 
-        // Process any final event that wasn't terminated by a newline.
-        if (buffer.trim()) {
-        await processStreamLine(buffer);
+            buffer = lines.pop();
+
+            for (const line of lines) {
+
+                if (!line.trim()) {
+                    continue;
+                }
+
+                const event = JSON.parse(line);
+
+                if (event.type === "chat") {
+
+                    currentChatId = event.chat.id;
+                    await loadChatList();
+
+                }
+
+                else if (event.type === "token") {
+
+                    fullResponse += event.content;
+
+                    thinkingBubble.innerHTML =
+                        formatAIResponse(fullResponse);
+
+                }
+
+                else if (event.type === "resource") {
+
+                    addResourceCard(
+                        event.resource,
+                        thinkingBubble.parentElement
+                    );
+
+                }
+
+                else if (event.type === "done") {
+
+                    console.log("AI response complete.");
+                }
+
+                else if (event.type === "memory_error") {
+
+                    addMemoryWarning(event.message);
+
+                }
+
+                scrollChatToLatest();
+            }
         }
 
     } catch (error) {
@@ -868,21 +958,25 @@ const aiChatDropdown =
     document.getElementById("ai-chat-dropdown");
 
 
-aiChatsToggle?.addEventListener("click", function () {
-if (!aiChatDropdown) {
-return;
-}
+aiChatsToggle.addEventListener("click", function () {
 
-const isOpen = aiChatDropdown.classList.toggle("open");
+    const isOpen =
+        aiChatDropdown.classList.toggle("open");
 
-aiChatsToggle.setAttribute("aria-expanded", String(isOpen));
-aiChatsToggle.setAttribute(
-"aria-label",
-isOpen ? "Hide saved chats" : "Show saved chats"
-);
+    aiChatsToggle.setAttribute(
+        "aria-expanded",
+        isOpen
+    );
+    aiChatsToggle.setAttribute(
+        "aria-label",
+        isOpen ? "Hide saved chats" : "Show saved chats"
+    );
 
-aiChatsToggle.textContent = isOpen ? "▴" : "▾";
-aiChatsToggle.title = isOpen ? "Hide chats" : "Show chats";
+    aiChatsToggle.textContent =
+        isOpen ? "▴" : "▾";
+
+    aiChatsToggle.title =
+        isOpen ? "Hide chats" : "Show chats";
 });
 
 loadChatList().catch((error) => {
