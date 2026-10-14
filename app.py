@@ -10,6 +10,9 @@ from pathlib import Path
 from urllib.parse import urlparse
 from flask import Flask, Response, redirect, render_template, request, session, url_for, jsonify  # type: ignore[reportMissingImports]
 from werkzeug.security import check_password_hash, generate_password_hash
+import os
+import shutil
+from flask import Flask, render_template, request, redirect, url_for, session
 
 try:
     from static.ai import (  # type: ignore[reportMissingImports]
@@ -990,8 +993,7 @@ def settings():
                 session.clear()
                 return redirect(url_for("login"))
 
-    return render_template("settings.html", username=user["username"], error=error, success=success, search_routes=search_routes)
-
+return render_template("settings.html", username=user["username"], error=error, success=success)
 
 @app.route("/resources")
 @login_required
