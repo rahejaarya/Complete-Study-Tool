@@ -4618,10 +4618,12 @@ body {
     color: #ffffff;
 }
 
-/* Appearance Accordion Styling */
+/* Appearance Container Constraints */
 .appearance-wrapper {
     padding: 0;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .appearance-details summary {
@@ -4659,11 +4661,66 @@ body {
     transform: rotate(180deg);
 }
 
+.appearance-details[open] {
+    display: flex;
+    flex-direction: column;
+}
+
 .appearance-content-inner {
     padding: 1.2rem 1.5rem 1.5rem;
     border-top: 1px solid #27272a;
 }
 
+.scrollable-appearance {
+    padding: 1rem 1.2rem;
+    overflow-y: auto;
+    max-height: 480px;
+}
+
+/* Theme Options Grid Adjustment */
+.appearance-picker-grid,
+.theme-options-grid,
+.theme-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)) !important;
+    gap: 0.75rem !important;
+    width: 100% !important;
+    box-sizing: border-box;
+}
+
+/* Individual Theme Cards & Full Label Visibility */
+.theme-card, 
+.theme-option {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+    padding: 6px !important;
+    box-sizing: border-box;
+}
+
+.theme-card span,
+.theme-option-label,
+.theme-name {
+    font-size: 0.75rem !important;
+    text-align: center !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    line-height: 1.1 !important;
+    margin-top: 6px !important;
+    display: block !important;
+    width: 100% !important;
+}
+
+/* Custom Scrollbar */
+.scrollable-appearance::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scrollable-appearance::-webkit-scrollbar-thumb {
+    background: #3f3f46;
+    border-radius: 4px;
+}
 /* Flash Messages */
 .account-alert {
     padding: 12px 16px;
