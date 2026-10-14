@@ -26,73 +26,102 @@
         {% endif %}
 
         <div class="settings-grid">
-            <!-- Left Card: Profile Overview & Logout -->
-            <section class="settings-card profile-card">
-                <div class="avatar-wrapper">
-                    <div class="avatar-circle">
-                        <span>{{ session.get("username", "S")[0]|upper }}</span>
+            <!-- Left Column -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- Profile Avatar Card -->
+                <section class="settings-card profile-card">
+                    <div class="avatar-wrapper">
+                        <div class="avatar-circle">
+                            <span>{{ session.get("username", "A")[0]|upper }}</span>
+                        </div>
                     </div>
-                </div>
-                <h2>{{ username }}</h2>
-                <p class="user-role">Student Account</p>
-                <a class="logout-btn" href="{{ url_for('logout') }}">Log out ➔</a>
-            </section>
+                    <h2>{{ username }}</h2>
+                    <p class="user-role">Student Account</p>
+                    <a class="logout-btn" href="{{ url_for('logout') }}">Log out ➔</a>
+                </section>
 
-            <!-- Right Card: Personal Information Form -->
-            <section class="settings-card">
-                <div class="card-header-row">
-                    <h2>Personal Information</h2>
-                </div>
-                <form method="POST" action="{{ url_for('settings') }}" class="settings-form">
-                    <input type="hidden" name="action" value="update_profile">
+                <!-- Danger Zone / Delete Account -->
+                <section class="settings-card danger-card">
+                    <h2 class="danger-title">Danger Zone</h2>
+                    <p class="danger-desc">Deleting your account removes all saved notebooks, schedules, and study history permanently.</p>
                     
-                    <div class="form-group">
-                        <label for="username">User name</label>
-                        <input type="text" id="username" name="username" value="{{ username }}" required>
+                    <form method="POST" action="{{ url_for('settings') }}" class="settings-form" onsubmit="return confirm('Are you sure you want to permanently delete your account? This action cannot be undone.');">
+                        <input type="hidden" name="action" value="delete_account">
+
+                        <div class="form-group">
+                            <label for="delete_password">Enter Password to Confirm</label>
+                            <input type="password" id="delete_password" name="delete_password" required placeholder="Enter password">
+                        </div>
+
+                        <button type="submit" class="delete-btn">Delete Account</button>
+                    </form>
+                </section>
+            </div>
+
+            <!-- Right Column -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- Personal Information -->
+                <section class="settings-card">
+                    <h2>Personal Information</h2>
+                    <form method="POST" action="{{ url_for('settings') }}" class="settings-form">
+                        <input type="hidden" name="action" value="update_profile">
+                        
+                        <div class="form-group">
+                            <label for="username">User name</label>
+                            <input type="text" id="username" name="username" value="{{ username }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="current_password">Confirm Current Password</label>
+                            <input type="password" id="current_password" name="current_password" placeholder="Enter password to save changes" required>
+                        </div>
+
+                        <button type="submit" class="save-btn">Update Profile</button>
+                    </form>
+                </section>
+
+                <!-- Password & Security -->
+                <section class="settings-card">
+                    <h2>Security & Password</h2>
+                    <form method="POST" action="{{ url_for('settings') }}" class="settings-form">
+                        <input type="hidden" name="action" value="change_password">
+
+                        <div class="form-group">
+                            <label for="old_password">Current Password</label>
+                            <input type="password" id="old_password" name="old_password" required placeholder="••••••••">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="new_password">New Password</label>
+                            <input type="password" id="new_password" name="new_password" required placeholder="New password">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirm_password">Confirm New Password</label>
+                            <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm new password">
+                        </div>
+
+                        <button type="submit" class="save-btn">Change Password</button>
+                    </form>
+                </section>
+            </div>
+        </div>
+
+        <!-- Collapsible Appearance Section -->
+        <section class="settings-card appearance-wrapper">
+            <details class="appearance-details">
+                <summary>
+                    <div class="summary-header">
+                        <h2>Appearance & Themes</h2>
+                        <p>Select a light or dark theme palette for your workspace.</p>
                     </div>
-
-                    <div class="form-group">
-                        <label for="current_password">Confirm Current Password</label>
-                        <input type="password" id="current_password" name="current_password" placeholder="Enter password to save changes" required>
-                    </div>
-
-                    <button type="submit" class="save-btn">Update Profile</button>
-                </form>
-            </section>
-
-            <section class="settings-card appearance-card">
-                <div class="card-header-row">
-                    <h2 id="appearance-settings-heading">Appearance</h2>
+                    <span class="chevron-icon">▼</span>
+                </summary>
+                <div class="appearance-content-inner">
+                    {% include "_appearance_settings.html" %}
                 </div>
-                {% include "_appearance_settings.html" %}
-            </section>
-
-            <!-- Bottom Left: Password Management -->
-            <section class="settings-card">
-                <h2>Security & Password</h2>
-                <form method="POST" action="{{ url_for('settings') }}" class="settings-form">
-                    <input type="hidden" name="action" value="change_password">
-
-                    <div class="form-group">
-                        <label for="old_password">Current Password</label>
-                        <input type="password" id="old_password" name="old_password" required placeholder="••••••••">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="new_password">New Password</label>
-                        <input type="password" id="new_password" name="new_password" required placeholder="New password">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="confirm_password">Confirm New Password</label>
-                        <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm new password">
-                    </div>
-
-                    <button type="submit" class="save-btn">Change Password</button>
-                </form>
-            </section>
-
-            <!-- Bottom Right: Danger Zone / Account Deletion -->
-            <section class="settings-card danger-card">
-                <h2 class="danger-title">Danger Zone</h2>
-                <p class="danger-desc">Deleting your
+            </details>
+        </section>
+    </main>
+</body>
+</html>
