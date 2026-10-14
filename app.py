@@ -88,7 +88,7 @@ def user_save_directory(user_id):
         raise ValueError("The signed-in user could not be found.")
 
     username = user["username"]
-    if not re.fullmatch(r"[A-Za-z0-9_-]{3,32}", username):
+    if not re.fullmatch(r"[A-Za-z0-9_-]{3,64}", username):
         raise ValueError("The signed-in username is not valid for AI storage.")
 
     user_dir = Path(app.config["SAVE_DATA_DIR"]) / username
@@ -575,8 +575,8 @@ def signup():
         password = request.form.get("password", "")
         password_confirmation = request.form.get("password_confirmation", "")
 
-        if not 3 <= len(username) <= 32 or not username.replace("_", "").replace("-", "").isalnum():
-            error = "Username must be 3-32 letters, numbers, underscores, or hyphens."
+        if not 3 <= len(username) <= 64 or not username.replace("_", "").replace("-", "").isalnum():
+            error = "Username must be 3-64 letters, numbers, underscores, or hyphens."
         elif not 4 <= len(password) <= 128:
             error = "Password must be between 4 and 128 characters."
         elif password != password_confirmation:

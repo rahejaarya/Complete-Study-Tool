@@ -1481,6 +1481,7 @@
 
                     label.className = "calendar-hour-label";
 
+                    if (hour !== 0) {}
                     if (hour % 3 === 0) {
                         label.textContent =
                             `${hour}:00`;
@@ -1716,8 +1717,7 @@
                 const indicator =
                     document.createElement("div");
 
-                indicator.className =
-                    "current-time-indicator";
+                indicator.className = "current-time-indicator";
 
                 indicator.setAttribute(
                     "role",
@@ -2322,10 +2322,7 @@
 
             renderCalendarDates();
 
-            window.setInterval(
-                renderCurrentTimeIndicator,
-                30000
-            );
+            setInterval(renderCurrentTimeIndicator, 30000);
 
             void loadEvents();
 

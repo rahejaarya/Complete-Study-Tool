@@ -115,6 +115,8 @@
 
                             <p>
                                 Type your prompt below to get instant study help.
+
+                                
                             </p>
                         </div>
 
@@ -239,80 +241,84 @@ let chatDialogAction = null;
  * safe HTML for display.
  */
 
- #########
+ 
 function formatAIResponse(text) {
+    // Escape HTML before interpreting Markdown.
+    let output = String(text ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
 
-    // Escape HTML first for security
-    text = text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    // Extract inline code first so its contents are not formatted as Markdown.
+    const codeBlocks = [];
 
+    output = output.replace(/`([^`\n]+)`/g, (_, code) => {
+        const token = `@@CODE${codeBlocks.length}@@`;
+        codeBlocks.push(`<code>${code}</code>`);
+        return token;
+    });
 
-    // Headings
-    text = text.replace(
-        /^### (.+)$/gm,
-        "<h4>$1</h4>"
+    // Markdown links. Only allow safe HTTP(S) destinations.
+    output = output.replace(
+        /\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/g,
+        (match, label, url) => {
+            try {
+                const parsed = new URL(url);
+                if (!["http:", "https:"].includes(parsed.protocol)) {
+                    return label;
+                }
+
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+            } catch {
+                return label;
+            }
+        }
     );
 
-    text = text.replace(
-        /^## (.+)$/gm,
-        "<h3>$1</h3>"
+    // Headings.
+    output = output.replace(/^### (.+)$/gm, "<h4>$1</h4>");
+    output = output.replace(/^## (.+)$/gm, "<h3>$1</h3>");
+    output = output.replace(/^# (.+)$/gm, "<h2>$1</h2>");
+
+    // Bold and italic.
+    output = output.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    output = output.replace(/(?<!\*)\*([^*\n]+?)\*(?!\*)/g, "<em>$1</em>");
+
+    // Restore inline code.
+    output = output.replace(/@@CODE(\d+)@@/g, (_, index) =>
+        codeBlocks[Number(index)] ?? ""
     );
 
-    text = text.replace(
-        /^# (.+)$/gm,
-        "<h2>$1</h2>"
+    // Convert consecutive bullet points to lists.
+    output = output.replace(
+        /(?:^(?:[-*•]) .+(?:\n|$))+/gm,
+        block => {
+            const items = block
+                .trim()
+                .split("\n")
+                .map(line => line.replace(/^[-*•] /, "").trim())
+                .filter(Boolean);
+
+            return "<ul>" +
+                items.map(item => `<li>${item}</li>`).join("") +
+                "</ul>\n";
+        }
     );
 
-
-    // Bold
-    text = text.replace(
-        /\*\*(.+?)\*\*/g,
-        "<strong>$1</strong>"
-    );
-
-
-    // Italic
-    text = text.replace(
-        /(?<!\*)\*([^*]+?)\*(?!\*)/g,
-        "<em>$1</em>"
-    );
-
-
-    // Inline code
-    text = text.replace(
-        /`([^`]+)`/g,
-        "<code>$1</code>"
-    );
-
-
-    // Bullet points
-    text = text.replace(
-        /^[-•] (.+)$/gm,
-        "<li>$1</li>"
-    );
-
-
-    // Turn groups of <li> elements into lists
-    text = text.replace(
-        /(<li>.*?<\/li>(?:\s*<li>.*?<\/li>)*)/gs,
-        "<ul>$1</ul>"
-    );
-
-
-    // Line breaks
-    text = text.replace(
-        /\n/g,
-        "<br>"
-    );
-
-
-    return text;
+    // Preserve line breaks without creating <br> tags inside list markup.
+    return output
+        .split(/(<\/?(?:h[2-4]|ul|li|code|strong|em|a)\b[^>]*>)/i)
+        .map(part => {
+            if (/^<\/?(?:h[2-4]|ul|li|code|strong|em|a)\b[^>]*>$/i.test(part)) {
+                return part;
+            }
+            return part.replace(/\n/g, "<br>");
+        })
+        .join("");
 }
-
 
 function insertChatEntry(entry, beforeElement = null) {
     const reference = beforeElement?.parentElement === chatMessages
@@ -363,6 +369,14 @@ function addMessage(message, sender) {
     return bubble;
 }
 
+function addMemoryWarning(message) {
+const warning = document.createElement("div");
+warning.className = "ai-memory-warning";
+warning.setAttribute("role", "status");
+warning.textContent = String(message || "Memory could not be updated.");
+insertChatEntry(warning);
+}
+
 
 function addResourceCard(resource, beforeElement = null) {
 
@@ -379,13 +393,6 @@ function addResourceCard(resource, beforeElement = null) {
         image.className = "ai-resource-image";
         image.src = resource.image;
         image.alt = "";
-    }
-
-    function addMemoryWarning(message) {
-        const warning = document.createElement("div");
-        warning.className = "ai-memory-warning";
-        warning.textContent = message;
-        insertChatEntry(warning);
     }
 
     const content = document.createElement("div");

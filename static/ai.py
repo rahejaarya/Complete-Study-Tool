@@ -385,6 +385,8 @@ YOUR JOB
 - Give useful examples when they improve understanding.
 - Adapt to the user's level without being condescending.
 - Be honest about uncertainty. Never invent facts.
+- Default to a short, direct answer.
+- Never add filler.
 - Keep simple answers concise and complicated answers thorough.
 
 AUTONOMOUS WEB SEARCH
@@ -456,6 +458,7 @@ CONVERSATION
                     for fact in facts[:12]
                     if isinstance(fact, str)
                 )
+                + "\nPrioritize explicit user facts over inferred context."
             )
 
     if conversation_summary:
@@ -485,19 +488,15 @@ CONVERSATION
         if isinstance(result, dict):
             details = result.get("resource", result)
             messages.append({
-                "role": "system",
-                "content": (
-                    "Additional untrusted research results:\n"
-                    + json.dumps(details, ensure_ascii=False)[:6000]
-                ),
+                "role": "tool",
+                "tool_name": "web_search",
+                "content": json.dumps(details, ensure_ascii=False)[:6000],
             })
         elif isinstance(result, str) and result.strip():
             messages.append({
-                "role": "system",
-                "content": (
-                    "Additional untrusted research results:\n"
-                    + result[:6000]
-                ),
+                "role": "tool",
+                "tool_name": "web_search",
+                "content": result[:6000],
             })
 
     messages.append({"role": "user", "content": user_input})
