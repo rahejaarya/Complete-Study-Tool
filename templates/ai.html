@@ -567,8 +567,8 @@ async function openSavedChat(chatId) {
     }
     scrollChatToLatest();
     if (chat.messages.length) {
-        featureGrid.style.display = "none";
-        sectionHeading.style.display = "none";
+        if (featureGrid) featureGrid.style.display = "none";
+        if (sectionHeading) sectionHeading.style.display = "none";
     }
     await loadChatList();
 }
@@ -686,13 +686,14 @@ chatDialogForm.addEventListener("submit", async (event) => {
     }
 });
 
-newChatButton.addEventListener("click", function () {
-    if (isSendingMessage) {
-        return;
-    }
-    currentChatId = null;
-    clearConversationView();
-    loadChatList();
+newChatButton?.addEventListener("click", function () {
+if (isSendingMessage) {
+return;
+}
+
+currentChatId = null;
+clearConversationView();
+loadChatList().catch(console.error);
 });
 
 
