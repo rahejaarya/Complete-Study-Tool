@@ -945,6 +945,12 @@ body {
     margin: 0 auto;
 }
 
+.ai-dashboard:not(.has-active-chat) {
+    min-height: calc(100vh - 140px);
+    display: flex;
+    align-items: center;
+}
+
 
 /* ================================
    GENERAL CARDS

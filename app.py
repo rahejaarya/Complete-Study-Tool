@@ -909,16 +909,88 @@ def home():
     )
 
 
-@app.route("/appearance")
-@login_required
-def appearance():
-    return render_template("settings.html")
-
-
-@app.route("/settings")
+@app.route("/appearance", methods=["GET", "POST"])
+@app.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
-    return render_template("settings.html")
+    user_id = session["user_id"]
+    db = get_db()
+    user = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+
+    error = None
+    success = None
+
+    if request.method == "POST":
+        action = request.form.get("action")
+
+        # ACTION 1: UPDATE USERNAME
+        if action == "update_profile":
+            new_username = request.form.get("username", "").strip()
+            current_password = request.form.get("current_password", "")
+
+            if not check_password_hash(user["password"], current_password):
+                error = "Incorrect current password."
+            elif not new_username:
+                error = "Username cannot be empty."
+            else:
+                if new_username != user["username"]:
+                    existing = db.execute("SELECT id FROM users WHERE username = ? AND id != ?", (new_username, user_id)).fetchone()
+                    if existing:
+                        error = "Username is already taken."
+
+                if not error:
+                    # Rename save folder if user directory exists
+                    old_dir = user_save_directory(user["username"])
+                    new_dir = user_save_directory(new_username)
+                    if os.path.exists(old_dir) and old_dir != new_dir:
+                        os.rename(old_dir, new_dir)
+
+                    db.execute("UPDATE users SET username = ? WHERE id = ?", (new_username, user_id))
+                    db.commit()
+                    session["username"] = new_username
+                    success = "Profile updated successfully!"
+                    user = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+
+        # ACTION 2: CHANGE PASSWORD
+        elif action == "change_password":
+            old_password = request.form.get("old_password", "")
+            new_password = request.form.get("new_password", "")
+            confirm_password = request.form.get("confirm_password", "")
+
+            if not check_password_hash(user["password"], old_password):
+                error = "Incorrect current password."
+            elif new_password != confirm_password:
+                error = "New passwords do not match."
+            elif len(new_password) < 4:
+                error = "Password must be at least 4 characters long."
+            else:
+                new_hash = generate_password_hash(new_password)
+                db.execute("UPDATE users SET password = ? WHERE id = ?", (new_hash, user_id))
+                db.commit()
+                success = "Password changed successfully!"
+                user = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+
+        # ACTION 3: DELETE ACCOUNT
+        elif action == "delete_account":
+            delete_password = request.form.get("delete_password", "")
+
+            if not check_password_hash(user["password"], delete_password):
+                error = "Incorrect password. Account deletion canceled."
+            else:
+                # 1. Clean up user files on disk
+                user_dir = user_save_directory(user["username"])
+                if os.path.exists(user_dir):
+                    shutil.rmtree(user_dir, ignore_errors=True)
+
+                # 2. Remove user record from SQLite database
+                db.execute("DELETE FROM users WHERE id = ?", (user_id,))
+                db.commit()
+
+                # 3. Clear session and return to login
+                session.clear()
+                return redirect(url_for("login"))
+
+    return render_template("settings.html", username=user["username"], error=error, success=success, search_routes=search_routes)
 
 
 @app.route("/resources")

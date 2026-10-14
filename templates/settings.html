@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -9,35 +9,83 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <main class="appearance-page">
-        <header class="appearance-header">
+    <main class="settings-container">
+        <header class="settings-top-bar">
             <a class="appearance-back" href="{{ url_for('home') }}">← Back to dashboard</a>
-            <div>
-                <div class="eyebrow">YOUR ACCOUNT</div>
-                <h1>Settings</h1>
-                <p>Manage your account and app preferences.</p>
+            <div class="header-titles">
+                <div class="eyebrow">ACCOUNT MANAGEMENT</div>
+                <h1>Settings & Profile</h1>
             </div>
         </header>
 
-        <section class="appearance-mode" aria-labelledby="account-settings-heading">
-            <header class="appearance-mode-header">
-                <div>
-                    <h2 id="account-settings-heading">Account</h2>
-                    <p>Signed in as {{ session.get("username", "Student") }}.</p>
-                </div>
-            </header>
-            <a class="timer-button" href="{{ url_for('logout') }}">Log out</a>
-        </section>
+        {% if error %}
+            <div class="account-alert error-alert">{{ error }}</div>
+        {% endif %}
+        {% if success %}
+            <div class="account-alert success-alert">{{ success }}</div>
+        {% endif %}
 
-        <section class="appearance-mode" aria-labelledby="appearance-settings-heading">
-            <header class="appearance-mode-header">
-                <div>
-                    <h2 id="appearance-settings-heading">Appearance</h2>
-                    <p>Choose a light or dark mode, then pick a color to preview.</p>
+        <div class="settings-grid">
+            <!-- Left Card: Profile Overview & Logout -->
+            <section class="settings-card profile-card">
+                <div class="avatar-wrapper">
+                    <div class="avatar-circle">
+                        <span>{{ session.get("username", "S")[0]|upper }}</span>
+                    </div>
                 </div>
-            </header>
-            {% include "_appearance_settings.html" %}
-        </section>
-    </main>
-</body>
-</html>
+                <h2>{{ username }}</h2>
+                <p class="user-role">Student Account</p>
+                <a class="logout-btn" href="{{ url_for('logout') }}">Log out ➔</a>
+            </section>
+
+            <!-- Right Card: Personal Information Form -->
+            <section class="settings-card">
+                <div class="card-header-row">
+                    <h2>Personal Information</h2>
+                </div>
+                <form method="POST" action="{{ url_for('settings') }}" class="settings-form">
+                    <input type="hidden" name="action" value="update_profile">
+                    
+                    <div class="form-group">
+                        <label for="username">User name</label>
+                        <input type="text" id="username" name="username" value="{{ username }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="current_password">Confirm Current Password</label>
+                        <input type="password" id="current_password" name="current_password" placeholder="Enter password to save changes" required>
+                    </div>
+
+                    <button type="submit" class="save-btn">Update Profile</button>
+                </form>
+            </section>
+
+            <!-- Bottom Left: Password Management -->
+            <section class="settings-card">
+                <h2>Security & Password</h2>
+                <form method="POST" action="{{ url_for('settings') }}" class="settings-form">
+                    <input type="hidden" name="action" value="change_password">
+
+                    <div class="form-group">
+                        <label for="old_password">Current Password</label>
+                        <input type="password" id="old_password" name="old_password" required placeholder="••••••••">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new_password">New Password</label>
+                        <input type="password" id="new_password" name="new_password" required placeholder="New password">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm New Password</label>
+                        <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm new password">
+                    </div>
+
+                    <button type="submit" class="save-btn">Change Password</button>
+                </form>
+            </section>
+
+            <!-- Bottom Right: Danger Zone / Account Deletion -->
+            <section class="settings-card danger-card">
+                <h2 class="danger-title">Danger Zone</h2>
+                <p class="danger-desc">Deleting your
