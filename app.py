@@ -993,7 +993,12 @@ def settings():
                 session.clear()
                 return redirect(url_for("login"))
 
-                return render_template("settings.html", username=user["username"], error=error, success=success)
+    return render_template(
+        "settings.html",
+        username=user["username"],
+        error=error,
+        success=success,
+    )
 
 @app.route("/resources")
 @login_required
