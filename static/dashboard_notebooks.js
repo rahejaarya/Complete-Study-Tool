@@ -8,6 +8,10 @@
     const contentInput = document.getElementById("notebook-content");
     const quickNoteInput = document.getElementById("notebook-quick-note");
     const status = document.getElementById("notebook-save-status");
+    if (!card || !toggle || !expanded || !list || !addButton || !nameInput || !contentInput || !quickNoteInput || !status) {
+        return;
+    }
+
     let notebookData;
     let saveTimer;
     let saveQueue = Promise.resolve();
@@ -107,7 +111,12 @@
         }
     }
 
-    toggle.addEventListener("click", () => {
+    toggle.addEventListener("click", (event) => {
+        if (window.location.pathname !== "/notes") {
+            event.preventDefault();
+            window.location.href = "/notes";
+            return;
+        }
         setExpanded(expanded.hidden);
     });
 

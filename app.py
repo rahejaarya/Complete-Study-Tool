@@ -1004,7 +1004,7 @@ def ai_help():
 @app.route("/notes")
 @login_required
 def notes():
-    return redirect(url_for("home") + "#notes-card")
+    return render_template("notes.html", username=session.get("username", "User"))
 
 
 init_db()

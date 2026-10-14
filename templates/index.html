@@ -264,7 +264,7 @@
                                 type="button"
                                 aria-expanded="false"
                                 aria-controls="notebook-expanded"
-                                aria-label="Open notebooks">↗</button>
+                                aria-label="Open notebook page">↗</button>
                         </div>
 
                         <label class="notebook-quick-label" for="notebook-quick-note">
@@ -384,6 +384,12 @@
     <script id="global-search-routes" type="application/json">{{ search_routes | tojson }}</script>
     <script src="{{ url_for('static', filename='dashboard_notebooks.js') }}" defer></script>
 
+    <nav class="notes-taskbar" aria-label="Quick notes navigation">
+        <a href="{{ url_for('home') }}" class="notes-taskbar-item" aria-label="Dashboard">▦</a>
+        <a href="{{ url_for('ai_help') }}" class="notes-taskbar-item" aria-label="AI assistant">✦</a>
+        <a href="{{ url_for('time_management') }}" class="notes-taskbar-item" aria-label="Time management">✓</a>
+        <a href="{{ url_for('notes') }}" class="notes-taskbar-item active" aria-label="Notes">✎</a>
+    </nav>
 
     <!-- Mobile navigation keeps the same major app destinations available on smaller screens. -->
     <nav class="mobile-navigation">

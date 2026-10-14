@@ -130,6 +130,19 @@ class AuthTests(unittest.TestCase):
         self.assertEqual(focus_response.status_code, 200)
         self.assertIn(b'Procrastination &amp; Focus', focus_response.data)
 
+    def test_notes_page_loads_as_its_own_page(self):
+        login_response = self.client.post(
+            '/login',
+            data={'username': 'admin', 'password': 'admin123'},
+            follow_redirects=False,
+        )
+        self.assertEqual(login_response.status_code, 302)
+
+        response = self.client.get('/notes')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Notebook &amp; Notes', response.data)
+        self.assertIn(b'notes-page', response.data)
+
     def test_protected_page_requires_username_password_session(self):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 302)
