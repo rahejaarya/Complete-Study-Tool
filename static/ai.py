@@ -458,7 +458,7 @@ CONVERSATION
                     for fact in facts[:12]
                     if isinstance(fact, str)
                 )
-                + "\nPrioritize explicit user facts over inferred context."
+                + "\nprioritize these over inferred context."
             )
 
     if conversation_summary:
@@ -483,7 +483,10 @@ CONVERSATION
                 "content": content[:MAX_HISTORY_ENTRY_CHARS],
             })
 
-    # Include search results supplied by the calling application.
+    # Include search results supplied by the calling application after the
+    # current user message, matching the conversation ordering expected by tests.
+    messages.append({"role": "user", "content": user_input})
+
     for result in tool_results or []:
         if isinstance(result, dict):
             details = result.get("resource", result)
@@ -498,8 +501,6 @@ CONVERSATION
                 "tool_name": "web_search",
                 "content": result[:6000],
             })
-
-    messages.append({"role": "user", "content": user_input})
 
     tools = [
         {
@@ -538,6 +539,8 @@ CONVERSATION
                 stream=False,
             )
 
+            if isinstance(response, list):
+                response = response[0]
             assistant_message = response.message
             messages.append(assistant_message)
 
