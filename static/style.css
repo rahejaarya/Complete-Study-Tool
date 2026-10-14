@@ -12,6 +12,8 @@
 }
 
 
+/* Theme tokens are the app's design system. Each variable stores a color or spacing value,
+   so switching a theme only requires updating these values instead of changing every selector. */
 :root {
     --background: #f7f5fb;
     --green: #256a2e;
@@ -388,6 +390,8 @@
 }
 
 
+/* The body element acts as the full-page canvas. It sets the default typeface, background,
+   and text colors used by the whole app before more specific components override them. */
 body {
     font-family:
         -apple-system,
@@ -404,7 +408,8 @@ body {
    MAIN APP
 ================================ */
 
-/* The app shell sets up the full-page layout with the sidebar and main content columns. */
+/* The app shell sets up the full-page layout with the sidebar and main content columns.
+   .app keeps the left navigation and content area in a single row while the page grows to full height. */
 
 .app {
     min-height: 100vh;
@@ -416,7 +421,8 @@ body {
    SIDEBAR
 ================================ */
 
-/* The sidebar creates the left navigation column and controls the main app navigation styling. */
+/* The sidebar creates the left navigation column and controls the main app navigation styling.
+   It stays fixed to the left edge so users can move between sections without losing context. */
 
 .sidebar {
     position: fixed;
@@ -475,6 +481,8 @@ body {
 
 
 /* NAVIGATION */
+/* The navigation stack arranges the sidebar menu items vertically, and each link gets a consistent
+   size, spacing, and hover state to behave like a simple dashboard menu. */
 
 .navigation {
     display: flex;
@@ -585,7 +593,8 @@ body {
    TOP BAR
 ================================ */
 
-/* The top bar styles the welcome header, search trigger, and action buttons at the top of the main content area. */
+/* The top bar styles the welcome header, search trigger, and action buttons at the top of the main content area.
+   It keeps the page title, utility buttons, and quick search aligned across different dashboard views. */
 
 .topbar {
     max-width: 1200px;
@@ -937,7 +946,8 @@ body {
    DASHBOARD
 ================================ */
 
-/* Dashboard styles control the cards and spacing used on the home screen and support-style overview pages. */
+/* Dashboard styles control the cards and spacing used on the home screen and support-style overview pages.
+   .dashboard limits content width so the interface stays readable and centered on large screens. */
 
 .dashboard {
     max-width: 1200px;
@@ -959,6 +969,8 @@ body {
 /* ================================
    GENERAL CARDS
 ================================ */
+/* .main-card is the reusable container for page sections. It gives content blocks a soft surface,
+   rounded corners, and shadow so they read like cards instead of plain panels. */
 
 .main-card {
     background: var(--white);
