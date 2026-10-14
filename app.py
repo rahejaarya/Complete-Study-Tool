@@ -1029,7 +1029,7 @@ def resources():
 @app.route("/focus")
 @login_required
 def focus():
-    return redirect(url_for("procrastination_focus"))
+    return render_template("procrastination_focus.html")
 
 
 @app.route("/noise-songs")
