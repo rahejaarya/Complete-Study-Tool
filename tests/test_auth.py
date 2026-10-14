@@ -143,6 +143,24 @@ class AuthTests(unittest.TestCase):
         self.assertIn(b'Notebook &amp; Notes', response.data)
         self.assertIn(b'notes-page', response.data)
 
+    def test_quick_notes_notebook_exists_by_default(self):
+        login_response = self.client.post(
+            '/login',
+            data={'username': 'admin', 'password': 'admin123'},
+            follow_redirects=False,
+        )
+        self.assertEqual(login_response.status_code, 302)
+
+        response = self.client.get('/api/notebooks')
+        self.assertEqual(response.status_code, 200)
+
+        payload = response.get_json()
+        self.assertIn('Quick Notes', [notebook['name'] for notebook in payload['notebooks']])
+        quick_notes = next(
+            notebook for notebook in payload['notebooks'] if notebook['name'] == 'Quick Notes'
+        )
+        self.assertEqual(payload['active_id'], quick_notes['id'])
+
     def test_protected_page_requires_username_password_session(self):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 302)
