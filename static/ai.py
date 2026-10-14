@@ -5,7 +5,7 @@ from urllib.parse import urlsplit
 import ollama
 from ddgs import DDGS
 
-MODEL = "qwen3.5:2b"
+MODEL = "qwen3.5:9b"
 
 _GREETING_REPLIES = {
     "hi": "Hi! What would you like help studying today?",
@@ -555,7 +555,7 @@ def update_user_memory(
     }
 
 
-def search_web(query):
+def find_resources(query, conversation_history=None, conversation_summary=""):
     try:
         results = DDGS().text(
             query,
