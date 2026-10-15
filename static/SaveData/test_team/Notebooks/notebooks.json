@@ -1,11 +1,17 @@
 {
   "notebooks": [
     {
+      "id": "fa855b00-0a80-47dd-91d2-2e740b75101c",
+      "name": "Quick Notes",
+      "content": "",
+      "quick_note": "dv vfeef"
+    },
+    {
       "id": "8dc16194584c4fda978b032c344f6f80",
       "name": "My Notebook",
       "content": "",
-      "quick_note": ""
+      "quick_note": "hellop"
     }
   ],
-  "active_id": "8dc16194584c4fda978b032c344f6f80"
+  "active_id": "fa855b00-0a80-47dd-91d2-2e740b75101c"
 }
