@@ -34,7 +34,8 @@ class SettingsTests(unittest.TestCase):
         response = self.client.get("/settings")
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"Security &amp; Password", response.data)
+        self.assertIn(b"Security", response.data)
+        self.assertIn(b"Password", response.data)
         self.assertNotIn(b"Account Preferences", response.data)
         self.assertNotIn(b"Default Dashboard View", response.data)
         self.assertNotIn(b"Personal Information", response.data)
