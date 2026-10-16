@@ -1,4 +1,5 @@
 (() => {
+    // Activity-to-sound recommendations and display labels for the sound library.
     const recommendations = {
         learning: { label: "Learning something new", sounds: ["brown", "piano", "ocean", "acoustic-piano", "ambient-synth"] },
         reviewing: { label: "Reviewing & revising", sounds: ["pink", "lofi", "cello", "432hz"] },
@@ -41,6 +42,7 @@
     const activeSounds = new Map();
     const soundVolumes = new Map(cards.map((card) => [card.dataset.sound, 1]));
 
+    // Create the shared Web Audio graph once and apply the master volume.
     function getAudioContext() {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         if (!AudioContextClass) {
@@ -54,6 +56,7 @@
         return audioContext;
     }
 
+    // Generate a looping buffer of brown- or pink-spectrum noise samples.
     function createNoiseBuffer(context, color) {
         const buffer = context.createBuffer(1, context.sampleRate * 2, context.sampleRate);
         const samples = buffer.getChannelData(0);
@@ -71,6 +74,7 @@
         return buffer;
     }
 
+    // Build a filtered noise source and return controls for stopping and volume.
     function createNoiseSound(context, kind) {
         const source = context.createBufferSource();
         source.buffer = createNoiseBuffer(context, kind === "brown" ? "brown" : "pink");
@@ -89,6 +93,7 @@
         };
     }
 
+    // Sequence simple oscillator notes using the selected sound's musical profile.
     function createMusicSound(context, kind) {
         const profiles = {
             piano: { notes: [261.63, 329.63, 392, 329.63, 293.66, 349.23, 440, 349.23], type: "triangle", interval: 900, decay: 1.2 },
@@ -124,6 +129,7 @@
         };
     }
 
+    // Play a steady sine tone at the requested frequency.
     function createToneSound(context, frequency, soundId) {
         const oscillator = context.createOscillator();
         const gain = context.createGain();
@@ -142,6 +148,7 @@
         };
     }
 
+    // Send slightly different tones to left and right channels for binaural audio.
     function createBinauralSound(context) {
         const oscillators = [context.createOscillator(), context.createOscillator()];
         const panners = [context.createStereoPanner(), context.createStereoPanner()];
@@ -172,6 +179,7 @@
         };
     }
 
+    // Start or stop one sound and synchronize playback state with its card.
     async function toggleSound(soundId) {
         if (activeSounds.has(soundId)) {
             activeSounds.get(soundId).stop();
@@ -219,6 +227,7 @@
         audioStatus.textContent = `${soundLabels[soundId]} is playing.`;
     }
 
+    // Update a sound card's playing style, button label, and pressed state.
     function updateCard(soundId, isPlaying) {
         const card = document.querySelector(`[data-sound="${soundId}"]`);
         const button = card?.querySelector(".sound-play");
@@ -229,6 +238,7 @@
         }
     }
 
+    // Show the recommended mix and mark the selected study activity.
     function updateRecommendations(activityId) {
         const recommendation = recommendations[activityId];
         selectedActivityLabel.textContent = `Selected: ${recommendation.label}`;
@@ -240,6 +250,7 @@
         });
     }
 
+    // Connect each card's playback button and independent volume slider.
     cards.forEach((card) => {
         card.querySelector(".sound-play").addEventListener("click", () => toggleSound(card.dataset.sound));
         const soundId = card.dataset.sound;
@@ -254,10 +265,12 @@
         });
     });
 
+    // Let students change the recommendation set without starting audio.
     activityButtons.forEach((button) => {
         button.addEventListener("click", () => updateRecommendations(button.dataset.activity));
     });
 
+    // Start every sound in the currently selected recommended mix.
     loadRecommendationsButton?.addEventListener("click", async () => {
         const activeButton = activityButtons.find((button) => button.classList.contains("active"));
         if (!activeButton) return;
@@ -267,6 +280,7 @@
         }
     });
 
+    // Stop all active sources and reset each corresponding card.
     document.getElementById("stop-all-sounds")?.addEventListener("click", () => {
         activeSounds.forEach((sound, soundId) => {
             sound.stop();
@@ -276,6 +290,7 @@
         audioStatus.textContent = "All sounds stopped.";
     });
 
+    // Apply master gain changes to both generated audio and the ocean recording.
     volumeInput.addEventListener("input", () => {
         const value = Number(volumeInput.value);
         volumeValue.textContent = `${value}%`;

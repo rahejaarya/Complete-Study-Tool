@@ -9,6 +9,7 @@
     <script src="{{ url_for('static', filename='dashboard_notebooks.js') }}" defer></script>
 </head>
 <body>
+    <!-- Standalone notebook page uses the shared app navigation and notebook editor. -->
     <div class="app">
         <aside class="sidebar">
             <div class="logo">
@@ -21,30 +22,28 @@
                     <span class="nav-icon">▦</span>
                     Dashboard
                 </a>
+
                 <a href="{{ url_for('resources') }}" class="nav-link">
                     <span class="nav-icon">⌕</span>
                     Study Resources
                 </a>
-                <a href="{{ url_for('notes') }}" class="nav-link active">
-                    <span class="nav-icon">✎</span>
-                    Notes
-                </a>
+
                 <a href="{{ url_for('noise_songs') }}" class="nav-link">
                     <span class="nav-icon">♫</span>
                     Noise &amp; Songs
                 </a>
+
                 <a href="{{ url_for('time_management') }}" class="nav-link">
                     <span class="nav-icon">✓</span>
                     Time Management
                 </a>
+
                 <a href="{{ url_for('support') }}" class="nav-link">
                     <span class="nav-icon">♡</span>
                     Student Support
                 </a>
-                <a href="{{ url_for('ai_help') }}" class="nav-link">
-                    <span class="nav-icon">✦</span>
-                    Sammy
-                </a>
+
+                {% include "_ai_nav.html" %}
             </nav>
 
             <div class="sidebar-bottom">
@@ -60,6 +59,7 @@
         </aside>
 
         <main class="main-content">
+            <!-- Constrain the editor workspace and provide a route back to the dashboard. -->
             <div class="notes-page">
                 <div class="notes-page-shell">
                     <header class="notes-page-header">
@@ -81,18 +81,6 @@
                                 aria-controls="notebook-expanded"
                                 aria-label="Open notebooks">↗</button>
                         </div>
-
-                        <label class="notebook-quick-label" for="notebook-quick-note">
-                            Quick note · synced to your Quick Notes notebook
-                        </label>
-                        <textarea
-                            class="notebook-textarea notebook-quick-note"
-                            id="notebook-quick-note"
-                            maxlength="20000"
-                            placeholder="Jot down a quick note..."
-                            aria-label="Quick note for the selected notebook"
-                            disabled></textarea>
-                        <p class="notebook-save-status" id="notebook-save-status" aria-live="polite">Loading notebooks…</p>
 
                         <div class="notebook-expanded" id="notebook-expanded" hidden>
                             <aside class="notebook-sidebar" aria-label="Your notebooks">
@@ -120,6 +108,7 @@
                                     disabled></textarea>
                             </div>
                         </div>
+                        <p class="notebook-save-status" id="notebook-save-status" aria-live="polite">Loading notebooks…</p>
                     </section>
                 </div>
             </div>

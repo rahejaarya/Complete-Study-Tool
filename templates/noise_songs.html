@@ -10,6 +10,7 @@
     <script src="{{ url_for('static', filename='noise.js') }}" defer></script>
 </head>
 <body>
+    <!-- App shell for the sound studio, with navigation shared across study pages. -->
     <div class="app">
         <aside class="sidebar">
             <div class="logo">
@@ -42,6 +43,7 @@
                 <span class="noise-page-topbar-spacer" aria-hidden="true"></span>
             </header>
 
+            <!-- Introduce the sound mixer and set the listening context for this page. -->
             <section class="sound-hero">
                 <div>
                     <div class="eyebrow">SOUND STUDIO</div>
@@ -51,6 +53,7 @@
                 <div class="sound-hero-orbit" aria-hidden="true"><span></span><span></span><span></span></div>
             </section>
 
+            <!-- Activity buttons select a suggested mix without preventing manual choices. -->
             <section class="noise-section" aria-labelledby="activity-heading">
                 <div class="noise-section-heading">
                     <div>
@@ -81,6 +84,7 @@
                 </div>
             </section>
 
+            <!-- Each sound card exposes playback and an independent volume control. -->
             <section class="noise-section" aria-labelledby="sound-heading">
                 <div class="noise-section-heading">
                     <div>
@@ -199,6 +203,7 @@
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
                 </div>
+                <!-- Shared master gain and live status apply to all active sound sources. -->
                 <div class="sound-mixer-bar">
                     <label for="master-volume">Master volume</label>
                     <input id="master-volume" type="range" min="0" max="100" value="35">
@@ -216,6 +221,7 @@
         <a href="{{ url_for('time_management') }}" class="mobile-link"><span>✓</span><small>Schedule</small></a>
         <a href="{{ url_for('support') }}" class="mobile-link"><span>♡</span><small>Support</small></a>
     </nav>
+    <!-- The ocean recording is loaded only when its card is played. -->
     <audio id="ocean-waves-audio" src="https://cdn.freesound.org/previews/456/456899_9518146-hq.mp3" preload="none" loop hidden></audio>
 </body>
 </html>

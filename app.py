@@ -65,16 +65,19 @@ VALID_THEMES = {
 # -----------------------------------------------------------------------------
 
 def get_db():
+    """Open a SQLite connection that returns rows addressable by column name."""
     conn = sqlite3.connect(app.config["DATABASE"])
     conn.row_factory = sqlite3.Row
     return conn
 
 
 def ai_user_directory():
+    """Return the signed-in user's persistent AI data directory."""
     return user_save_directory(session.get("user_id"))
 
 
 def user_save_directory(user_id):
+    """Validate a user's storage path and create its standard data folders."""
     conn = get_db()
     try:
         user = conn.execute(
@@ -102,6 +105,7 @@ def user_save_directory(user_id):
 
 
 def write_json_atomically(path, data):
+    """Write JSON through a temporary file so interrupted saves do not corrupt data."""
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary_path = None
     try:
@@ -124,6 +128,7 @@ def write_json_atomically(path, data):
 
 
 def safe_chat_title(value):
+    """Normalize a conversation title and supply a fallback for blank input."""
     cleaned = re.sub(r"\s+", " ", value).strip()
     if not cleaned:
         return "New conversation"
@@ -131,11 +136,13 @@ def safe_chat_title(value):
 
 
 def chat_filename_slug(title):
+    """Convert a conversation title into a compact filename-safe slug."""
     slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
     return slug[:60].rstrip("-") or "conversation"
 
 
 def find_chat_file(user_dir, chat_id):
+    """Find the unique saved chat file associated with a validated chat ID."""
     if not isinstance(chat_id, str) or not re.fullmatch(r"[a-f0-9]{32}", chat_id):
         return None
     matches = list((user_dir / "chats").glob(f"*-{chat_id}.json"))
@@ -143,6 +150,7 @@ def find_chat_file(user_dir, chat_id):
 
 
 def load_user_memory(user_dir):
+    """Load and sanitize the bounded personal facts used as AI context."""
     memory_path = user_dir / "memory"
     if not memory_path.exists():
         return {"explicit_facts": [], "facts": []}
@@ -175,6 +183,7 @@ def load_user_memory(user_dir):
 # -----------------------------------------------------------------------------
 
 def init_db():
+    """Create account/preference tables and seed the development admin account."""
     conn = get_db()
     conn.execute(
         """
@@ -211,6 +220,7 @@ def init_db():
 
 
 def migrate_database_preferences(user_id, user_dir):
+    """Copy legacy database preferences to per-user schedule and settings files."""
     schedule_path = user_dir / "Schedule" / "schedule.json"
     settings_path = user_dir / "Settings" / "settings.json"
     if schedule_path.exists() and settings_path.exists():
@@ -243,6 +253,7 @@ def migrate_database_preferences(user_id, user_dir):
 
 
 def get_saved_schedule(user_id):
+    """Load a user's saved calendar events, defaulting to an empty schedule."""
     schedule_path = user_save_directory(user_id) / "Schedule" / "schedule.json"
     if not schedule_path.exists():
         return []
@@ -254,6 +265,7 @@ def get_saved_schedule(user_id):
 
 
 def save_user_theme(user_id, theme):
+    """Persist the selected appearance theme while preserving other settings."""
     settings_path = user_save_directory(user_id) / "Settings" / "settings.json"
     settings = {}
     if settings_path.exists():
@@ -270,11 +282,13 @@ def save_user_theme(user_id, theme):
 
 
 def save_user_schedule(user_id, schedule):
+    """Persist the validated schedule as the user's schedule JSON file."""
     schedule_path = user_save_directory(user_id) / "Schedule" / "schedule.json"
     write_json_atomically(schedule_path, schedule)
 
 
 def login_required(view):
+    """Redirect anonymous requests to login while preserving their destination."""
     @wraps(view)
     def wrapped_view(*args, **kwargs):
         if "user_id" in session:
@@ -291,6 +305,7 @@ def login_required(view):
 @app.route("/api/preferences/theme", methods=["GET", "PUT"])
 @login_required
 def user_theme_preference():
+    """Get or validate and save the signed-in user's appearance theme."""
     user_id = session["user_id"]
     if request.method == "GET":
         try:
@@ -329,6 +344,7 @@ def user_theme_preference():
 @app.route("/api/preferences/schedule", methods=["GET", "PUT"])
 @login_required
 def user_schedule_preference():
+    """Get or validate and save the signed-in user's calendar events."""
     user_id = session["user_id"]
     if request.method == "GET":
         try:
@@ -428,6 +444,7 @@ def user_schedule_preference():
 # -----------------------------------------------------------------------------
 
 def clean_notebook_data(data):
+    """Validate notebook fields, unique IDs, and the selected active notebook."""
     notebooks = data.get("notebooks")
     active_id = data.get("active_id")
     if not isinstance(notebooks, list) or not notebooks:
@@ -473,6 +490,7 @@ def clean_notebook_data(data):
 @app.route("/api/notebooks", methods=["GET", "PUT"])
 @login_required
 def user_notebooks():
+    """Load or validate and persist a user's notebook collection."""
     notebooks_path = (
         user_save_directory(session["user_id"])
         / "Notebooks"
@@ -525,6 +543,7 @@ def user_notebooks():
 
 
 def safe_next_url(target):
+    """Allow only local redirect targets and otherwise return the home page."""
     if not target:
         return url_for("home")
 
@@ -535,6 +554,7 @@ def safe_next_url(target):
 
 
 def load_resources():
+    """Load the bundled study-resource catalog when its JSON file exists."""
     json_path = os.path.join(app.root_path, "data", "resources.json")
     if os.path.exists(json_path):
         with open(json_path, "r", encoding="utf-8") as f:
@@ -548,6 +568,7 @@ def load_resources():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    """Authenticate a user and redirect to their requested local page."""
     error = None
 
     if request.method == "POST":
@@ -574,6 +595,7 @@ def login():
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
+    """Validate a new account, save its password hash, and sign it in."""
     error = None
 
     if request.method == "POST":
@@ -614,6 +636,7 @@ def signup():
 @app.route("/api/ai", methods=["POST"])
 @login_required
 def ai_chat():
+    """Append a user message and stream the AI response as newline-delimited JSON."""
     data = request.get_json()
 
     if not data:
@@ -804,6 +827,7 @@ def ai_chat():
 @app.route("/api/ai/chats", methods=["GET"])
 @login_required
 def list_ai_chats():
+    """Return the signed-in user's saved conversations, newest first."""
     try:
         user_dir = ai_user_directory()
         chats = []
@@ -825,6 +849,7 @@ def list_ai_chats():
 @app.route("/api/ai/chats/<chat_id>", methods=["GET"])
 @login_required
 def get_ai_chat(chat_id):
+    """Return one saved conversation after restricting lookup to the current user."""
     try:
         user_dir = ai_user_directory()
         chat_path = find_chat_file(user_dir, chat_id)
@@ -842,6 +867,7 @@ def get_ai_chat(chat_id):
 @app.route("/api/ai/chats/<chat_id>/rename", methods=["POST"])
 @login_required
 def rename_ai_chat(chat_id):
+    """Validate a new title and atomically move the user's conversation file."""
     data = request.get_json()
     if not isinstance(data, dict):
         return jsonify({"error": "A conversation title is required."}), 400
@@ -878,6 +904,7 @@ def rename_ai_chat(chat_id):
 @app.route("/api/ai/chats/<chat_id>", methods=["DELETE"])
 @login_required
 def delete_ai_chat(chat_id):
+    """Delete one saved conversation belonging to the signed-in user."""
     try:
         user_dir = ai_user_directory()
         chat_path = find_chat_file(user_dir, chat_id)
@@ -903,6 +930,7 @@ def logout():
 @app.route("/")
 @login_required
 def home():
+    """Render the dashboard and provide page routes for global search indexing."""
     search_routes = [
         {"path": rule.rule, "endpoint": rule.endpoint}
         for rule in app.url_map.iter_rules()
@@ -922,6 +950,7 @@ def home():
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
+    """Render account settings and process profile, password, or deletion forms."""
     user_id = session["user_id"]
     db = get_db()
     user = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
@@ -1009,6 +1038,7 @@ def settings():
 @app.route("/resources")
 @login_required
 def resources():
+    """Render curated study resources filtered by query and optional web results."""
     query = request.args.get("query", "").strip()
     all_resources = load_resources()
     web_results = search_web(query) if query else []
@@ -1035,60 +1065,70 @@ def resources():
 @app.route("/focus")
 @login_required
 def focus():
+    """Render the focus-tools page."""
     return render_template("procrastination_focus.html")
 
 
 @app.route("/noise-songs")
 @login_required
 def noise_songs():
+    """Render the ambient-noise and music player page."""
     return render_template("noise_songs.html")
 
 
 @app.route("/schedule")
 @login_required
 def schedule():
+    """Redirect the legacy schedule endpoint to the time-management page."""
     return redirect(url_for("time_management"))
 
 
 @app.route("/time-management")
 @login_required
 def time_management():
+    """Render the combined scheduler and study timer page."""
     return render_template("time_management.html")
 
 
 @app.route("/timeManagement.html")
 @login_required
 def legacy_time_management():
+    """Permanently redirect the old time-management URL to its current route."""
     return redirect("/time-management", code=301)
 
 
 @app.route("/support")
 @login_required
 def support():
+    """Render the student support resource page."""
     return render_template("support.html")
 
 
 @app.route("/peer-pressure-boundaries")
 @login_required
 def peer_pressure_boundaries():
+    """Render guidance about peer pressure and setting personal boundaries."""
     return render_template("peerPreshAndBoundaries.html")
 
 
 @app.route("/procrastination-focus")
 @login_required
 def procrastination_focus():
+    """Render the procrastination and focus guidance page."""
     return render_template("procrastination_focus.html")
 
 
 @app.route("/ai")
 @login_required
 def ai_help():
+    """Render the AI study assistant interface."""
     return render_template("ai.html")
 
 
 @app.route("/notes")
 @login_required
 def notes():
+    """Render the notebook workspace for the current account."""
     return render_template("notes.html", username=session.get("username", "User"))
 
 

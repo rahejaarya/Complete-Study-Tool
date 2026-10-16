@@ -857,6 +857,7 @@
 
             let activeManagementSection = null;
 
+            // Collapse the active timer/calendar panel and restore the launcher layout.
             function closeManagementSection() {
                 activeManagementSection = null;
 
@@ -875,6 +876,7 @@
                 managementClose.hidden = true;
             }
 
+            // Show one management panel and hide the inactive page sections.
             function openManagementSection(section) {
                 if (activeManagementSection === section) {
                     closeManagementSection();
@@ -937,6 +939,7 @@
                 });
             }
 
+            // Connect launchers and the close control to the expanded tool panel.
             schedulerLauncher.addEventListener("click", () => {
                 openManagementSection("scheduler");
             });
@@ -1000,6 +1003,7 @@
             let remainingSeconds = selectedPreset.work * 60;
             let timerInterval;
 
+            // Format the remaining timer duration as a zero-padded clock value.
             function formatTime(totalSeconds) {
                 const minutes = Math.floor(totalSeconds / 60)
                     .toString()
@@ -1012,10 +1016,12 @@
                 return `${minutes}:${seconds}`;
             }
 
+            // Refresh the visible timer display from the remaining seconds.
             function renderTimer() {
                 timerReadout.textContent = formatTime(remainingSeconds);
             }
 
+            // Describe whether the current timer interval is study or break time.
             function renderSessionLabel() {
                 const phaseLabel = sessionPhase === "work"
                     ? "Work session"
@@ -1025,6 +1031,7 @@
                     `${selectedPreset.name} · ${phaseLabel} (${selectedPreset.work} min work / ${selectedPreset.rest} min break)`;
             }
 
+            // Clear the active interval when the timer completes or is reset.
             function stopTimer() {
                 window.clearInterval(timerInterval);
                 timerInterval = undefined;
@@ -1033,6 +1040,7 @@
                 pauseButton.disabled = true;
             }
 
+            // Start the countdown and transition between study and break intervals.
             function startTimer() {
                 if (timerInterval || remainingSeconds <= 0) {
                     return;
@@ -1079,6 +1087,7 @@
                 }, 1000);
             }
 
+            // Pause the countdown while retaining the current remaining duration.
             function pauseTimer() {
                 if (!timerInterval) {
                     return;
@@ -1090,6 +1099,7 @@
                     `Timer paused during your ${sessionPhase === "work" ? "study session" : "break"}.`;
             }
 
+            // Restore the selected preset's initial study duration and idle state.
             function resetTimer() {
                 stopTimer();
 
@@ -1102,6 +1112,7 @@
                 timerStatus.textContent = "Timer reset. Ready when you are.";
             }
 
+            // Apply one built-in study/break rhythm and reset the timer to its work phase.
             presetButtons.forEach((button) => {
                 button.addEventListener("click", () => {
                     presetButtons.forEach((preset) => {
@@ -1124,6 +1135,7 @@
                 });
             });
 
+            // Validate and apply a user-defined study and break duration.
             customPresetForm.addEventListener("submit", (submitEvent) => {
                 submitEvent.preventDefault();
 
@@ -1150,6 +1162,7 @@
                     "Custom study and break times applied.";
             });
 
+            // Wire the timer's start, pause, and reset controls to their state handlers.
             startButton.addEventListener("click", startTimer);
             pauseButton.addEventListener("click", pauseTimer);
             resetButton.addEventListener("click", resetTimer);
@@ -1201,6 +1214,7 @@
 
             plannerSubmitButton.disabled = true;
 
+            // Check that loaded schedule records have the fields needed by the calendar.
             function validEvents(candidate) {
                 if (!Array.isArray(candidate)) {
                     throw new Error("Saved planner data must be a list.");
@@ -1246,6 +1260,7 @@
                     });
             }
 
+            // Load schedule data from the account API and initialize the calendar view.
             async function loadEvents() {
                 try {
                     const response = await fetch("/api/preferences/schedule");
@@ -1363,6 +1378,7 @@
                 }
             }
 
+            // Persist the current calendar collection through the schedule API.
             function saveEvents() {
                 if (!eventsReady) {
                     return Promise.resolve(false);
@@ -1414,6 +1430,7 @@
                 return saveQueue;
             }
 
+            // Convert a local Date into the calendar's YYYY-MM-DD storage key.
             function formatDateKey(date) {
                 const year = date.getFullYear();
                 const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -1422,12 +1439,14 @@
                 return `${year}-${month}-${day}`;
             }
 
+            // Parse a date key as a local calendar date rather than a UTC timestamp.
             function parseDateKey(dateKey) {
                 const [year, month, day] = dateKey.split("-").map(Number);
 
                 return new Date(year, month - 1, day);
             }
 
+            // Choose a default one-hour event end while staying within the same day.
             function defaultEndTime(startTime) {
                 const [hours, minutes] = startTime.split(":").map(Number);
 
@@ -1439,6 +1458,7 @@
                 return `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:${String(endMinutes % 60).padStart(2, "0")}`;
             }
 
+            // Update the seven day headers and their accessible date labels.
             function renderCalendarDates() {
                 const today = new Date();
 
@@ -1590,6 +1610,7 @@
                 renderCurrentTimeIndicator();
             }
 
+            // Place saved events into day columns according to their start and end times.
             function renderScheduleEvents() {
                 weeklyDays.forEach((dayColumn) => {
                     const dayDate =
@@ -1681,6 +1702,7 @@
                 });
             }
 
+            // Position the red current-time line in today's calendar column.
             function renderCurrentTimeIndicator() {
                 weeklyDays.forEach((dayColumn) => {
                     dayColumn
@@ -1750,6 +1772,7 @@
                     .append(indicator);
             }
 
+            // Rebuild the month picker grid and mark today/selected dates.
             function renderDatePicker() {
                 datePickerMonth.textContent =
                     pickerMonth.toLocaleDateString(undefined, {
@@ -1853,6 +1876,7 @@
                 }
             }
 
+            // Position the event editor near its calendar anchor within the viewport.
             function positionEventEditor(anchor) {
                 if (!anchor) {
                     return;
@@ -1908,6 +1932,7 @@
                     `${top}px`;
             }
 
+            // Populate and open the planner dialog for a new or existing event.
             function openEventEditor(
                 dateKey,
                 time,
@@ -1984,6 +2009,7 @@
                 plannerTitle.focus();
             }
 
+            // Close the planner dialog and clear transient edit state.
             function closeEventEditor() {
                 plannerDialog.close();
 
@@ -1992,6 +2018,7 @@
                 plannerDialogError.textContent = "";
             }
 
+            // Create an event when a valid empty calendar hour is selected.
             weeklyGrid.addEventListener(
                 "click",
                 (clickEvent) => {
@@ -2054,6 +2081,7 @@
                 closeEventEditor
             );
 
+            // Delete the edited event and restore the previous list if persistence fails.
             plannerDialogDelete.addEventListener(
                 "click",
                 async () => {
@@ -2104,6 +2132,7 @@
                 }
             );
 
+            // Dismiss the editor outside the dialog and keep it positioned on resize.
             document.addEventListener(
                 "pointerdown",
                 (pointerEvent) => {
@@ -2129,6 +2158,7 @@
                 }
             );
 
+            // Move the date picker month and calendar week, or return to the current week.
             datePickerPrevious.addEventListener(
                 "click",
                 () => {
@@ -2181,6 +2211,7 @@
                 }
             );
 
+            // Validate, create/update, and persist an event submitted from the editor.
             plannerForm.addEventListener(
                 "submit",
                 async (submitEvent) => {

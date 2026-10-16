@@ -1,4 +1,5 @@
 (() => {
+    // Read page routes from the template and prepare the searchable feature index.
     const overlay = document.getElementById("global-search-overlay");
     const trigger = document.getElementById("global-search-open");
     const input = document.getElementById("global-search-input");
@@ -15,6 +16,7 @@
     let activeResult = -1;
     let renderedResults = [];
 
+    // Add a normalized index entry once, avoiding duplicate page features.
     function addItem(item) {
         const key = `${item.category}|${item.url}|${item.title}`;
         if (!pageIndex.some((existing) => existing.key === key)) {
@@ -22,16 +24,19 @@
         }
     }
 
+    // Group routes into the categories shown in the search results dialog.
     function routeCategory(path) {
         if (path === "/time-management" || path === "/schedule") return "Timers";
         if (path === "/settings" || path === "/appearance") return "Settings";
         return "Pages";
     }
 
+    // Normalize rendered element text before using it as a search label.
     function readableText(element) {
         return (element?.textContent || "").replace(/\s+/g, " ").trim();
     }
 
+    // Fetch app pages once and index their headings, links, and key controls.
     async function buildIndex() {
         if (indexPromise) return indexPromise;
         indexPromise = (async () => {
@@ -193,6 +198,7 @@
         return indexPromise;
     }
 
+    // Hide the dialog, clear its query, and return keyboard focus to the trigger.
     function closeSearch() {
         overlay.hidden = true;
         trigger.setAttribute("aria-expanded", "false");
@@ -200,6 +206,7 @@
         trigger.focus();
     }
 
+    // Show the dialog, focus its input, and lazily build or refresh the index.
     function openSearch() {
         overlay.hidden = false;
         trigger.setAttribute("aria-expanded", "true");
@@ -216,6 +223,7 @@
         });
     }
 
+    // Rank matching index entries and render them as keyboard-selectable results.
     function renderResults(query) {
         results.replaceChildren();
         activeResult = -1;
@@ -300,6 +308,7 @@
         }
     }
 
+    // Move the active result with wraparound and scroll it into view.
     function moveSelection(direction) {
         if (!renderedResults.length) return;
         activeResult = (activeResult + direction + renderedResults.length) % renderedResults.length;
@@ -310,6 +319,7 @@
         });
     }
 
+    // Wire dialog controls, keyboard shortcuts, result navigation, and focus trap.
     trigger.addEventListener("click", openSearch);
     closeButton.addEventListener("click", closeSearch);
     overlay.addEventListener("click", (event) => {

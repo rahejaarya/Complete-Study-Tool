@@ -1,4 +1,8 @@
+# Flask serves the web application, templates, and authenticated APIs.
 Flask>=3.0,<4.0
+# HTTP client dependency retained in the environment; current Python source does not import it.
 requests>=2.31,<3.0
+# Ollama client used to prompt the configured local language model.
 ollama>=0.4,<1.0
+# DuckDuckGo search client used to find educational videos and web resources.
 ddgs>=9.0,<10.0

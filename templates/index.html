@@ -413,12 +413,14 @@
 
     </nav>
 
+    <!-- Load the nearest unfinished future event and keep its countdown current. -->
     <script>
         (() => {
             const title = document.getElementById("upcoming-deadline-title");
             const details = document.getElementById("upcoming-deadline-details");
             let upcomingDeadlines = [];
 
+            // Recalculate the human-readable time remaining for the nearest deadline.
             function updateDeadlineCountdown() {
                 const now = new Date();
                 const nextDeadline = upcomingDeadlines.find((deadline) => deadline.date > now);
@@ -506,6 +508,7 @@
         })();
     </script>
 
+    <!-- Rotate motivational quotes and persist the slideshow's pause/current state. -->
     <script>
         (() => {
             const quotes = [
@@ -689,6 +692,7 @@
             let storageAvailable = true;
             let changeTimer;
 
+            // Randomize quote order while keeping the initial quote in first position.
             function shuffleQuotes() {
                 const order = quotes.slice(1).map((_, index) => index + 1);
                 for (let index = order.length - 1; index > 0; index -= 1) {
@@ -698,6 +702,7 @@
                 return [0, ...order];
             }
 
+            // Reject malformed browser state before restoring the slideshow.
             function isValidState(state) {
                 return state
                     && Array.isArray(state.order)
@@ -709,6 +714,7 @@
                     && state.index < quotes.length;
             }
 
+            // Restore the saved quote order and position when session storage is available.
             function loadState() {
                 try {
                     const savedState = sessionStorage.getItem(storageKey);
@@ -726,6 +732,7 @@
                 return { order: shuffleQuotes(), index: 0 };
             }
 
+            // Store the current quote order and position for this browser tab.
             function saveState() {
                 if (!storageAvailable) {
                     return;
@@ -741,12 +748,14 @@
 
             let state = loadState();
 
+            // Update the visible quote and author from the current shuffled position.
             function showCurrentQuote() {
                 const quote = quotes[state.order[state.index]];
                 quoteText.textContent = quote.text;
                 quoteAuthor.textContent = quote.author;
             }
 
+            // Fade to the next quote and persist its new position after the transition.
             function advanceQuote() {
                 const previousQuoteIndex = state.order[state.index];
                 state.index += 1;
@@ -767,6 +776,7 @@
                 }, 180);
             }
 
+            // Start automatic quote rotation unless the user has paused it.
             function startSlideshow() {
                 changeTimer = window.setInterval(advanceQuote, 9000);
                 toggleButton.textContent = "Pause";

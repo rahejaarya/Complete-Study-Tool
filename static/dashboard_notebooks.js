@@ -1,4 +1,5 @@
 (() => {
+    // Notebook editor controls and save state for the dashboard and notes page.
     const card = document.getElementById("notes-card");
     const toggle = document.getElementById("notebook-toggle");
     const expanded = document.getElementById("notebook-expanded");
@@ -8,7 +9,7 @@
     const contentInput = document.getElementById("notebook-content");
     const quickNoteInput = document.getElementById("notebook-quick-note");
     const status = document.getElementById("notebook-save-status");
-    if (!card || !toggle || !expanded || !list || !addButton || !nameInput || !contentInput || !quickNoteInput || !status) {
+    if (!card || !toggle || !expanded || !list || !addButton || !nameInput || !contentInput || !status) {
         return;
     }
 
@@ -16,12 +17,14 @@
     let saveTimer;
     let saveQueue = Promise.resolve();
 
+    // Return the notebook currently selected in the saved notebook collection.
     function activeNotebook() {
         return notebookData.notebooks.find(
             (notebook) => notebook.id === notebookData.active_id
         );
     }
 
+    // Synchronize the expanded editor panel with its accessible toggle state.
     function setExpanded(isExpanded) {
         expanded.hidden = !isExpanded;
         toggle.setAttribute("aria-expanded", String(isExpanded));
@@ -32,6 +35,7 @@
         card.classList.toggle("is-expanded", isExpanded);
     }
 
+    // Preserve the dedicated Quick Notes notebook expected by the dashboard field.
     function ensureQuickNotesNotebook() {
         const quickNotesNotebook = notebookData.notebooks.find(
             (notebook) => notebook.name.trim().toLowerCase() === "quick notes"
@@ -53,6 +57,7 @@
         notebookData.active_id = notebook.id;
     }
 
+    // Rebuild the notebook selector and mark the active entry.
     function renderList() {
         list.replaceChildren();
         notebookData.notebooks.forEach((notebook) => {
@@ -73,6 +78,7 @@
         });
     }
 
+    // Populate editor fields and list items from the active notebook data.
     function render() {
         const notebook = activeNotebook();
         if (!notebook) {
@@ -80,10 +86,16 @@
         }
         nameInput.value = notebook.name;
         contentInput.value = notebook.content;
-        quickNoteInput.value = notebook.quick_note;
+        const quickNotesNotebook = notebookData.notebooks.find(
+            (candidate) => candidate.name.trim().toLowerCase() === "quick notes"
+        );
+        if (quickNoteInput) {
+            quickNoteInput.value = quickNotesNotebook?.content ?? "";
+        }
         renderList();
     }
 
+    // Serialize writes through one promise queue to prevent stale saves winning.
     function save() {
         status.textContent = "Saving notebooks…";
         saveQueue = saveQueue
@@ -105,11 +117,13 @@
             });
     }
 
+    // Debounce edits so frequent keystrokes produce a single API save.
     function scheduleSave() {
         window.clearTimeout(saveTimer);
         saveTimer = window.setTimeout(save, 350);
     }
 
+    // Load the account's notebooks, initialize controls, and report failures.
     async function loadNotebooks() {
         try {
             const response = await fetch("/api/notebooks");
@@ -133,6 +147,7 @@
         }
     }
 
+    // Open the standalone notes page from the dashboard or toggle its editor.
     toggle.addEventListener("click", (event) => {
         if (window.location.pathname !== "/notes") {
             event.preventDefault();
@@ -142,20 +157,37 @@
         setExpanded(expanded.hidden);
     });
 
-    quickNoteInput.addEventListener("input", () => {
+    // Keep the dashboard's quick-note field linked to the Quick Notes notebook.
+    if (quickNoteInput) {
+        quickNoteInput.addEventListener("input", () => {
         if (window.location.pathname === "/notes") {
             setExpanded(true);
         }
-        activeNotebook().quick_note = quickNoteInput.value;
+        const quickNotesNotebook = notebookData.notebooks.find(
+            (candidate) => candidate.name.trim().toLowerCase() === "quick notes"
+        );
+        if (!quickNotesNotebook) {
+            return;
+        }
+        quickNotesNotebook.content = quickNoteInput.value;
+        if (activeNotebook().id === quickNotesNotebook.id) {
+            contentInput.value = quickNoteInput.value;
+        }
         scheduleSave();
-    });
+        });
+    }
 
+    // Persist editor changes and mirror them into Quick Notes when applicable.
     contentInput.addEventListener("input", () => {
         setExpanded(true);
         activeNotebook().content = contentInput.value;
+        if (quickNoteInput && activeNotebook().name.trim().toLowerCase() === "quick notes") {
+            quickNoteInput.value = contentInput.value;
+        }
         scheduleSave();
     });
 
+    // Save valid notebook names while warning about a temporarily blank name.
     nameInput.addEventListener("input", () => {
         const notebook = activeNotebook();
         notebook.name = nameInput.value.trim();
@@ -167,6 +199,7 @@
         }
     });
 
+    // Restore a usable name if the user leaves the name field empty.
     nameInput.addEventListener("blur", () => {
         const notebook = activeNotebook();
         if (!notebook.name) {
@@ -177,6 +210,7 @@
         }
     });
 
+    // Create a new notebook, select it, and focus its name for immediate editing.
     addButton.addEventListener("click", () => {
         const notebook = {
             id: crypto.randomUUID(),

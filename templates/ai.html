@@ -218,6 +218,7 @@
 
 <script>
 
+// Cache chat controls and track which conversation/action is currently active.
 const aiInput = document.getElementById("ai-input");
 const aiSend = document.getElementById("ai-send");
 
@@ -320,6 +321,7 @@ function formatAIResponse(text) {
 }
 
 
+// Insert a message or resource at a stable position in the ordered transcript.
 function insertChatEntry(entry, beforeElement = null) {
     const reference = beforeElement?.parentElement === chatMessages
         ? beforeElement
@@ -336,10 +338,12 @@ function insertChatEntry(entry, beforeElement = null) {
         });
 }
 
+// Keep the newest transcript entry visible after rendering or streaming updates.
 function scrollChatToLatest() {
     chatMessages.lastElementChild?.scrollIntoView({ block: "end" });
 }
 
+// Render a user or assistant bubble and switch the page into active-chat layout.
 function addMessage(message, sender) {
 
     const messageDiv = document.createElement("div");
@@ -370,6 +374,7 @@ function addMessage(message, sender) {
 }
 
 
+// Render a trusted search result as a linked card in the conversation transcript.
 function addResourceCard(resource, beforeElement = null) {
 
     const card = document.createElement("a");
@@ -387,6 +392,7 @@ function addResourceCard(resource, beforeElement = null) {
         image.alt = "";
     }
 
+    // Add an accessible notice when memory persistence fails after a reply.
     function addMemoryWarning(message) {
         const warning = document.createElement("div");
         warning.className = "ai-memory-warning";
@@ -432,6 +438,7 @@ function addResourceCard(resource, beforeElement = null) {
     scrollChatToLatest();
 }
 
+// Reset the transcript and restore the initial AI landing-page content.
 function clearConversationView() {
     chatMessages.replaceChildren();
     chatMessages.style.display = "none";
@@ -440,6 +447,7 @@ function clearConversationView() {
     sectionHeading.style.display = "";
 }
 
+// Dispatch a stored transcript entry to the matching message/resource renderer.
 function renderSavedMessage(message) {
     if (message.role === "user") {
         addMessage(message.content, "user");
@@ -450,6 +458,7 @@ function renderSavedMessage(message) {
     }
 }
 
+// Fetch saved conversations and rebuild the sidebar list with action menus.
 async function loadChatList() {
     const response = await fetch("/api/ai/chats");
     if (!response.ok) {
@@ -536,6 +545,7 @@ async function loadChatList() {
     }
 }
 
+// Fetch one conversation, restore its transcript, and select it in the list.
 async function openSavedChat(chatId) {
     if (isSendingMessage) {
         return;
@@ -561,11 +571,13 @@ async function openSavedChat(chatId) {
     await loadChatList();
 }
 
+// Hide a chat's action menu and reset the trigger's expanded state.
 function closeChatActionsMenu(menu, button) {
     menu.hidden = true;
     button.setAttribute("aria-expanded", "false");
 }
 
+// Support Escape and arrow-key navigation for chat action menus.
 document.addEventListener("keydown", (event) => {
     const openMenu = document.querySelector(".chat-actions-menu:not([hidden])");
     if (event.key === "Escape" && openMenu) {
@@ -584,6 +596,7 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
+// Close open chat menus when a click lands outside their conversation row.
 document.addEventListener("click", (event) => {
     document.querySelectorAll(".chat-actions-menu:not([hidden])").forEach(
         (menu) => {
@@ -597,6 +610,7 @@ document.addEventListener("click", (event) => {
     );
 });
 
+// Configure and open the shared rename/delete confirmation dialog.
 function showChatDialog(chat, action) {
     chatDialogAction = {chat, action};
     chatDialogError.textContent = "";
@@ -621,14 +635,17 @@ function showChatDialog(chat, action) {
     }
 }
 
+// Open the dialog in rename mode for the selected saved conversation.
 async function renameSavedChat(chat) {
     showChatDialog(chat, "rename");
 }
 
+// Open the dialog in delete-confirmation mode for the selected conversation.
 async function deleteSavedChat(chat) {
     showChatDialog(chat, "delete");
 }
 
+// Submit rename/delete requests and refresh the transcript list after success.
 chatDialogCancel.addEventListener("click", () => chatDialog.close());
 chatDialogForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -674,6 +691,7 @@ chatDialogForm.addEventListener("submit", async (event) => {
     }
 });
 
+// Start a blank conversation and refresh the active state in the chat list.
 newChatButton.addEventListener("click", function () {
     if (isSendingMessage) {
         return;
@@ -684,6 +702,7 @@ newChatButton.addEventListener("click", function () {
 });
 
 
+// Post a message, consume the streamed NDJSON events, and render the response.
 async function sendMessage() {
 
     const message = aiInput.value.trim();
@@ -833,6 +852,7 @@ async function sendMessage() {
 }
 
 
+// Send on button activation or Enter, while allowing Shift+Enter for new lines.
 aiSend.addEventListener(
     "click",
     sendMessage
@@ -861,6 +881,7 @@ const aiChatDropdown =
     document.getElementById("ai-chat-dropdown");
 
 
+// Expand/collapse the saved-chat list and keep its accessibility state current.
 aiChatsToggle.addEventListener("click", function () {
 
     const isOpen =

@@ -179,7 +179,10 @@
                     </h2>
                 </div>
 
+                <!-- Render live web results separately from the curated resource categories. -->
                 {% if web_results %}
+                                <!-- Curated video, notes, practice, and general resource discovery groups. -->
+                                <!-- Category 1: Videos -->
                 <div style="margin-bottom: 25px;">
                     <h3 style="margin-bottom: 12px;">🔎 Search Engine Results</h3>
 
@@ -358,6 +361,7 @@
 
 
     <!-- Recent Searches Script -->
+    <!-- Keep up to five recent topic searches in browser storage and render shortcuts. -->
     <script>
         const DEFAULT_SEARCHES = ["Newton's Laws", "Quadratic Equations", "AP Euro Renaissance"];
         const searchInput = document.getElementById('search-input');
@@ -366,6 +370,7 @@
 
         function getRecentSearches() {
             const saved = localStorage.getItem('recent_study_searches');
+            // Load saved searches or use starter examples for a first visit.
             if (saved) {
                 return JSON.parse(saved);
             }
@@ -374,6 +379,7 @@
 
         function saveRecentSearch(query) {
             if (!query.trim()) return;
+            // Move this query to the front and cap the saved history at five entries.
             let searches = getRecentSearches();
             searches = searches.filter(item => item.toLowerCase() !== query.toLowerCase());
             searches.unshift(query.trim());

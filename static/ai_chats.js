@@ -1,3 +1,4 @@
+// Build the saved-chat dropdown only on pages that include its required controls.
 const chatsToggle = document.getElementById("ai-chats-toggle");
 const chatsDropdown = document.getElementById("ai-chat-dropdown");
 const chatsList = chatsDropdown?.querySelector(".chat-list");
@@ -17,11 +18,13 @@ if (chatsToggle && chatsDropdown && chatsList) {
         }
     });
 
+    // Hide one chat action menu and reset its trigger's accessible state.
     function closeMenu(menu, trigger) {
         menu.hidden = true;
         trigger.setAttribute("aria-expanded", "false");
     }
 
+    // Close every open row menu before opening another or leaving the list.
     function closeAllMenus() {
         chatsList.querySelectorAll(".chat-actions-menu:not([hidden])").forEach(
             (menu) => {
@@ -34,6 +37,7 @@ if (chatsToggle && chatsDropdown && chatsList) {
         );
     }
 
+    // Present a modal rename/delete form and submit the matching chat API request.
     function showDialog(chat, action) {
         const dialog = document.createElement("dialog");
         dialog.className = "chat-dialog";
@@ -132,6 +136,7 @@ if (chatsToggle && chatsDropdown && chatsList) {
         }
     }
 
+    // Create a safe DOM row with a link and accessible rename/delete actions.
     function createChatRow(chat) {
         const row = document.createElement("div");
         row.className = "chat-list-item";
@@ -186,6 +191,7 @@ if (chatsToggle && chatsDropdown && chatsList) {
         return row;
     }
 
+    // Fetch saved conversations and render either rows or the empty-list message.
     async function loadChats() {
         const response = await fetch("/api/ai/chats");
         if (!response.ok) {
@@ -204,11 +210,13 @@ if (chatsToggle && chatsDropdown && chatsList) {
         }
     }
 
+    // Dismiss row menus when a click occurs outside the chat list.
     document.addEventListener("click", (event) => {
         if (!chatsList.contains(event.target)) {
             closeAllMenus();
         }
     });
+    // Support Escape dismissal and arrow-key movement through action menus.
     document.addEventListener("keydown", (event) => {
         const openMenu = chatsList.querySelector(".chat-actions-menu:not([hidden])");
         if (event.key === "Escape" && openMenu) {
@@ -236,6 +244,7 @@ if (chatsToggle && chatsDropdown && chatsList) {
         }
     });
 
+    // Populate the dropdown on page load and show a recoverable error on failure.
     loadChats().catch((error) => {
         console.error(error);
         const message = document.createElement("span");

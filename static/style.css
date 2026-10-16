@@ -15,6 +15,7 @@
 /* Theme tokens are the app's design system. Each variable stores a color or spacing value,
    so switching a theme only requires updating these values instead of changing every selector. */
 :root {
+    --sidebar-width: clamp(190px, 22vw, 280px);
     --background: #f7f5fb;
     --green: #256a2e;
 
@@ -39,6 +40,7 @@
     --yellow-light: #fff4d9;
 }
 
+/* Theme selectors below override semantic tokens for each supported color palette. */
 [data-theme="light-lavender"] {
     color-scheme: light;
     --background: #f7f5fb;
@@ -213,6 +215,7 @@
     --yellow-light: #f7f0df;
 }
 
+/* Dark palettes override the same semantic tokens while enabling native dark controls. */
 [data-theme="dark-purple"] {
     color-scheme: dark;
     --background: #0b0b0e;
@@ -431,7 +434,7 @@ body {
     top: 0;
     bottom: 0;
 
-    width: 245px;
+    width: var(--sidebar-width);
 
     background: var(--white);
 
@@ -456,6 +459,8 @@ body {
 
     font-size: 21px;
     font-weight: 700;
+    transform: scale(1.08);
+    transform-origin: left center;
 }
 
 
@@ -553,9 +558,9 @@ body {
 /* The main content area holds the page-specific content and keeps the layout flexible for dashboards, support pages, and study resources. */
 
 .main-content {
-    width: calc(100% - 245px);
+    width: calc(100% - var(--sidebar-width));
 
-    margin-left: 245px;
+    margin-left: var(--sidebar-width);
 
     padding: 35px 55px 70px;
 }
@@ -687,6 +692,7 @@ body {
     min-width: 0;
 }
 
+/* Search trigger and overlay styles provide the shared keyboard-accessible feature finder. */
 .global-search-trigger {
     min-width: 190px;
     height: 39px;
@@ -1109,6 +1115,7 @@ body {
     opacity: 0.7;
 }
 
+/* Conversation transcript, response bubbles, and resource cards used by AI chat. */
 .chat-messages {
     flex-direction: column;
     gap: 12px;
@@ -1441,6 +1448,7 @@ body {
    LOWER GRID
 ================================ */
 
+/* Notebook selector/editor and the adjacent dashboard workspace cards. */
 .lower-grid {
     display: grid;
 
@@ -3059,15 +3067,7 @@ body {
 
 @media (max-width: 950px) {
 
-    .sidebar {
-        width: 210px;
-    }
-
     .main-content {
-        width: calc(100% - 210px);
-
-        margin-left: 210px;
-
         padding: 30px;
     }
 

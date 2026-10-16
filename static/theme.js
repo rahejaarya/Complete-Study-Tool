@@ -1,4 +1,5 @@
 (() => {
+    // Theme identifiers, legacy aliases, and local preference keys shared by the app.
     const storageKey = "studytool_color_theme_v1";
     const migrationKey = "studytool_color_theme_account_migrated_v1";
     const legacyThemes = {
@@ -37,6 +38,7 @@
 
     document.documentElement.dataset.theme = selectedTheme;
 
+    // Apply a theme, cache it locally, and notify page-specific appearance controls.
     function rememberTheme(theme) {
         document.documentElement.dataset.theme = theme;
         selectedTheme = theme;
@@ -50,6 +52,7 @@
         }));
     }
 
+    // Record that the browser's previous theme has been copied to the account.
     function markMigrationComplete() {
         try {
             window.localStorage.setItem(migrationKey, "complete");
@@ -58,6 +61,7 @@
         }
     }
 
+    // Load the account preference and migrate the browser preference when needed.
     async function loadAccountTheme() {
         try {
             const response = await fetch("/api/preferences/theme");
@@ -93,5 +97,6 @@
         }
     }
 
+    // Apply the saved account theme as soon as this script initializes.
     void loadAccountTheme();
 })();
