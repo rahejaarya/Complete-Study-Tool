@@ -3619,6 +3619,65 @@ body {
     cursor: pointer;
 }
 
+.translator-widget {
+    margin-bottom: 30px;
+}
+
+.translator-toggle {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 58px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: 8px;
+    background: var(--white, #fff);
+    color: var(--text, #222);
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.translator-toggle:focus-visible {
+    outline: 2px solid var(--accent-strong, #5267df);
+    outline-offset: 2px;
+}
+
+.translator-toggle-icon {
+    width: 18px;
+    height: 18px;
+    position: relative;
+    flex: 0 0 18px;
+}
+
+.translator-toggle-icon::before,
+.translator-toggle-icon::after {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 1px;
+    width: 16px;
+    height: 2px;
+    border-radius: 1px;
+    background: currentColor;
+    transition: transform 0.18s ease;
+}
+
+.translator-toggle-icon::after {
+    transform: rotate(90deg);
+}
+
+.translator-toggle[aria-expanded="true"] .translator-toggle-icon::after {
+    transform: rotate(90deg) scaleX(0);
+}
+
+.translator-panel {
+    padding-top: 16px;
+}
+
 .resource-tiles {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

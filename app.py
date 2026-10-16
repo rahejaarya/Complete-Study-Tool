@@ -1084,6 +1084,168 @@ def noise_songs():
     return render_template("noise_songs.html")
 
 
+@app.route("/api/my-songs", methods=["GET", "POST"])
+@login_required
+def user_songs():
+    """List or save the signed-in user's uploaded songs and direct audio links."""
+    user_id = session["user_id"]
+    try:
+        song_directory = user_song_directory(user_id)
+        songs_path = song_directory / "songs.json"
+        songs = load_user_songs(user_id)
+
+        if request.method == "GET":
+            response_songs = []
+            for song in songs:
+                song_id = song.get("id")
+                title = song.get("title")
+                source = song.get("source")
+                if not isinstance(song_id, str) or not re.fullmatch(r"[a-f0-9]{32}", song_id):
+                    raise ValueError("Saved song identifier is not valid.")
+                if not isinstance(title, str) or source not in {"upload", "link"}:
+                    raise ValueError("Saved song metadata is not valid.")
+                audio_url = (
+                    url_for("user_song_audio", song_id=song_id)
+                    if source == "upload"
+                    else song.get("url")
+                )
+                if not isinstance(audio_url, str):
+                    raise ValueError("Saved song audio location is not valid.")
+                response_songs.append({
+                    "id": song_id,
+                    "title": title,
+                    "source": source,
+                    "audio_url": audio_url,
+                })
+            return jsonify({"songs": response_songs})
+
+        if len(songs) >= MAX_USER_SONGS:
+            return jsonify({"error": f"You can save up to {MAX_USER_SONGS} sounds."}), 400
+
+        title = request.form.get("title", "").strip()
+        source = request.form.get("source", "")
+        if not title or len(title) > 100:
+            return jsonify({"error": "Enter a title between 1 and 100 characters."}), 400
+
+        song = {"id": uuid.uuid4().hex, "title": title, "source": source}
+        saved_audio_path = None
+        if source == "upload":
+            audio_file = request.files.get("audio_file")
+            if audio_file is None or not audio_file.filename:
+                return jsonify({"error": "Choose an audio file to upload."}), 400
+            extension = Path(audio_file.filename).suffix.lower()
+            if extension not in USER_SONG_AUDIO_EXTENSIONS:
+                return jsonify({
+                    "error": "Use an MP3, WAV, M4A, AAC, OGG, OPUS, or FLAC audio file."
+                }), 400
+
+            saved_audio_path = song_directory / f"{song['id']}{extension}"
+            temporary_audio_path = song_directory / f".{song['id']}.upload"
+            audio_file.save(temporary_audio_path)
+            if temporary_audio_path.stat().st_size == 0:
+                temporary_audio_path.unlink()
+                return jsonify({"error": "The selected audio file is empty."}), 400
+            if temporary_audio_path.stat().st_size > MAX_USER_SONG_SIZE:
+                temporary_audio_path.unlink()
+                return jsonify({"error": "Audio files must be 25 MB or smaller."}), 400
+            os.replace(temporary_audio_path, saved_audio_path)
+            song["filename"] = saved_audio_path.name
+        elif source == "link":
+            audio_url = request.form.get("audio_url", "").strip()
+            parsed_url = urlparse(audio_url)
+            if (
+                parsed_url.scheme != "https"
+                or not parsed_url.netloc
+                or Path(parsed_url.path).suffix.lower() not in USER_SONG_AUDIO_EXTENSIONS
+            ):
+                return jsonify({
+                    "error": "Enter an HTTPS link directly to an MP3, WAV, M4A, AAC, OGG, OPUS, or FLAC file."
+                }), 400
+            song["url"] = audio_url
+        else:
+            return jsonify({"error": "Choose an upload or direct audio link."}), 400
+
+        songs.append(song)
+        try:
+            write_json_atomically(songs_path, songs)
+        except OSError:
+            if saved_audio_path and saved_audio_path.exists():
+                saved_audio_path.unlink()
+            raise
+        song["audio_url"] = (
+            url_for("user_song_audio", song_id=song["id"])
+            if source == "upload"
+            else song["url"]
+        )
+        return jsonify({"song": song}), 201
+    except (OSError, sqlite3.Error, json.JSONDecodeError, ValueError) as error:
+        app.logger.exception("Could not save or load user songs: %s", error)
+        return jsonify({"error": "Could not access your saved sounds."}), 500
+
+
+@app.route("/api/my-songs/<song_id>/audio")
+@login_required
+def user_song_audio(song_id):
+    """Serve an uploaded audio file only to its signed-in owner."""
+    if not re.fullmatch(r"[a-f0-9]{32}", song_id):
+        return jsonify({"error": "Sound not found."}), 404
+    try:
+        songs = load_user_songs(session["user_id"])
+        song = next(
+            (
+                item for item in songs
+                if item.get("id") == song_id and item.get("source") == "upload"
+            ),
+            None,
+        )
+        if song is None:
+            return jsonify({"error": "Sound not found."}), 404
+        filename = song.get("filename")
+        if not isinstance(filename, str) or not re.fullmatch(
+            rf"{song_id}\.(?:aac|flac|m4a|mp3|ogg|opus|wav)",
+            filename,
+        ):
+            raise ValueError("Saved audio filename is not valid.")
+        audio_path = user_song_directory(session["user_id"]) / filename
+        if not audio_path.is_file():
+            return jsonify({"error": "Sound file not found."}), 404
+        mimetype = mimetypes.guess_type(filename)[0] or "application/octet-stream"
+        return send_file(audio_path, mimetype=mimetype, conditional=True)
+    except (OSError, sqlite3.Error, json.JSONDecodeError, ValueError) as error:
+        app.logger.exception("Could not serve user audio: %s", error)
+        return jsonify({"error": "Could not play this saved sound."}), 500
+
+
+@app.route("/api/my-songs/<song_id>", methods=["DELETE"])
+@login_required
+def delete_user_song(song_id):
+    """Remove one saved link or uploaded audio file owned by the current user."""
+    if not re.fullmatch(r"[a-f0-9]{32}", song_id):
+        return jsonify({"error": "Sound not found."}), 404
+    try:
+        songs = load_user_songs(session["user_id"])
+        song = next((item for item in songs if item.get("id") == song_id), None)
+        if song is None:
+            return jsonify({"error": "Sound not found."}), 404
+
+        remaining_songs = [item for item in songs if item.get("id") != song_id]
+        song_directory = user_song_directory(session["user_id"])
+        write_json_atomically(song_directory / "songs.json", remaining_songs)
+        if song.get("source") == "upload":
+            filename = song.get("filename")
+            if isinstance(filename, str) and re.fullmatch(
+                rf"{song_id}\.(?:aac|flac|m4a|mp3|ogg|opus|wav)",
+                filename,
+            ):
+                audio_path = song_directory / filename
+                if audio_path.exists():
+                    audio_path.unlink()
+        return jsonify({"deleted": song_id})
+    except (OSError, sqlite3.Error, json.JSONDecodeError, ValueError) as error:
+        app.logger.exception("Could not delete user sound: %s", error)
+        return jsonify({"error": "Could not delete this saved sound."}), 500
+
+
 @app.route("/schedule")
 @login_required
 def schedule():

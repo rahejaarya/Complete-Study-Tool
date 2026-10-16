@@ -8,6 +8,7 @@
     <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="{{ url_for('static', filename='noise.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='custom_songs.js') }}" defer></script>
 </head>
 <body>
     <!-- App shell for the sound studio, with navigation shared across study pages. -->
@@ -209,6 +210,49 @@
                     <input id="master-volume" type="range" min="0" max="100" value="35">
                     <span id="volume-value">35%</span>
                     <span id="audio-status" class="audio-status" aria-live="polite">Ready when you are.</span>
+                </div>
+            </section>
+
+            <section class="noise-section custom-songs-section" aria-labelledby="my-songs-heading">
+                <div class="noise-section-heading">
+                    <div>
+                        <div class="eyebrow">YOUR LIBRARY</div>
+                        <h2 id="my-songs-heading">My Songs &amp; Sounds</h2>
+                    </div>
+                    <button id="toggle-add-song" class="sound-stop-button" type="button" aria-expanded="false" aria-controls="add-song-panel">
+                        Add a sound
+                    </button>
+                </div>
+                <div id="add-song-panel" class="add-song-panel" hidden>
+                    <form id="add-song-form" class="add-song-form">
+                        <label for="custom-song-title">Name</label>
+                        <input id="custom-song-title" name="title" type="text" maxlength="100" placeholder="Name this sound" required>
+
+                        <label for="custom-song-source">Add by</label>
+                        <select id="custom-song-source" name="source">
+                            <option value="upload">Upload an audio file</option>
+                            <option value="link">Paste a direct audio link</option>
+                        </select>
+
+                        <div id="custom-song-upload-field" class="custom-song-source-field">
+                            <label for="custom-song-file">Audio file (up to 25 MB)</label>
+                            <input id="custom-song-file" name="audio_file" type="file" accept=".mp3,.wav,.m4a,.aac,.ogg,.opus,.flac,audio/*" required>
+                        </div>
+                        <div id="custom-song-link-field" class="custom-song-source-field" hidden>
+                            <label for="custom-song-url">Direct audio link</label>
+                            <input id="custom-song-url" name="audio_url" type="url" placeholder="https://example.com/audio.mp3" disabled>
+                            <p>Use a direct HTTPS link to an audio file, not a streaming page.</p>
+                        </div>
+
+                        <div class="add-song-actions">
+                            <button class="sound-stop-button" type="button" id="cancel-add-song">Cancel</button>
+                            <button class="sound-add-button" type="submit">Save sound</button>
+                        </div>
+                    </form>
+                </div>
+                <p id="my-songs-status" class="my-songs-status" aria-live="polite"></p>
+                <div id="my-songs-list" class="my-songs-list">
+                    <p class="my-songs-empty">Your saved sounds will show up here.</p>
                 </div>
             </section>
 
