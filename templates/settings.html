@@ -26,7 +26,7 @@
         {% endif %}
 
         <div class="settings-grid">
-            <!-- Left Column: Profile, Appearance, Danger Zone -->
+            <!-- Left Column: Profile and Danger Zone -->
             <div class="grid-column">
                 <!-- 1. Profile Card -->
                 <section class="settings-card profile-card">
@@ -40,23 +40,7 @@
                     <a class="logout-btn" href="{{ url_for('logout') }}">Log out ➔</a>
                 </section>
 
-                <!-- Appearance & Themes Section -->
-                <section class="settings-card appearance-wrapper flex-fill">
-                    <details class="appearance-details">
-                        <summary>
-                         <div class="summary-header">
-                             <h2>Appearance & Themes</h2>
-                               <p>Select a light or dark theme palette.</p>
-                           </div>
-                           <span class="chevron-icon">▼</span>
-                      </summary>
-                      <div class="appearance-content-inner scrollable-appearance">
-                          {% include "_appearance_settings.html" %}
-                      </div>
-                    </details>
-                </section>
-
-                <!-- 3. Danger Zone (Aligned with Security & Password) -->
+                <!-- Danger Zone -->
                 <section class="settings-card danger-card">
                     <h2 class="danger-title">Danger Zone</h2>
                     <p class="danger-desc">Deleting your account removes all saved notebooks, schedules, and study history permanently.</p>
@@ -74,7 +58,7 @@
                 </section>
             </div>
 
-            <!-- Right Column: Security & Password -->
+            <!-- Right Column: Security & Appearance -->
             <div class="grid-column">
                 <section class="settings-card security-card">
                     <h2>Security & Password</h2>
@@ -98,6 +82,21 @@
 
                         <button type="submit" class="save-btn">Change Password</button>
                     </form>
+                </section>
+
+                <section class="settings-card appearance-wrapper">
+                    <details class="appearance-details">
+                        <summary>
+                            <div class="summary-header">
+                                <h2>Appearance & Themes</h2>
+                                <p>Select a light or dark theme palette.</p>
+                            </div>
+                            <span class="chevron-icon">▼</span>
+                        </summary>
+                        <div class="appearance-content-inner scrollable-appearance">
+                            {% include "_appearance_settings.html" %}
+                        </div>
+                    </details>
                 </section>
             </div>
         </div>
