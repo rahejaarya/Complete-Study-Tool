@@ -1,1 +1,2 @@
+# Exclude installed JavaScript dependencies rather than tracking generated packages.
 node_modules/

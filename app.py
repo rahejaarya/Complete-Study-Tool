@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import shutil
 import sqlite3
 import tempfile
 import uuid
@@ -8,11 +9,18 @@ from datetime import datetime, timezone
 from functools import wraps
 from pathlib import Path
 from urllib.parse import urlparse
-from flask import Flask, Response, redirect, render_template, request, session, url_for, jsonify  # type: ignore[reportMissingImports]
+
+from flask import (
+    Flask,
+    Response,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from werkzeug.security import check_password_hash, generate_password_hash
-import os
-import shutil
-from flask import Flask, render_template, request, redirect, url_for, session
 
 try:
     from static.ai import (  # type: ignore[reportMissingImports]

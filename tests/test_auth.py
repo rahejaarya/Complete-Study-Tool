@@ -2,7 +2,7 @@ import unittest
 import uuid
 from unittest.mock import patch
 
-from app import app, init_db
+from app import app, init_db #
 
 
 class AuthTests(unittest.TestCase):
