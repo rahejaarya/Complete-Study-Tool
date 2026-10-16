@@ -1021,8 +1021,11 @@ def settings():
             else:
                 try:
                     user_dir = user_save_directory(user_id)
+                    songs_dir = user_song_directory(user_id)
                     if user_dir.exists():
                         shutil.rmtree(user_dir)
+                    if songs_dir.exists():
+                        shutil.rmtree(songs_dir)
                 except (OSError, sqlite3.Error, ValueError) as deletion_error:
                     app.logger.exception(
                         "Could not delete account data for user %s: %s",

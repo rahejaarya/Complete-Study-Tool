@@ -3954,6 +3954,137 @@ body {
     transition: 0.2s ease;
 }
 
+.add-song-panel {
+    margin-bottom: 16px;
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--white);
+}
+
+.add-song-form {
+    display: grid;
+    grid-template-columns: minmax(100px, 0.35fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 12px 16px;
+}
+
+.add-song-form > label,
+.custom-song-source-field label {
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.add-song-form input,
+.add-song-form select {
+    width: 100%;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--control-bg);
+    color: var(--text);
+    font: inherit;
+}
+
+.custom-song-source-field {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(100px, 0.35fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 12px 16px;
+}
+
+.custom-song-source-field p {
+    grid-column: 2;
+    margin-top: -6px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.add-song-actions {
+    display: flex;
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.sound-add-button,
+.my-song-remove {
+    padding: 9px 14px;
+    border: 1px solid var(--purple);
+    border-radius: 9px;
+    background: var(--purple-light);
+    color: var(--purple);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.sound-add-button:disabled,
+.my-song-remove:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}
+
+.my-songs-status {
+    min-height: 1.2em;
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.my-songs-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.my-song-card {
+    min-width: 0;
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--white);
+}
+
+.my-song-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.my-song-heading h3 {
+    overflow-wrap: anywhere;
+    font-size: 15px;
+}
+
+.my-song-card audio {
+    width: 100%;
+    min-width: 0;
+}
+
+.my-song-remove {
+    justify-self: start;
+    border-color: var(--border);
+    background: var(--control-bg);
+    color: var(--muted);
+}
+
+.my-songs-empty {
+    grid-column: 1 / -1;
+    padding: 20px;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    color: var(--muted);
+    text-align: center;
+}
+
 .sound-card:hover,
 .sound-card.is-playing {
     border-color: var(--purple);
@@ -4108,6 +4239,10 @@ body {
     .recommendation-panel { align-items: flex-start; flex-wrap: wrap; }
     .recommendation-panel .text-button { margin-left: 45px; }
     .sound-library { grid-template-columns: 1fr; }
+    .my-songs-list { grid-template-columns: 1fr; }
+    .add-song-form,
+    .custom-song-source-field { grid-template-columns: 1fr; }
+    .custom-song-source-field p { grid-column: 1; margin-top: -4px; }
     .sound-mixer-bar { flex-wrap: wrap; }
     .sound-mixer-bar input { flex: 1; }
     .audio-status { width: 100%; margin-left: 0; }
