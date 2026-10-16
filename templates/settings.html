@@ -42,7 +42,7 @@
 
                 <!-- Appearance & Themes Section -->
                 <section class="settings-card appearance-wrapper flex-fill">
-                    <details class="appearance-details" open>
+                    <details class="appearance-details">
                         <summary>
                          <div class="summary-header">
                              <h2>Appearance & Themes</h2>
@@ -74,30 +74,9 @@
                 </section>
             </div>
 
-            <!-- Right Column: Personal Information, Security & Password -->
+            <!-- Right Column: Security & Password -->
             <div class="grid-column">
-                <!-- 1. Personal Information -->
-                <section class="settings-card">
-                    <h2>Personal Information</h2>
-                    <form method="POST" action="{{ url_for('settings') }}" class="settings-form">
-                        <input type="hidden" name="action" value="update_profile">
-                        
-                        <div class="form-group">
-                            <label for="username">User name</label>
-                            <input type="text" id="username" name="username" value="{{ username }}" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="current_password">Confirm Current Password</label>
-                            <input type="password" id="current_password" name="current_password" placeholder="Enter password to save changes" required>
-                        </div>
-
-                        <button type="submit" class="save-btn">Update Profile</button>
-                    </form>
-                </section>
-
-                <!-- 2. Security & Password -->
-                <section class="settings-card">
+                <section class="settings-card security-card">
                     <h2>Security & Password</h2>
                     <form method="POST" action="{{ url_for('settings') }}" class="settings-form">
                         <input type="hidden" name="action" value="change_password">

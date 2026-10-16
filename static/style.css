@@ -4449,12 +4449,14 @@ body {
     grid-template-columns: 340px 1fr;
     gap: 1.5rem;
     align-items: stretch;
+    min-width: 0;
 }
 
 .grid-column {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    min-width: 0;
 }
 
 /* Expands the Appearance card to fill available height */
@@ -4570,6 +4572,18 @@ body {
     border-color: #52525b;
 }
 
+.security-card {
+    flex: 1;
+}
+
+.security-card .settings-form {
+    flex: 1;
+}
+
+.security-card .save-btn {
+    margin-top: auto;
+}
+
 .logout-btn {
     border: 1px solid rgba(239, 68, 68, 0.4);
     background: rgba(239, 68, 68, 0.1);
@@ -4675,6 +4689,8 @@ body {
     padding: 1rem 1.2rem;
     overflow-y: auto;
     max-height: 480px;
+    scrollbar-width: thin;
+    scrollbar-color: #3f3f46 transparent;
 }
 
 /* Theme Options Grid Adjustment */

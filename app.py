@@ -593,8 +593,7 @@ def login():
         if user and check_password_hash(user["password_hash"], password):
             session["user_id"] = user["id"]
             session["username"] = user["username"]
-            next_url = safe_next_url(request.args.get("next"))
-            return redirect(next_url)
+            return redirect(safe_next_url(request.args.get("next")))
 
         error = "Invalid username or password."
 
@@ -958,7 +957,7 @@ def home():
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
-    """Render account settings and process profile, password, or deletion forms."""
+    """Render account settings and process preferences, password, or deletion forms."""
     user_id = session["user_id"]
     db = get_db()
     user = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
@@ -969,49 +968,20 @@ def settings():
     if request.method == "POST":
         action = request.form.get("action")
 
-        # ACTION 1: UPDATE USERNAME
-        if action == "update_profile":
-            new_username = request.form.get("username", "").strip()
-            current_password = request.form.get("current_password", "")
-
-            if not check_password_hash(user["password"], current_password):
-                error = "Incorrect current password."
-            elif not new_username:
-                error = "Username cannot be empty."
-            else:
-                if new_username != user["username"]:
-                    existing = db.execute("SELECT id FROM users WHERE username = ? AND id != ?", (new_username, user_id)).fetchone()
-                    if existing:
-                        error = "Username is already taken."
-
-                if not error:
-                    # Rename save folder if user directory exists
-                    old_dir = user_save_directory(user["username"])
-                    new_dir = user_save_directory(new_username)
-                    if os.path.exists(old_dir) and old_dir != new_dir:
-                        os.rename(old_dir, new_dir)
-
-                    db.execute("UPDATE users SET username = ? WHERE id = ?", (new_username, user_id))
-                    db.commit()
-                    session["username"] = new_username
-                    success = "Profile updated successfully!"
-                    user = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
-
-        # ACTION 2: CHANGE PASSWORD
-        elif action == "change_password":
+        if action == "change_password":
             old_password = request.form.get("old_password", "")
             new_password = request.form.get("new_password", "")
             confirm_password = request.form.get("confirm_password", "")
 
-            if not check_password_hash(user["password"], old_password):
+            if not check_password_hash(user["password_hash"], old_password):
                 error = "Incorrect current password."
             elif new_password != confirm_password:
                 error = "New passwords do not match."
-            elif len(new_password) < 4:
-                error = "Password must be at least 4 characters long."
+            elif not 8 <= len(new_password) <= 128:
+                error = "Password must be between 8 and 128 characters."
             else:
                 new_hash = generate_password_hash(new_password)
-                db.execute("UPDATE users SET password = ? WHERE id = ?", (new_hash, user_id))
+                db.execute("UPDATE users SET password_hash = ? WHERE id = ?", (new_hash, user_id))
                 db.commit()
                 success = "Password changed successfully!"
                 user = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
@@ -1020,21 +990,25 @@ def settings():
         elif action == "delete_account":
             delete_password = request.form.get("delete_password", "")
 
-            if not check_password_hash(user["password"], delete_password):
+            if not check_password_hash(user["password_hash"], delete_password):
                 error = "Incorrect password. Account deletion canceled."
             else:
-                # 1. Clean up user files on disk
-                user_dir = user_save_directory(user["username"])
-                if os.path.exists(user_dir):
-                    shutil.rmtree(user_dir, ignore_errors=True)
-
-                # 2. Remove user record from SQLite database
-                db.execute("DELETE FROM users WHERE id = ?", (user_id,))
-                db.commit()
-
-                # 3. Clear session and return to login
-                session.clear()
-                return redirect(url_for("login"))
+                try:
+                    user_dir = user_save_directory(user_id)
+                    if user_dir.exists():
+                        shutil.rmtree(user_dir)
+                except (OSError, sqlite3.Error, ValueError) as deletion_error:
+                    app.logger.exception(
+                        "Could not delete account data for user %s: %s",
+                        user_id,
+                        deletion_error,
+                    )
+                    error = "Your account data could not be deleted. Please try again."
+                else:
+                    db.execute("DELETE FROM users WHERE id = ?", (user_id,))
+                    db.commit()
+                    session.clear()
+                    return redirect(url_for("login"))
 
     return render_template(
         "settings.html",

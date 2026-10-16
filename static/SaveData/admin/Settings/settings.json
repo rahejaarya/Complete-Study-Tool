@@ -1,5 +1,9 @@
 {
   "appearance": {
     "theme": "dark-neon"
+  },
+  "preferences": {
+    "default_view": "dashboard",
+    "reminders": false
   }
 }
