@@ -22,6 +22,7 @@ from flask import (
     session,
     url_for,
 )
+from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.security import check_password_hash, generate_password_hash
 
 try:
@@ -1092,6 +1093,7 @@ def noise_songs():
 def user_songs():
     """List or save the signed-in user's uploaded songs and direct audio links."""
     user_id = session["user_id"]
+    request.max_content_length = MAX_USER_SONG_SIZE + 1024 * 1024
     try:
         song_directory = user_song_directory(user_id)
         songs_path = song_directory / "songs.json"
@@ -1181,6 +1183,8 @@ def user_songs():
             else song["url"]
         )
         return jsonify({"song": song}), 201
+    except RequestEntityTooLarge:
+        return jsonify({"error": "Audio files must be 25 MB or smaller."}), 413
     except (OSError, sqlite3.Error, json.JSONDecodeError, ValueError) as error:
         app.logger.exception("Could not save or load user songs: %s", error)
         return jsonify({"error": "Could not access your saved sounds."}), 500

@@ -55,6 +55,7 @@ class CustomSongsTests(unittest.TestCase):
         audio_response = self.client.get(song["audio_url"])
         self.assertEqual(audio_response.status_code, 200)
         self.assertEqual(audio_response.data, b"audio bytes")
+        audio_response.close()
 
         private_audio = (
             Path(app.config["USER_SONGS_DIR"]) / "admin" / f"{song['id']}.mp3"
@@ -105,6 +106,28 @@ class CustomSongsTests(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
+
+    def test_account_deletion_removes_private_audio_files(self):
+        upload_response = self.client.post(
+            "/api/my-songs",
+            data={
+                "title": "Private track",
+                "source": "upload",
+                "audio_file": (io.BytesIO(b"audio bytes"), "private.mp3"),
+            },
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(upload_response.status_code, 201)
+        song_directory = Path(app.config["USER_SONGS_DIR"]) / "admin"
+        self.assertTrue(song_directory.exists())
+
+        delete_response = self.client.post(
+            "/settings",
+            data={"action": "delete_account", "delete_password": "admin123"},
+        )
+
+        self.assertEqual(delete_response.status_code, 302)
+        self.assertFalse(song_directory.exists())
 
 
 if __name__ == "__main__":
