@@ -1,4 +1,5 @@
 import json
+import mimetypes
 import os
 import re
 import shutil
@@ -17,6 +18,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    send_file,
     session,
     url_for,
 )
@@ -48,7 +50,11 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "studytool-dev-secret-key")
 app.config["DATABASE"] = os.path.join(app.root_path, "studytool.db")
 app.config["SAVE_DATA_DIR"] = os.path.join(app.root_path, "static", "SaveData")
+app.config["USER_SONGS_DIR"] = os.path.join(app.instance_path, "user_songs")
 
+USER_SONG_AUDIO_EXTENSIONS = {".aac", ".flac", ".m4a", ".mp3", ".ogg", ".opus", ".wav"}
+MAX_USER_SONG_SIZE = 25 * 1024 * 1024
+MAX_USER_SONGS = 50
 VALID_THEMES = {
     "light-lavender",
     "light-blue",
@@ -293,6 +299,26 @@ def save_user_schedule(user_id, schedule):
     """Persist the validated schedule as the user's schedule JSON file."""
     schedule_path = user_save_directory(user_id) / "Schedule" / "schedule.json"
     write_json_atomically(schedule_path, schedule)
+
+
+def user_song_directory(user_id):
+    """Return a private audio directory associated with this account."""
+    username = user_save_directory(user_id).name
+    song_directory = Path(app.config["USER_SONGS_DIR"]) / username
+    song_directory.mkdir(parents=True, exist_ok=True)
+    return song_directory
+
+
+def load_user_songs(user_id):
+    """Load the signed-in user's saved audio metadata."""
+    songs_path = user_song_directory(user_id) / "songs.json"
+    if not songs_path.exists():
+        return []
+    with songs_path.open("r", encoding="utf-8") as songs_file:
+        songs = json.load(songs_file)
+    if not isinstance(songs, list) or any(not isinstance(song, dict) for song in songs):
+        raise ValueError("Saved song data must be a list of song objects.")
+    return songs
 
 
 def login_required(view):
