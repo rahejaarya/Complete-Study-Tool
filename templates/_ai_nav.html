@@ -1,7 +1,5 @@
 <div class="ai-nav-section">
     <!-- Shared sidebar links for notes and the AI assistant's saved conversations. -->
-        <a href="{{ url_for('notes') }}" class="nav-link{% if request.endpoint == 'notes' %} active{% endif %}"{% if request.endpoint == 'notes' %} aria-current="page"{% endif %}>
-            <!-- Open the standalone notebook workspace. -->
     <a href="{{ url_for('notes') }}" class="nav-link{% if request.endpoint == 'notes' %} active{% endif %}"{% if request.endpoint == 'notes' %} aria-current="page"{% endif %}>
         <span class="nav-icon">✎</span>
         Notes
