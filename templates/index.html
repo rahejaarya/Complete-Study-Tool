@@ -384,32 +384,30 @@
 
     <!-- Mobile navigation keeps the same major app destinations available on smaller screens. -->
     <nav class="mobile-navigation">
-
-        <a href="{{ url_for('home') }}" class="mobile-link active">
+        <a href="/" class="mobile-link active">
             <span>▦</span>
-            <small>Home</small>
+            <small>Dashboard</small>
         </a>
-
-        <a href="{{ url_for('resources') }}" class="mobile-link">
+        <a href="/resources" class="mobile-link">
             <span>⌕</span>
-            <small>Resources</small>
+            <small>Study Resources</small>
         </a>
-
-        <a href="{{ url_for('noise_songs') }}" class="mobile-link">
+        <a href="/noise-songs" class="mobile-link">
             <span>♫</span>
-            <small>Sounds</small>
+            <small>Noise &amp; Songs</small>
         </a>
-
-        <a href="{{ url_for('time_management') }}" class="mobile-link">
-            <span>⏱</span>
+        <a href="/time-management" class="mobile-link">
+            <span>✓</span>
             <small>Time Management</small>
         </a>
-
-        <a href="{{ url_for('support') }}" class="mobile-link">
+        <a href="/support" class="mobile-link">
             <span>♡</span>
             <small>Support</small>
         </a>
-
+        <a href="/ai" class="mobile-link">
+            <span>✦</span>
+            <small>Cypher</small>
+        </a>
     </nav>
 
     <!-- Load the nearest unfinished future event and keep its countdown current. -->

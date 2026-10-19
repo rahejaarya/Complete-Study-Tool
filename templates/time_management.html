@@ -704,21 +704,30 @@
     <!-- =============================================================
          MOBILE NAVIGATION
          ============================================================= -->
-    <nav class="mobile-navigation" aria-label="Mobile navigation">
-        <a href="{{ url_for('home') }}" class="mobile-link">
-            <span>▦</span><small>Home</small>
+    <nav class="mobile-navigation">
+        <a href="/" class="mobile-link">
+            <span>▦</span>
+            <small>Dashboard</small>
         </a>
-        <a href="{{ url_for('resources') }}" class="mobile-link">
-            <span>📚</span><small>Resources</small>
+        <a href="/resources" class="mobile-link">
+            <span>⌕</span>
+            <small>Study Resources</small>
         </a>
-        <a href="{{ url_for('noise_songs') }}" class="mobile-link">
-            <span>♫</span><small>Sounds</small>
+        <a href="/noise-songs" class="mobile-link">
+            <span>♫</span>
+            <small>Noise &amp; Songs</small>
         </a>
-        <a href="{{ url_for('time_management') }}" class="mobile-link active" aria-current="page">
-            <span>✓</span><small>Schedule</small>
+        <a href="/time-management" class="mobile-link active">
+            <span>✓</span>
+            <small>Time Management</small>
         </a>
-        <a href="{{ url_for('support') }}" class="mobile-link">
-            <span>♡</span><small>Support</small>
+        <a href="/support" class="mobile-link">
+            <span>♡</span>
+            <small>Support</small>
+        </a>
+        <a href="/ai" class="mobile-link">
+            <span>✦</span>
+            <small>Cypher</small>
         </a>
     </nav>
 
