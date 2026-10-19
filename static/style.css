@@ -1287,7 +1287,7 @@ body {
 
 /* Feature-card styles create the clickable study and support tiles used throughout the dashboard and support pages. */
 
-.feature-grid {
+.feature-griddy {
     display: grid;
 
     grid-template-columns: repeat(2, 1fr);
