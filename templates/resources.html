@@ -129,32 +129,45 @@
                         <span class="translator-toggle-icon" aria-hidden="true"></span>
                     </button>
                     <div class="translator-panel" id="translator-panel" hidden>
-                        <div class="resource-tiles">
-                            <div class="resource-tile">
-                                <label class="resource-language-label" for="source-language">Translate from</label>
-                                <select class="resource-language-select" id="source-language" name="source-language">
-                                    <option value="en">English</option>
-                                    <option value="es">Spanish</option>
-                                    <option value="fr">French</option>
-                                    <option value="de">German</option>
-                                    <option value="it">Italian</option>
-                                </select>
-                                <label for="resource-tile-input">Text to translate</label>
-                                <textarea id="resource-tile-input" placeholder="Type here..."></textarea>
-                            </div>
-                            <div class="resource-tile">
-                                <label class="resource-language-label" for="target-language">Translate to</label>
-                                <select class="resource-language-select" id="target-language" name="target-language">
-                                    <option value="en">English</option>
-                                    <option value="es">Spanish</option>
-                                    <option value="fr">French</option>
-                                    <option value="de">German</option>
-                                    <option value="it">Italian</option>
-                                </select>
-                                <label for="resource-tile-readonly">Translation</label>
-                                <textarea id="resource-tile-readonly" placeholder="Read-only" readonly></textarea>
-                            </div>
-                        </div>
+    <div class="resource-tiles">
+        <!-- Input Block -->
+        <div class="resource-tile">
+            <label class="resource-language-label" for="source-language">Translate from</label>
+            <select class="resource-language-select" id="source-language" name="source-language">
+                <option value="auto">Auto-Detect</option>
+                <option value="en" selected>English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="it">Italian</option>
+                <option value="hi">Hindi</option>
+            </select>
+            <label for="resource-tile-input">Text to translate</label>
+            <textarea id="resource-tile-input" placeholder="Type here to translate automatically..."></textarea>
+        </div>
+
+        <!-- Output Block -->
+        <div class="resource-tile">
+            <label class="resource-language-label" for="target-language">Translate to</label>
+            <select class="resource-language-select" id="target-language" name="target-language">
+                <option value="es" selected>Spanish</option>
+                <option value="en">English</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="it">Italian</option>
+                <option value="hi">Hindi</option>
+            </select>
+            <label for="resource-tile-readonly">Translation</label>
+            <textarea id="resource-tile-readonly" placeholder="Translation will appear here..." readonly></textarea>
+        </div>
+    </div>
+</div>
+
+<!-- Translation Logic Script with Live Auto-Translate & Debounce -->
+
+   
+
+
                     </div>
                 </div>
 
@@ -208,7 +221,67 @@
             }
             return DEFAULT_SEARCHES;
         }
+         const textInput = document.getElementById('resource-tile-input');
+    const sourceLangSelect = document.getElementById('source-language');
+    const targetLangSelect = document.getElementById('target-language');
+    const outputField = document.getElementById('resource-tile-readonly');
+    
+    let debounceTimer;
 
+    // Core function to trigger translation API
+    async function performTranslation() {
+        const textValue = textInput.value;
+        const sourceLang = sourceLangSelect.value;
+        const targetLang = targetLangSelect.value;
+
+        if (!textValue.trim()) {
+            outputField.value = "";
+            return;
+        }
+
+        outputField.value = "Translating...";
+
+        try {
+            const response = await fetch("https://goos.org", {
+                method: "POST",
+                body: JSON.stringify({
+                    q: textValue,
+                    source: sourceLang,
+                    target: targetLang,
+                    format: "text"
+                }),
+                headers: { "Content-Type": "application/json" }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                outputField.value = data.translatedText;
+            } else {
+                outputField.value = "Error: Service busy. Retrying shortly...";
+            }
+        } catch (error) {
+            outputField.value = "Error: Connection lost or free node down.";
+            console.error("Translation Engine Exception:", error);
+        }
+    }
+
+    // Event listeners to handle typing inside the textarea
+    textInput.addEventListener('input', () => {
+        // Clear previous timer on keystroke
+        clearTimeout(debounceTimer);
+        
+        // Start a new 500ms countdown before making the API request
+        debounceTimer = setTimeout(() => {
+            performTranslation();
+        }, 500);
+    });
+
+    // Instantly re-translate if the user manually alters the language options
+    sourceLangSelect.addEventListener('change', performTranslation);
+    targetLangSelect.addEventListener('change', performTranslation);
+    //End of translation module
+
+    
         function saveRecentSearch(query) {
             if (!query.trim()) return;
             // Move this query to the front and cap the saved history at five entries.

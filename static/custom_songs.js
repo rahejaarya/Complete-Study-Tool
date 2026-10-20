@@ -8,7 +8,7 @@
     const uploadInput = document.getElementById("custom-song-file");
     const linkField = document.getElementById("custom-song-link-field");
     const linkInput = document.getElementById("custom-song-url");
-    const songsList = document.getElementById("my-songs-list");
+    const soundLibrary = document.getElementById("sound-library");
     const status = document.getElementById("my-songs-status");
     const saveButton = form.querySelector('[type="submit"]');
 
@@ -30,33 +30,37 @@
         linkInput.required = !uploading;
     }
 
-    function showEmptyState() {
-        const emptyMessage = document.createElement("p");
-        emptyMessage.className = "my-songs-empty";
-        emptyMessage.textContent = "Your saved sounds will show up here.";
-        songsList.replaceChildren(emptyMessage);
-    }
-
     function renderSong(song) {
         const card = document.createElement("article");
-        card.className = "my-song-card";
+        card.className = "sound-card my-song-card";
 
-        const songHeading = document.createElement("div");
-        songHeading.className = "my-song-heading";
+        const songTop = document.createElement("div");
+        songTop.className = "sound-card-top";
         const title = document.createElement("h3");
         title.textContent = song.title;
         const source = document.createElement("span");
         source.className = "sound-type";
-        source.textContent = song.source === "upload" ? "UPLOADED" : "LINK";
-        songHeading.append(title, source);
+        source.textContent = `${song.source === "upload" ? "UPLOADED" : "LINK"} · ${song.media_type.toUpperCase()}`;
+        songTop.append(title, source);
 
-        const audio = document.createElement("audio");
-        audio.controls = true;
-        audio.preload = "none";
-        audio.src = song.audio_url;
-        audio.addEventListener("error", () => {
-            status.textContent = `Could not play "${song.title}". Check that its audio file or link is still available.`;
-        });
+        let player;
+        if (song.media_type === "youtube") {
+            player = document.createElement("iframe");
+            player.src = song.embed_url;
+            player.title = `Play ${song.title} on YouTube`;
+            player.loading = "lazy";
+            player.referrerPolicy = "strict-origin-when-cross-origin";
+            player.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+            player.allowFullscreen = true;
+        } else {
+            player = document.createElement(song.media_type === "video" ? "video" : "audio");
+            player.controls = true;
+            player.preload = "none";
+            player.src = song.audio_url;
+            player.addEventListener("error", () => {
+                status.textContent = `Could not play "${song.title}". Check that its media file or link is still available.`;
+            });
+        }
 
         const removeButton = document.createElement("button");
         removeButton.className = "my-song-remove";
@@ -67,7 +71,7 @@
             void removeSong(song.id, removeButton);
         });
 
-        card.append(songHeading, audio, removeButton);
+        card.append(songTop, player, removeButton);
         return card;
     }
 
@@ -79,12 +83,8 @@
             if (!response.ok) {
                 throw new Error(data.error || "Could not load your saved sounds.");
             }
-            songsList.replaceChildren();
-            if (data.songs.length === 0) {
-                showEmptyState();
-            } else {
-                data.songs.forEach((song) => songsList.append(renderSong(song)));
-            }
+            soundLibrary.querySelectorAll(".my-song-card").forEach((card) => card.remove());
+            data.songs.forEach((song) => soundLibrary.insertBefore(renderSong(song), toggleButton));
             status.textContent = "";
         } catch (error) {
             status.textContent = error.message || "Could not load your saved sounds.";

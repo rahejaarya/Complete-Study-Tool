@@ -34,10 +34,10 @@ class CustomSongsTests(unittest.TestCase):
         response = self.client.get("/noise-songs")
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"My Songs &amp; Sounds", response.data)
-        self.assertIn(b"Add a sound", response.data)
-        self.assertIn(b"Upload an audio file", response.data)
-        self.assertIn(b"Paste a direct audio link", response.data)
+        self.assertIn(b'id="sound-library"', response.data)
+        self.assertIn(b"Add song or music", response.data)
+        self.assertIn(b"Upload audio or video", response.data)
+        self.assertIn(b"Paste a media or YouTube link", response.data)
 
     def test_uploaded_audio_can_be_listed_played_and_removed(self):
         response = self.client.post(
@@ -52,6 +52,7 @@ class CustomSongsTests(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         song = response.get_json()["song"]
         self.assertEqual(song["title"], "My focus track")
+        self.assertEqual(song["media_type"], "audio")
         audio_response = self.client.get(song["audio_url"])
         self.assertEqual(audio_response.status_code, 200)
         self.assertEqual(audio_response.data, b"audio bytes")
@@ -93,6 +94,78 @@ class CustomSongsTests(unittest.TestCase):
             self.client.get("/api/my-songs").get_json()["songs"][0]["audio_url"],
             "https://example.com/audio.mp3?token=abc",
         )
+
+    def test_uploaded_video_can_be_listed_and_served_for_playback(self):
+        response = self.client.post(
+            "/api/my-songs",
+            data={
+                "title": "Lecture clip",
+                "source": "upload",
+                "audio_file": (io.BytesIO(b"video bytes"), "lecture.mp4"),
+            },
+            content_type="multipart/form-data",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        song = response.get_json()["song"]
+        self.assertEqual(song["media_type"], "video")
+        media_response = self.client.get(song["audio_url"])
+        self.assertEqual(media_response.data, b"video bytes")
+        media_response.close()
+        listed_song = self.client.get("/api/my-songs").get_json()["songs"][0]
+        self.assertEqual(listed_song["media_type"], "video")
+
+    def test_direct_video_link_is_saved_for_video_playback(self):
+        response = self.client.post(
+            "/api/my-songs",
+            data={
+                "title": "Video lesson",
+                "source": "link",
+                "audio_url": "https://example.com/lesson.webm",
+            },
+        )
+
+        self.assertEqual(response.status_code, 201)
+        song = self.client.get("/api/my-songs").get_json()["songs"][0]
+        self.assertEqual(song["media_type"], "video")
+        self.assertEqual(song["audio_url"], "https://example.com/lesson.webm")
+
+    def test_youtube_watch_link_uses_privacy_enhanced_embed(self):
+        youtube_url = (
+            "https://www.youtube.com/watch?v=ZUHpUXlsvbI"
+            "&pp=ygUTd2UgYXJlIGNoYXJsaWUga2lyaw%3D%3D"
+        )
+        response = self.client.post(
+            "/api/my-songs",
+            data={
+                "title": "Charlie Kirk video",
+                "source": "link",
+                "audio_url": youtube_url,
+            },
+        )
+
+        self.assertEqual(response.status_code, 201)
+        song = response.get_json()["song"]
+        self.assertEqual(song["media_type"], "youtube")
+        self.assertEqual(
+            song["embed_url"],
+            "https://www.youtube-nocookie.com/embed/ZUHpUXlsvbI?rel=0",
+        )
+        listed_song = self.client.get("/api/my-songs").get_json()["songs"][0]
+        self.assertEqual(listed_song["media_type"], "youtube")
+        self.assertEqual(listed_song["embed_url"], song["embed_url"])
+
+    def test_youtube_like_untrusted_host_is_rejected(self):
+        response = self.client.post(
+            "/api/my-songs",
+            data={
+                "title": "Untrusted video",
+                "source": "link",
+                "audio_url": "https://youtube.com.evil.example/watch?v=ZUHpUXlsvbI",
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
 
     def test_rejects_unsupported_upload_type(self):
         response = self.client.post(

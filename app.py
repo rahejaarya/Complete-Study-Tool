@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime, timezone
 from functools import wraps
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from flask import (
     Flask,
@@ -53,9 +53,52 @@ app.config["DATABASE"] = os.path.join(app.root_path, "studytool.db")
 app.config["SAVE_DATA_DIR"] = os.path.join(app.root_path, "static", "SaveData")
 app.config["USER_SONGS_DIR"] = os.path.join(app.instance_path, "user_songs")
 
-USER_SONG_AUDIO_EXTENSIONS = {".aac", ".flac", ".m4a", ".mp3", ".ogg", ".opus", ".wav"}
+USER_SONG_AUDIO_EXTENSIONS = {
+    ".aac", ".flac", ".m4a", ".mp3", ".ogg", ".opus", ".wav"
+}
+USER_SONG_VIDEO_EXTENSIONS = {".mp4", ".mov", ".ogv", ".webm"}
+USER_SONG_MEDIA_EXTENSIONS = USER_SONG_AUDIO_EXTENSIONS | USER_SONG_VIDEO_EXTENSIONS
 MAX_USER_SONG_SIZE = 25 * 1024 * 1024
 MAX_USER_SONGS = 50
+
+
+def youtube_video_id(media_url):
+    """Extract a video ID from supported HTTPS YouTube URLs."""
+    try:
+        parsed_url = urlparse(media_url)
+        if (
+            parsed_url.scheme != "https"
+            or parsed_url.username
+            or parsed_url.password
+            or parsed_url.port not in {None, 443}
+        ):
+            return None
+    except ValueError:
+        return None
+
+    hostname = (parsed_url.hostname or "").lower()
+    if hostname in {"youtube.com", "www.youtube.com", "m.youtube.com"}:
+        if parsed_url.path == "/watch":
+            video_id = parse_qs(parsed_url.query).get("v", [""])[0]
+        else:
+            path_parts = parsed_url.path.strip("/").split("/")
+            video_id = (
+                path_parts[1]
+                if len(path_parts) == 2 and path_parts[0] in {"embed", "live", "shorts"}
+                else ""
+            )
+    elif hostname in {"youtu.be", "www.youtu.be"}:
+        video_id = parsed_url.path.strip("/").split("/")[0]
+    else:
+        return None
+    return video_id if re.fullmatch(r"[A-Za-z0-9_-]{11}", video_id) else None
+
+
+def youtube_embed_url(video_id):
+    """Build a privacy-enhanced YouTube embed URL from a validated ID."""
+    return f"https://www.youtube-nocookie.com/embed/{video_id}?rel=0"
+
+
 VALID_THEMES = {
     "light-lavender",
     "light-blue",
@@ -1074,6 +1117,14 @@ def resources():
     )
 
 
+@app.route("/test-study-resources")
+@login_required
+def test_study_resources():
+    """Render the test study resources page."""
+    query = request.args.get("query", "").strip()
+    return render_template("testStudyResources.html", query=query)
+
+
 @app.route("/focus")
 @login_required
 def focus():
@@ -1091,7 +1142,7 @@ def noise_songs():
 @app.route("/api/my-songs", methods=["GET", "POST"])
 @login_required
 def user_songs():
-    """List or save the signed-in user's uploaded songs and direct audio links."""
+    """List or save the signed-in user's uploaded songs and direct media links."""
     user_id = session["user_id"]
     request.max_content_length = MAX_USER_SONG_SIZE + 1024 * 1024
     try:
@@ -1109,19 +1160,44 @@ def user_songs():
                     raise ValueError("Saved song identifier is not valid.")
                 if not isinstance(title, str) or source not in {"upload", "link"}:
                     raise ValueError("Saved song metadata is not valid.")
-                audio_url = (
-                    url_for("user_song_audio", song_id=song_id)
-                    if source == "upload"
-                    else song.get("url")
-                )
-                if not isinstance(audio_url, str):
-                    raise ValueError("Saved song audio location is not valid.")
-                response_songs.append({
+                if source == "upload":
+                    filename = song.get("filename")
+                    if not isinstance(filename, str):
+                        raise ValueError("Saved song media filename is not valid.")
+                    extension = Path(filename).suffix.lower()
+                    if filename != f"{song_id}{extension}":
+                        raise ValueError("Saved song media filename is not valid.")
+                    audio_url = url_for("user_song_audio", song_id=song_id)
+                    media_type = (
+                        "video" if extension in USER_SONG_VIDEO_EXTENSIONS else "audio"
+                    )
+                    embed_url = None
+                else:
+                    audio_url = song.get("url")
+                    if not isinstance(audio_url, str):
+                        raise ValueError("Saved song media location is not valid.")
+                    video_id = youtube_video_id(audio_url)
+                    if video_id:
+                        media_type = "youtube"
+                        embed_url = youtube_embed_url(video_id)
+                    else:
+                        extension = Path(urlparse(audio_url).path).suffix.lower()
+                        if extension not in USER_SONG_MEDIA_EXTENSIONS:
+                            raise ValueError("Saved song media type is not valid.")
+                        media_type = (
+                            "video" if extension in USER_SONG_VIDEO_EXTENSIONS else "audio"
+                        )
+                        embed_url = None
+                response_song = {
                     "id": song_id,
                     "title": title,
                     "source": source,
                     "audio_url": audio_url,
-                })
+                    "media_type": media_type,
+                }
+                if embed_url:
+                    response_song["embed_url"] = embed_url
+                response_songs.append(response_song)
             return jsonify({"songs": response_songs})
 
         if len(songs) >= MAX_USER_SONGS:
@@ -1133,58 +1209,78 @@ def user_songs():
             return jsonify({"error": "Enter a title between 1 and 100 characters."}), 400
 
         song = {"id": uuid.uuid4().hex, "title": title, "source": source}
-        saved_audio_path = None
+        saved_media_path = None
         if source == "upload":
             audio_file = request.files.get("audio_file")
             if audio_file is None or not audio_file.filename:
-                return jsonify({"error": "Choose an audio file to upload."}), 400
+                return jsonify({"error": "Choose an audio or video file to upload."}), 400
             extension = Path(audio_file.filename).suffix.lower()
-            if extension not in USER_SONG_AUDIO_EXTENSIONS:
+            if extension not in USER_SONG_MEDIA_EXTENSIONS:
                 return jsonify({
-                    "error": "Use an MP3, WAV, M4A, AAC, OGG, OPUS, or FLAC audio file."
+                    "error": "Use a supported audio file or an MP4, MOV, OGV, or WebM video file."
                 }), 400
 
-            saved_audio_path = song_directory / f"{song['id']}{extension}"
-            temporary_audio_path = song_directory / f".{song['id']}.upload"
-            audio_file.save(temporary_audio_path)
-            if temporary_audio_path.stat().st_size == 0:
-                temporary_audio_path.unlink()
-                return jsonify({"error": "The selected audio file is empty."}), 400
-            if temporary_audio_path.stat().st_size > MAX_USER_SONG_SIZE:
-                temporary_audio_path.unlink()
-                return jsonify({"error": "Audio files must be 25 MB or smaller."}), 400
-            os.replace(temporary_audio_path, saved_audio_path)
-            song["filename"] = saved_audio_path.name
+            saved_media_path = song_directory / f"{song['id']}{extension}"
+            temporary_media_path = song_directory / f".{song['id']}.upload"
+            audio_file.save(temporary_media_path)
+            if temporary_media_path.stat().st_size == 0:
+                temporary_media_path.unlink()
+                return jsonify({"error": "The selected media file is empty."}), 400
+            if temporary_media_path.stat().st_size > MAX_USER_SONG_SIZE:
+                temporary_media_path.unlink()
+                return jsonify({"error": "Media files must be 25 MB or smaller."}), 400
+            os.replace(temporary_media_path, saved_media_path)
+            song["filename"] = saved_media_path.name
         elif source == "link":
             audio_url = request.form.get("audio_url", "").strip()
-            parsed_url = urlparse(audio_url)
-            if (
-                parsed_url.scheme != "https"
-                or not parsed_url.netloc
-                or Path(parsed_url.path).suffix.lower() not in USER_SONG_AUDIO_EXTENSIONS
-            ):
-                return jsonify({
-                    "error": "Enter an HTTPS link directly to an MP3, WAV, M4A, AAC, OGG, OPUS, or FLAC file."
-                }), 400
+            youtube_id = youtube_video_id(audio_url)
+            if not youtube_id:
+                try:
+                    parsed_url = urlparse(audio_url)
+                except ValueError:
+                    return jsonify({
+                        "error": "Enter a YouTube link or an HTTPS link directly to an audio or video file."
+                    }), 400
+                if (
+                    parsed_url.scheme != "https"
+                    or not parsed_url.netloc
+                    or Path(parsed_url.path).suffix.lower() not in USER_SONG_MEDIA_EXTENSIONS
+                ):
+                    return jsonify({
+                        "error": "Enter a YouTube link or an HTTPS link directly to an audio or video file."
+                    }), 400
             song["url"] = audio_url
         else:
-            return jsonify({"error": "Choose an upload or direct audio link."}), 400
+            return jsonify({"error": "Choose an upload or direct media link."}), 400
 
         songs.append(song)
         try:
             write_json_atomically(songs_path, songs)
         except OSError:
-            if saved_audio_path and saved_audio_path.exists():
-                saved_audio_path.unlink()
+            if saved_media_path and saved_media_path.exists():
+                saved_media_path.unlink()
             raise
         song["audio_url"] = (
             url_for("user_song_audio", song_id=song["id"])
             if source == "upload"
             else song["url"]
         )
+        if source == "upload":
+            media_extension = Path(song["filename"]).suffix.lower()
+            song["media_type"] = (
+                "video" if media_extension in USER_SONG_VIDEO_EXTENSIONS else "audio"
+            )
+        elif youtube_id:
+            song["media_type"] = "youtube"
+            song["embed_url"] = youtube_embed_url(youtube_id)
+        else:
+            media_extension = Path(urlparse(song["url"]).path).suffix.lower()
+            song["media_type"] = (
+                "video" if media_extension in USER_SONG_VIDEO_EXTENSIONS else "audio"
+            )
         return jsonify({"song": song}), 201
     except RequestEntityTooLarge:
-        return jsonify({"error": "Audio files must be 25 MB or smaller."}), 413
+        return jsonify({"error": "Media files must be 25 MB or smaller."}), 413
     except (OSError, sqlite3.Error, json.JSONDecodeError, ValueError) as error:
         app.logger.exception("Could not save or load user songs: %s", error)
         return jsonify({"error": "Could not access your saved sounds."}), 500
@@ -1193,7 +1289,7 @@ def user_songs():
 @app.route("/api/my-songs/<song_id>/audio")
 @login_required
 def user_song_audio(song_id):
-    """Serve an uploaded audio file only to its signed-in owner."""
+    """Serve an uploaded audio or video file only to its signed-in owner."""
     if not re.fullmatch(r"[a-f0-9]{32}", song_id):
         return jsonify({"error": "Sound not found."}), 404
     try:
@@ -1208,16 +1304,16 @@ def user_song_audio(song_id):
         if song is None:
             return jsonify({"error": "Sound not found."}), 404
         filename = song.get("filename")
-        if not isinstance(filename, str) or not re.fullmatch(
-            rf"{song_id}\.(?:aac|flac|m4a|mp3|ogg|opus|wav)",
-            filename,
-        ):
+        if not isinstance(filename, str):
             raise ValueError("Saved audio filename is not valid.")
-        audio_path = user_song_directory(session["user_id"]) / filename
-        if not audio_path.is_file():
+        extension = Path(filename).suffix.lower()
+        if filename != f"{song_id}{extension}" or extension not in USER_SONG_MEDIA_EXTENSIONS:
+            raise ValueError("Saved audio filename is not valid.")
+        media_path = user_song_directory(session["user_id"]) / filename
+        if not media_path.is_file():
             return jsonify({"error": "Sound file not found."}), 404
         mimetype = mimetypes.guess_type(filename)[0] or "application/octet-stream"
-        return send_file(audio_path, mimetype=mimetype, conditional=True)
+        return send_file(media_path, mimetype=mimetype, conditional=True)
     except (OSError, sqlite3.Error, json.JSONDecodeError, ValueError) as error:
         app.logger.exception("Could not serve user audio: %s", error)
         return jsonify({"error": "Could not play this saved sound."}), 500
@@ -1226,7 +1322,7 @@ def user_song_audio(song_id):
 @app.route("/api/my-songs/<song_id>", methods=["DELETE"])
 @login_required
 def delete_user_song(song_id):
-    """Remove one saved link or uploaded audio file owned by the current user."""
+    """Remove one saved link or uploaded media file owned by the current user."""
     if not re.fullmatch(r"[a-f0-9]{32}", song_id):
         return jsonify({"error": "Sound not found."}), 404
     try:
@@ -1240,10 +1336,11 @@ def delete_user_song(song_id):
         write_json_atomically(song_directory / "songs.json", remaining_songs)
         if song.get("source") == "upload":
             filename = song.get("filename")
-            if isinstance(filename, str) and re.fullmatch(
-                rf"{song_id}\.(?:aac|flac|m4a|mp3|ogg|opus|wav)",
-                filename,
-            ):
+            if isinstance(filename, str):
+                extension = Path(filename).suffix.lower()
+            else:
+                extension = ""
+            if filename == f"{song_id}{extension}" and extension in USER_SONG_MEDIA_EXTENSIONS:
                 audio_path = song_directory / filename
                 if audio_path.exists():
                     audio_path.unlink()

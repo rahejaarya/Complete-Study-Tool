@@ -93,7 +93,7 @@
                     </div>
                     <button id="stop-all-sounds" class="sound-stop-button" type="button">Stop all</button>
                 </div>
-                <div class="sound-library">
+                <div class="sound-library" id="sound-library">
                     <article class="sound-card" id="sound-brown" data-sound="brown">
                         <div class="sound-card-top"><span class="sound-art brown-art">≈</span><span class="sound-type">NOISE</span></div>
                         <h3>Brown Noise</h3><p>Low, warm, and steady for deep work.</p>
@@ -202,24 +202,10 @@
                         <div class="sound-volume-control"><label for="volume-174hz">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-174hz" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
-                </div>
-                <!-- Shared master gain and live status apply to all active sound sources. -->
-                <div class="sound-mixer-bar">
-                    <label for="master-volume">Master volume</label>
-                    <input id="master-volume" type="range" min="0" max="100" value="35">
-                    <span id="volume-value">35%</span>
-                    <span id="audio-status" class="audio-status" aria-live="polite">Ready when you are.</span>
-                </div>
-            </section>
-
-            <section class="noise-section custom-songs-section" aria-labelledby="my-songs-heading">
-                <div class="noise-section-heading">
-                    <div>
-                        <div class="eyebrow">YOUR LIBRARY</div>
-                        <h2 id="my-songs-heading">My Songs &amp; Sounds</h2>
-                    </div>
-                    <button id="toggle-add-song" class="sound-stop-button" type="button" aria-expanded="false" aria-controls="add-song-panel">
-                        Add a sound
+                    <button id="toggle-add-song" class="sound-card add-song-tile" type="button" aria-expanded="false" aria-controls="add-song-panel">
+                        <span class="add-song-tile-icon" aria-hidden="true">+</span>
+                        <span class="add-song-tile-title">Add song or music</span>
+                        <span class="add-song-tile-copy">Upload audio or video, or add a direct link.</span>
                     </button>
                 </div>
                 <div id="add-song-panel" class="add-song-panel" hidden>
@@ -229,18 +215,18 @@
 
                         <label for="custom-song-source">Add by</label>
                         <select id="custom-song-source" name="source">
-                            <option value="upload">Upload an audio file</option>
-                            <option value="link">Paste a direct audio link</option>
+                            <option value="upload">Upload audio or video</option>
+                            <option value="link">Paste a media or YouTube link</option>
                         </select>
 
                         <div id="custom-song-upload-field" class="custom-song-source-field">
-                            <label for="custom-song-file">Audio file (up to 25 MB)</label>
-                            <input id="custom-song-file" name="audio_file" type="file" accept=".mp3,.wav,.m4a,.aac,.ogg,.opus,.flac,audio/*" required>
+                            <label for="custom-song-file">Audio or video file (up to 25 MB)</label>
+                            <input id="custom-song-file" name="audio_file" type="file" accept=".mp3,.wav,.m4a,.aac,.ogg,.opus,.flac,.mp4,.webm,.ogv,.mov,audio/*,video/*" required>
                         </div>
                         <div id="custom-song-link-field" class="custom-song-source-field" hidden>
-                            <label for="custom-song-url">Direct audio link</label>
-                            <input id="custom-song-url" name="audio_url" type="url" placeholder="https://example.com/audio.mp3" disabled>
-                            <p>Use a direct HTTPS link to an audio file, not a streaming page.</p>
+                            <label for="custom-song-url">Media or YouTube link</label>
+                            <input id="custom-song-url" name="audio_url" type="url" placeholder="https://www.youtube.com/watch?v=..." disabled>
+                            <p>Use a YouTube video link or a direct HTTPS link to an audio/video file.</p>
                         </div>
 
                         <div class="add-song-actions">
@@ -250,8 +236,12 @@
                     </form>
                 </div>
                 <p id="my-songs-status" class="my-songs-status" aria-live="polite"></p>
-                <div id="my-songs-list" class="my-songs-list">
-                    <p class="my-songs-empty">Your saved sounds will show up here.</p>
+                <!-- Shared master gain and live status apply to all active sound sources. -->
+                <div class="sound-mixer-bar">
+                    <label for="master-volume">Master volume</label>
+                    <input id="master-volume" type="range" min="0" max="100" value="35">
+                    <span id="volume-value">35%</span>
+                    <span id="audio-status" class="audio-status" aria-live="polite">Ready when you are.</span>
                 </div>
             </section>
 
