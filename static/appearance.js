@@ -2,10 +2,10 @@
     // Controls for previewing and saving the theme selected on the settings page.
     const storageKey = "studytool_color_theme_v1";
     const themeNames = {
-        "light-lavender": "Classroom",
+        "light-lavender": "Cobalt",
         "light-blue": "Blue",
         "light-coral": "Coral",
-        "light-cobalt": "Cobalt",
+        "light-cobalt": "Lavender",
         "light-emerald": "Emerald",
         "light-orchid": "Orchid",
         "light-citrus": "Citrus",

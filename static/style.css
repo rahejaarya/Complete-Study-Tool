@@ -5863,6 +5863,29 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .main-content {
     border-color: color-mix(in srgb, #c62828 28%, var(--border));
 }
 
+/* Restore the original Lavender palette in the card that used to be Cobalt. */
+[data-theme="light-cobalt"] {
+    color-scheme: light;
+    --background: #f7f5fb;
+    --white: #ffffff;
+    --text: #29273a;
+    --muted: #777487;
+    --border: #e9e6ef;
+    --purple: #7665d8;
+    --purple-light: #eeeaff;
+    --accent-strong: #6253c8;
+    --nav-text: #6f6c7e;
+    --nav-hover: #f6f3fb;
+    --control-bg: #fbfaff;
+    --soft-surface: #faf9fc;
+    --card-shadow: rgba(50, 40, 80, 0.035);
+    --deadline-tag-color: #80601e;
+    --blue-light: #eaf1ff;
+    --green-light: #e8f6ef;
+    --pink-light: #f8eaf1;
+    --yellow-light: #fff4d9;
+}
+
 .support-page .dashboard .feature-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: stretch;
