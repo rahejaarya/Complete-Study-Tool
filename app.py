@@ -1118,6 +1118,35 @@ def resources():
     )
 
 
+def _translate_with_google_web(text, source, target):
+    """Best-effort use of Google's public web translator without a key."""
+    try:
+        response = requests.get(
+            "https://translate.googleapis.com/translate_a/single",
+            params={
+                "client": "gtx",
+                "sl": "auto" if source == "auto" else source,
+                "tl": target,
+                "dt": "t",
+                "q": text,
+            },
+            timeout=8,
+        )
+        response.raise_for_status()
+        payload = response.json()
+        segments = payload[0] if isinstance(payload, list) and payload else None
+        if isinstance(segments, list):
+            candidate = "".join(
+                segment[0]
+                for segment in segments
+                if isinstance(segment, list) and segment and isinstance(segment[0], str)
+            ).strip()
+            return candidate or None
+    except (requests.RequestException, ValueError, IndexError, TypeError):
+        pass
+    return None
+
+
 @app.route("/api/translate", methods=["POST"])
 @login_required
 def translate_text():
@@ -1129,36 +1158,94 @@ def translate_text():
     text = data.get("text")
     source = data.get("source")
     target = data.get("target")
-    languages = {"auto", "en", "es", "fr", "de", "it", "hi"}
     if not isinstance(text, str) or not text.strip():
         return jsonify({"error": "Enter text to translate."}), 400
     if len(text) > 5000:
         return jsonify({"error": "Text must be 5,000 characters or fewer."}), 400
-    if (
-        not isinstance(source, str)
-        or not isinstance(target, str)
-        or source not in languages
-        or target not in languages - {"auto"}
-    ):
-        return jsonify({"error": "Choose supported source and target languages."}), 400
 
-    translation = None
+    # Accept standard ISO language codes (and common BCP-47 variants) so adding
+    # a UI language never fails solely because a backend allowlist was stale.
+    source = source.strip().lower() if isinstance(source, str) else ""
+    target = target.strip().lower() if isinstance(target, str) else ""
+    language_code = re.compile(r"^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$")
+    if source != "auto" and not language_code.fullmatch(source):
+        return jsonify({"error": "Choose a source language."}), 400
+    if not language_code.fullmatch(target):
+        return jsonify({"error": "Choose a target language."}), 400
+
+    # The free web translation endpoint handles a broad set of language pairs.
+    # Romanized Hindi needs transliteration first: otherwise "namaste" is often
+    # treated as an English loanword and simply copied into the Spanish result.
+    source_for_translation = source
+    text_for_translation = text
+    roman_hindi_words = {
+        "namaste", "namaskar", "kaise", "aap", "hain", "hai", "ho", "mera",
+        "meri", "naam", "kya", "shukriya", "dhanyavaad", "accha", "achha",
+        "theek", "thik", "bahut", "paani", "pani", "kyun", "kyon", "mujhe",
+        "tum", "nahi", "nahin", "haan", "ji",
+    }
+    roman_words = [re.sub(r"[^a-z]", "", word.lower()) for word in text.split()]
+    hindi_markers = sum(word in roman_hindi_words for word in roman_words if word)
+    likely_roman_hindi = bool(roman_words) and (
+        (len(roman_words) == 1 and hindi_markers == 1)
+        or (hindi_markers >= 2 and hindi_markers / len(roman_words) >= 0.3)
+    )
+    if (source == "hi" or (source == "auto" and likely_roman_hindi)) and re.search(r"[a-zA-Z]", text):
+        try:
+            transliteration_response = requests.get(
+                "https://inputtools.google.com/request",
+                params={"text": text, "itc": "hi-t-i0-und", "num": 1},
+                timeout=5,
+            )
+            transliteration_response.raise_for_status()
+            transliteration_data = transliteration_response.json()
+            if isinstance(transliteration_data, list) and transliteration_data[:1] == ["SUCCESS"]:
+                for item in transliteration_data[1]:
+                    candidates = item[1] if isinstance(item, list) and len(item) > 1 else []
+                    if isinstance(candidates, list) and candidates and isinstance(candidates[0], str):
+                        text_for_translation = candidates[0]
+                        source_for_translation = "hi"
+                        break
+        except (requests.RequestException, ValueError, IndexError, TypeError):
+            # Continue with the original text and the normal provider fallback.
+            pass
+
+    # Avoid an unnecessary request (and a provider outage) when no translation
+    # is needed. Auto-detect is treated as potentially different.
+    if source_for_translation == target:
+        return jsonify({"translatedText": text})
+
+    # Prioritize this route for Hindi because the transliteration step is
+    # specifically handled by Google's paired input-tools service.
+    google_tried = source_for_translation == "hi" or text_for_translation != text
+    translation = (
+        _translate_with_google_web(text_for_translation, source_for_translation, target)
+        if google_tried
+        else None
+    )
+
     try:
-        response = requests.get(
-            "https://api.mymemory.translated.net/get",
-            params={
-                "q": text,
-                "langpair": f"{'autodetect' if source == 'auto' else source}|{target}",
-            },
-            timeout=10,
-        )
-        response.raise_for_status()
-        payload = response.json()
-        response_data = payload.get("responseData") if isinstance(payload, dict) else None
-        if isinstance(response_data, dict) and str(payload.get("responseStatus")) == "200":
-            translation = response_data.get("translatedText")
+        if not isinstance(translation, str):
+            response = requests.get(
+                "https://api.mymemory.translated.net/get",
+                params={
+                    "q": text_for_translation,
+                    "langpair": f"{'autodetect' if source_for_translation == 'auto' else source_for_translation}|{target}",
+                },
+                timeout=10,
+            )
+            response.raise_for_status()
+            payload = response.json()
+            response_data = payload.get("responseData") if isinstance(payload, dict) else None
+            if isinstance(response_data, dict) and str(payload.get("responseStatus")) == "200":
+                candidate = response_data.get("translatedText")
+                if isinstance(candidate, str) and candidate.strip():
+                    translation = candidate
     except (requests.RequestException, ValueError):
         pass
+
+    if not isinstance(translation, str) and not google_tried:
+        translation = _translate_with_google_web(text_for_translation, source_for_translation, target)
 
     if not isinstance(translation, str):
         for endpoint in (
@@ -1169,8 +1256,9 @@ def translate_text():
                 response = requests.post(
                     endpoint,
                     json={
-                        "q": text,
-                        "source": source,
+                        "q": text_for_translation,
+                        # LibreTranslate uses `auto` for language detection.
+                        "source": "auto" if source_for_translation == "auto" else source_for_translation,
                         "target": target,
                         "format": "text",
                     },
@@ -1179,7 +1267,7 @@ def translate_text():
                 response.raise_for_status()
                 payload = response.json()
                 candidate = payload.get("translatedText") if isinstance(payload, dict) else None
-                if isinstance(candidate, str):
+                if isinstance(candidate, str) and candidate.strip():
                     translation = candidate
                     break
             except (requests.RequestException, ValueError):
