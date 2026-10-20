@@ -1,0 +1,25 @@
+{% macro sound_icon(kind) -%}
+<svg class="sound-line-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+    {% if kind == 'wave' %}
+    <path d="M2 12h3l2-6 4 12 3-10 2 4h6"/>
+    {% elif kind == 'sine' %}
+    <path d="M2 12c2.5 0 2.5-6 5-6s2.5 12 5 12 2.5-12 5-12 2.5 6 5 6"/>
+    {% elif kind == 'water' %}
+    <path d="M3 9c2.2-2 4.2-2 6.4 0s4.2 2 6.4 0 3.5-2 5.2-.6M3 15c2.2-2 4.2-2 6.4 0s4.2 2 6.4 0 3.5-2 5.2-.6"/>
+    {% elif kind == 'record' %}
+    <circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2"/><path d="m17.8 6.2-3 3"/>
+    {% elif kind == 'keys' %}
+    <path d="M4 5h16v14H4zM8 5v6m4-6v6m4-6v6M8 11v8m4-8v8m4-8v8"/>
+    {% elif kind == 'rain' %}
+    <path d="M6 14h11a3.5 3.5 0 0 0 .2-7A5.5 5.5 0 0 0 6.7 8 3 3 0 0 0 6 14Z"/><path d="m8 17-1 2m6-2-1 2m6-2-1 2"/>
+    {% elif kind == 'strings' %}
+    <path d="M5 19V5m0 0c4 2 7 2 11 0v14c-4-2-7-2-11 0Zm11-14v14"/><path d="M8 7v10m4-10v10"/>
+    {% elif kind == 'ambient' %}
+    <path d="M3 9a4 4 0 0 1 0 6m4-9a8 8 0 0 1 0 12m4-15a12 12 0 0 1 0 18"/>
+    {% elif kind == 'drop' %}
+    <path d="M12 3c-2.5 4-6.5 8-6.5 12a6.5 6.5 0 0 0 13 0c0-4-4-8-6.5-12Z"/><path d="M9 16a3 3 0 0 0 3 2"/>
+    {% else %}
+    <path d="M3 12h3l2-5 4 10 3-8 2 3h4"/>
+    {% endif %}
+</svg>
+{%- endmacro %}

@@ -4314,6 +4314,15 @@ body {
     font-size: 21px;
 }
 
+.sound-line-icon {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 .brown-art,
 .pink-art,
 .rain-art,
@@ -5971,6 +5980,23 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .main-content {
     stroke-width: 1.65;
     stroke-linecap: round;
     stroke-linejoin: round;
+}
+
+.app-line-icon {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    stroke-width: 1.65;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vertical-align: middle;
+}
+
+.nav-icon .app-line-icon,
+.mobile-link .app-line-icon,
+.search-icon .app-line-icon {
+    width: 19px;
+    height: 19px;
 }
 
 .support-topic-copy {

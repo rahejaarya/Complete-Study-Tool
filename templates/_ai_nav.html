@@ -1,3 +1,4 @@
+{% from "_app_icon.html" import app_icon %}
 <div class="ai-nav-section">
     <!-- Shared sidebar links for notes and the AI assistant's saved conversations. -->
     <a href="{{ url_for('notes') }}" class="nav-link{% if request.endpoint == 'notes' %} active{% endif %}"{% if request.endpoint == 'notes' %} aria-current="page"{% endif %}>
@@ -7,7 +8,7 @@
     <div class="ai-nav-row{% if request.endpoint == 'ai_help' %} active{% endif %}">
     <!-- The dropdown toggle exposes the saved-chat list alongside the AI entry. -->
         <a href="{{ url_for('ai_help') }}" class="nav-link{% if request.endpoint == 'ai_help' %} active{% endif %}"{% if request.endpoint == 'ai_help' %} aria-current="page"{% endif %}>
-            <span class="nav-icon">⟡</span>
+            <span class="nav-icon">{{ app_icon("assistant") }}</span>
             <span>Cypher</span>
         </a>
         <button

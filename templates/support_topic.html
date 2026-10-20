@@ -1,3 +1,4 @@
+{% from "_app_icon.html" import app_icon %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +17,7 @@
             <nav class="navigation" id="primary-navigation">
                 <a href="{{ url_for('home') }}" class="nav-link"><span class="nav-icon">⌂</span>Dashboard</a>
                 <a href="{{ url_for('resources') }}" class="nav-link"><span class="nav-icon">▤</span>Study Resources</a>
-                <a href="{{ url_for('noise_songs') }}" class="nav-link"><span class="nav-icon">∿</span>Noise &amp; Songs</a>
+                <a href="{{ url_for('noise_songs') }}" class="nav-link"><span class="nav-icon">♫</span>Noise &amp; Songs</a>
                 <a href="{{ url_for('time_management') }}" class="nav-link"><span class="nav-icon">◷</span>Time Management</a>
                 <a href="{{ url_for('support') }}" class="nav-link active"><span class="nav-icon">♡</span>Student Support</a>
                 {% include "_ai_nav.html" %}
@@ -82,10 +83,10 @@
     <nav class="mobile-navigation">
         <a href="{{ url_for('home') }}" class="mobile-link"><span>⌂</span><small>Dashboard</small></a>
         <a href="{{ url_for('resources') }}" class="mobile-link"><span>▤</span><small>Resources</small></a>
-        <a href="{{ url_for('noise_songs') }}" class="mobile-link"><span>∿</span><small>Noise &amp; Songs</small></a>
+        <a href="{{ url_for('noise_songs') }}" class="mobile-link"><span>♫</span><small>Noise &amp; Songs</small></a>
         <a href="{{ url_for('time_management') }}" class="mobile-link"><span>◷</span><small>Time</small></a>
         <a href="{{ url_for('support') }}" class="mobile-link active"><span>♡</span><small>Support</small></a>
-        <a href="{{ url_for('ai_help') }}" class="mobile-link"><span>⟡</span><small>Cypher</small></a>
+        <a href="{{ url_for('ai_help') }}" class="mobile-link"><span>{{ app_icon("assistant") }}</span><small>Cypher</small></a>
     </nav>
 </body>
 </html>

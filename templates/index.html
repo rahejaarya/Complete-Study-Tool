@@ -1,3 +1,4 @@
+{% from "_app_icon.html" import app_icon %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,7 +34,7 @@
                     Study Resources
                 </a>
                 <a href="{{ url_for('noise_songs') }}" class="nav-link">
-                    <span class="nav-icon">∿</span>
+                    <span class="nav-icon">♫</span>
                     Noise &amp; Songs
                 </a>
 
@@ -120,7 +121,7 @@
                    
 
                     <a href="{{ url_for('resources') }}" class="feature-card study-resource-link">
-                        <span class="feature-icon resources-icon" aria-hidden="true">▤</span>
+                        <span class="feature-icon resources-icon" aria-hidden="true">{{ app_icon("resources") }}</span>
                         <span class="feature-content">
                             <span class="feature-title">Study Resources</span>
                             <span class="feature-description">Find free notes, videos and study materials.</span>
@@ -144,7 +145,7 @@
                         <div class="feature-card">
 
                             <div class="feature-icon ai-icon">
-                                ⟡
+                                {{ app_icon("assistant") }}
                             </div>
 
                             <div class="feature-content">
@@ -384,7 +385,7 @@
             <small>Study Resources</small>
         </a>
         <a href="/noise-songs" class="mobile-link">
-            <span>∿</span>
+            <span>♫</span>
             <small>Noise &amp; Songs</small>
         </a>
         <a href="/time-management" class="mobile-link">
@@ -396,7 +397,7 @@
             <small>Support</small>
         </a>
         <a href="/ai" class="mobile-link">
-            <span>⟡</span>
+            <span>{{ app_icon("assistant") }}</span>
             <small>Cypher</small>
         </a>
     </nav>

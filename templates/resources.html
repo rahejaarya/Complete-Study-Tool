@@ -1,3 +1,4 @@
+{% from "_app_icon.html" import app_icon %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,7 +32,7 @@
                 </a>
 
                 <a href="{{ url_for('noise_songs') }}" class="nav-link">
-                    <span class="nav-icon">∿</span>
+                    <span class="nav-icon">♫</span>
                     Noise &amp; Songs
                 </a>
 
@@ -72,7 +73,7 @@
             <header class="topbar">
 
                 <div class="welcome">
-                    <div class="welcome-icon">▤</div>
+                    <div class="welcome-icon">{{ app_icon("resources") }}</div>
                     <div>
                         <h1>What do you want to learn?</h1>
                         <p>Find free resources for any subject or topic.</p>
@@ -227,7 +228,7 @@
             <small>Study Resources</small>
         </a>
         <a href="/noise-songs" class="mobile-link">
-            <span>∿</span>
+            <span>♫</span>
             <small>Noise &amp; Songs</small>
         </a>
         <a href="/time-management" class="mobile-link">
@@ -239,7 +240,7 @@
             <small>Support</small>
         </a>
         <a href="/ai" class="mobile-link">
-            <span>⟡</span>
+            <span>{{ app_icon("assistant") }}</span>
             <small>Cypher</small>
         </a>
     </nav>
