@@ -1215,13 +1215,10 @@ def translate_text():
     if source_for_translation == target:
         return jsonify({"translatedText": text})
 
-    # Prioritize this route for Hindi because the transliteration step is
-    # specifically handled by Google's paired input-tools service.
-    google_tried = source_for_translation == "hi" or text_for_translation != text
-    translation = (
-        _translate_with_google_web(text_for_translation, source_for_translation, target)
-        if google_tried
-        else None
+    # Use Google's translation engine first for every pair. Hindi transliteration
+    # is handled above; MyMemory and LibreTranslate remain availability fallbacks.
+    translation = _translate_with_google_web(
+        text_for_translation, source_for_translation, target
     )
 
     try:
@@ -1243,9 +1240,6 @@ def translate_text():
                     translation = candidate
     except (requests.RequestException, ValueError):
         pass
-
-    if not isinstance(translation, str) and not google_tried:
-        translation = _translate_with_google_web(text_for_translation, source_for_translation, target)
 
     if not isinstance(translation, str):
         for endpoint in (

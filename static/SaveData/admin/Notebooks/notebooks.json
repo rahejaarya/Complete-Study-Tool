@@ -9,7 +9,7 @@
     {
       "id": "9d24394ff6b34b6fad1649cb4b9d40c4",
       "name": "My Notebook",
-      "content": "This is a note",
+      "content": "This is a notebook",
       "quick_note": "fdfd"
     },
     {
@@ -19,5 +19,5 @@
       "quick_note": ""
     }
   ],
-  "active_id": "9d24394ff6b34b6fad1649cb4b9d40c4"
+  "active_id": "86bea1a0-1a02-44d7-bedc-456747e68b5d"
 }
