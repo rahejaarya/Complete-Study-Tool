@@ -31,23 +31,24 @@
         <div class="settings-grid">
             <section class="settings-card profile-card">
                 <div class="avatar-wrapper">
-                    <div class="avatar-circle">
-                        {% if profile_picture_url %}
-                        <img src="{{ profile_picture_url }}" alt="Your profile picture">
-                        {% else %}
-                        <span>{{ session.get("username", "A")[0]|upper }}</span>
-                        {% endif %}
-                    </div>
+                    <form method="POST" action="{{ url_for('settings') }}" class="profile-picture-form" enctype="multipart/form-data">
+                        <input type="hidden" name="action" value="upload_profile_picture">
+                        <input class="profile-picture-input" type="file" id="profile_picture" name="profile_picture" accept="image/png,image/jpeg,image/webp" aria-label="Choose a profile picture" onchange="if (this.files.length) this.form.requestSubmit();" required>
+                        <label class="avatar-circle profile-picture-trigger" for="profile_picture" title="Change profile picture">
+                            {% if profile_picture_url %}
+                            <img src="{{ profile_picture_url }}" alt="">
+                            {% else %}
+                            <span>{{ session.get("username", "A")[0]|upper }}</span>
+                            {% endif %}
+                            <span class="profile-picture-edit-indicator" aria-hidden="true">
+                                <svg viewBox="0 0 20 20" fill="none" focusable="false">
+                                    <path d="M3 6.5h3l1.2-2h5.6l1.2 2h3v9H3v-9Z" />
+                                    <circle cx="10" cy="11" r="2.7" />
+                                </svg>
+                            </span>
+                        </label>
+                    </form>
                 </div>
-                <form method="POST" action="{{ url_for('settings') }}" class="settings-form profile-picture-form" enctype="multipart/form-data">
-                    <input type="hidden" name="action" value="upload_profile_picture">
-                    <div class="form-group">
-                        <label for="profile_picture">Profile picture</label>
-                        <input type="file" id="profile_picture" name="profile_picture" accept="image/png,image/jpeg,image/webp" required>
-                        <small>JPG, PNG, or WebP, up to 5 MB.</small>
-                    </div>
-                    <button type="submit" class="save-btn">Upload picture</button>
-                </form>
                 <h2>{{ username }}</h2>
                 <p class="user-role">Student Account</p>
                 <form method="POST" action="{{ url_for('settings') }}" class="settings-form account-username-form">
