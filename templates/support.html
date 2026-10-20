@@ -27,7 +27,7 @@
                     Dashboard
                 </a>
                 <a href="{{ url_for('resources') }}" class="nav-link">
-                    <span class="nav-icon">▤</span>
+                    <span class="nav-icon">{{ app_icon("resources") }}</span>
                     Study Resources
                 </a>
                 <a href="{{ url_for('noise_songs') }}" class="nav-link">
@@ -132,7 +132,7 @@
             <small>Dashboard</small>
         </a>
         <a href="{{ url_for('resources') }}" class="mobile-link">
-            <span>▤</span>
+            <span>{{ app_icon("resources") }}</span>
             <small>Study Resources</small>
         </a>
         <a href="{{ url_for('noise_songs') }}" class="mobile-link">

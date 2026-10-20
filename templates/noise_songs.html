@@ -1,4 +1,3 @@
-{% from "_sound_icon.html" import sound_icon %}
 {% from "_app_icon.html" import app_icon %}
 <!DOCTYPE html>
 <html lang="en">
@@ -19,7 +18,7 @@
             {% include "_sidebar_header.html" %}
             <nav class="navigation" id="primary-navigation">
                 <a href="{{ url_for('home') }}" class="nav-link"><span class="nav-icon">⌂</span>Dashboard</a>
-                <a href="{{ url_for('resources') }}" class="nav-link"><span class="nav-icon">▤</span>Study Resources</a>
+                <a href="{{ url_for('resources') }}" class="nav-link"><span class="nav-icon">{{ app_icon("resources") }}</span>Study Resources</a>
                 <a href="{{ url_for('noise_songs') }}" class="nav-link active"><span class="nav-icon">♫</span>Noise &amp; Songs</a>
                 <a href="{{ url_for('time_management') }}" class="nav-link"><span class="nav-icon">◷</span>Time Management</a>
                 <a href="{{ url_for('support') }}" class="nav-link"><span class="nav-icon">♡</span>Student Support</a>
@@ -72,7 +71,7 @@
                     <button class="activity-chip" type="button" data-activity="break" aria-pressed="false">Taking a study break</button>
                 </div>
                 <div class="recommendation-panel">
-                    <div class="recommendation-icon">♫</div>
+                    <div class="recommendation-icon">✦</div>
                     <div>
                         <p class="recommendation-kicker">RECOMMENDED FOR YOU</p>
                         <p id="recommendation-copy">Brown Noise, Calm Piano, Ocean Waves, Acoustic Guitar &amp; Piano, Soft Ambient Synth</p>
@@ -91,43 +90,43 @@
                 </div>
                 <div class="sound-library" id="sound-library">
                     <article class="sound-card" id="sound-brown" data-sound="brown">
-                        <div class="sound-card-top"><span class="sound-art brown-art">{{ sound_icon("wave") }}</span><span class="sound-type">NOISE</span></div>
+                        <div class="sound-card-top"><span class="sound-art brown-art">≈</span><span class="sound-type">NOISE</span></div>
                         <h3>Brown Noise</h3><p>Low, warm, and steady for deep work.</p>
                         <div class="sound-volume-control"><label for="volume-brown">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-brown" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
                     <article class="sound-card" id="sound-pink" data-sound="pink">
-                        <div class="sound-card-top"><span class="sound-art pink-art">{{ sound_icon("sine") }}</span><span class="sound-type">NOISE</span></div>
+                        <div class="sound-card-top"><span class="sound-art pink-art">∿</span><span class="sound-type">NOISE</span></div>
                         <h3>Pink Noise</h3><p>Softer static for reading and review.</p>
                         <div class="sound-volume-control"><label for="volume-pink">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-pink" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
                     <article class="sound-card" id="sound-852hz" data-sound="852hz">
-                        <div class="sound-card-top"><span class="sound-art rain-art">{{ sound_icon("sine") }}</span><span class="sound-type">TONE</span></div>
+                        <div class="sound-card-top"><span class="sound-art rain-art">852</span><span class="sound-type">TONE</span></div>
                         <h3>852 Hz</h3><p>A steady, continuous sine tone proven to get rid of overthinking. Take a break.</p>
                         <div class="sound-volume-control"><label for="volume-852hz">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-852hz" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
                     <article class="sound-card" id="sound-ocean" data-sound="ocean">
-                        <div class="sound-card-top"><span class="sound-art ocean-art">{{ sound_icon("water") }}</span><span class="sound-type">NATURE</span></div>
+                        <div class="sound-card-top"><span class="sound-art ocean-art">◒</span><span class="sound-type">NATURE</span></div>
                         <h3>Ocean Waves</h3><p>A recording of real ocean waves.</p>
                         <div class="sound-volume-control"><label for="volume-ocean">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-ocean" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
                     <article class="sound-card" id="sound-lofi" data-sound="lofi">
-                        <div class="sound-card-top"><span class="sound-art lofi-art">{{ sound_icon("record") }}</span><span class="sound-type">SONG LOOP</span></div>
+                        <div class="sound-card-top"><span class="sound-art lofi-art">▰</span><span class="sound-type">SONG LOOP</span></div>
                         <h3>Lo-Fi Glow</h3><p>A mellow chord loop for homework and code.</p>
                         <div class="sound-volume-control"><label for="volume-lofi">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-lofi" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
                     <article class="sound-card" id="sound-piano" data-sound="piano">
-                        <div class="sound-card-top"><span class="sound-art piano-art">{{ sound_icon("keys") }}</span><span class="sound-type">SONG LOOP</span></div>
+                        <div class="sound-card-top"><span class="sound-art piano-art">♬</span><span class="sound-type">SONG LOOP</span></div>
                         <h3>Calm Piano</h3><p>Simple notes for memorization or a reset.</p>
                         <div class="sound-volume-control"><label for="volume-piano">Volume <output class="sound-volume-value">100%</output></label><input class="sound-volume" id="volume-piano" type="range" min="0" max="100" value="100"></div>
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
                     <article class="sound-card" id="sound-rain-window" data-sound="rain-window">
-                        <div class="sound-card-top"><span class="sound-art ocean-art">{{ sound_icon("rain") }}</span><span class="sound-type">NATURE</span></div>
+                        <div class="sound-card-top"><span class="sound-art ocean-art">☂</span><span class="sound-type">NATURE</span></div>
                         <h3>Rain on Window</h3>
                         <p>Deep rainfall audio that masks background voices.</p>
                         <p class="sound-best-for"><strong>Best For:</strong> Dense reading, essay writing, and studying in noisy environments.</p>
@@ -136,7 +135,7 @@
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
                     <article class="sound-card" id="sound-acoustic-piano" data-sound="acoustic-piano">
-                        <div class="sound-card-top"><span class="sound-art piano-art">{{ sound_icon("keys") }}</span><span class="sound-type">MUSIC</span></div>
+                        <div class="sound-card-top"><span class="sound-art piano-art">♬</span><span class="sound-type">MUSIC</span></div>
                         <h3>Acoustic Guitar &amp; Piano</h3>
                         <p>Gentle instrumental melody for steady problem-solving.</p>
                         <p class="sound-best-for"><strong>Best For:</strong> Math problem sets, coding, and logical reasoning.</p>
@@ -145,7 +144,7 @@
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
                     <article class="sound-card" id="sound-cello" data-sound="cello">
-                        <div class="sound-card-top"><span class="sound-art brown-art">{{ sound_icon("strings") }}</span><span class="sound-type">MUSIC</span></div>
+                        <div class="sound-card-top"><span class="sound-art brown-art">♫</span><span class="sound-type">MUSIC</span></div>
                         <h3>Warm Cello</h3>
                         <p>Deep, resonant string tones for long study blocks.</p>
                         <p class="sound-best-for"><strong>Best For:</strong> Textbook review and prolonged research.</p>
@@ -154,7 +153,7 @@
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
                     <article class="sound-card" id="sound-ambient-synth" data-sound="ambient-synth">
-                        <div class="sound-card-top"><span class="sound-art lofi-art">{{ sound_icon("ambient") }}</span><span class="sound-type">MUSIC</span></div>
+                        <div class="sound-card-top"><span class="sound-art lofi-art">✧</span><span class="sound-type">MUSIC</span></div>
                         <h3>Soft Ambient Synth</h3>
                         <p>Floating, beatless harmonies that ease mind chatter.</p>
                         <p class="sound-best-for"><strong>Best For:</strong> Exam prep and high-stress revision.</p>
@@ -163,7 +162,7 @@
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
                     <article class="sound-card" id="sound-gentle-creek" data-sound="gentle-creek">
-                        <div class="sound-card-top"><span class="sound-art ocean-art">{{ sound_icon("water") }}</span><span class="sound-type">NATURE</span></div>
+                        <div class="sound-card-top"><span class="sound-art ocean-art">⌁</span><span class="sound-type">NATURE</span></div>
                         <h3>Gentle Creek</h3>
                         <p>Soft trickling water and forest breeze.</p>
                         <p class="sound-best-for"><strong>Best For:</strong> Creative brainstorming and note organizing.</p>
@@ -172,7 +171,7 @@
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
                     <article class="sound-card" id="sound-432hz" data-sound="432hz">
-                        <div class="sound-card-top"><span class="sound-art rain-art">{{ sound_icon("sine") }}</span><span class="sound-type">TONE</span></div>
+                        <div class="sound-card-top"><span class="sound-art rain-art">432</span><span class="sound-type">TONE</span></div>
                         <h3>432 Hz Solfeggio Tuning</h3>
                         <p>Natural harmonic sine tone tuned for physical calm.</p>
                         <p class="sound-best-for"><strong>Best For:</strong> Stress relief during tough subjects or after long study blocks.</p>
@@ -181,7 +180,7 @@
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
                     <article class="sound-card" id="sound-theta6" data-sound="theta6">
-                        <div class="sound-card-top"><span class="sound-art lofi-art">{{ sound_icon("wave") }}</span><span class="sound-type">FREQUENCY</span></div>
+                        <div class="sound-card-top"><span class="sound-art lofi-art">θ</span><span class="sound-type">FREQUENCY</span></div>
                         <h3>Theta Binaural Beats (6 Hz)</h3>
                         <p>Dual-ear stereo entrainment for deep learning.</p>
                         <p class="sound-best-for"><strong>Best For:</strong> Memorizing flashcards, language acquisition, and conceptual study.</p>
@@ -190,7 +189,7 @@
                         <button class="sound-play" type="button" aria-pressed="false">Play</button>
                     </article>
                     <article class="sound-card" id="sound-174hz" data-sound="174hz">
-                        <div class="sound-card-top"><span class="sound-art brown-art">{{ sound_icon("wave") }}</span><span class="sound-type">TONE</span></div>
+                        <div class="sound-card-top"><span class="sound-art brown-art">174</span><span class="sound-type">TONE</span></div>
                         <h3>174 Hz Foundation Frequency</h3>
                         <p>Low-frequency sine wave designed to ease physical tension.</p>
                         <p class="sound-best-for"><strong>Best For:</strong> Late-night study sessions and overcoming desk fatigue.</p>
@@ -253,7 +252,7 @@
             <small>Dashboard</small>
         </a>
         <a href="/resources" class="mobile-link">
-            <span>▤</span>
+            <span>{{ app_icon("resources") }}</span>
             <small>Study Resources</small>
         </a>
         <a href="/noise-songs" class="mobile-link active">
