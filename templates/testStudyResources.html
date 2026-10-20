@@ -265,15 +265,10 @@
         const outputField = document.getElementById('resource-tile-readonly');
         
         let debounceTimer;
-
-        // List of redundant translation servers to try if one fails
-        const translationEndpoints = [
-            "https://argosopentech.com",
-            "https://vern.cc",
-            "https://terraprint.co"
-        ];
+        let translationRequestId = 0;
 
         async function performTranslation() {
+            const requestId = ++translationRequestId;
             const textValue = textInput.value;
             const sourceLang = sourceLangSelect.value;
             const targetLang = targetLangSelect.value;
@@ -285,35 +280,29 @@
 
             outputField.value = "Translating...";
 
-            for (let i = 0; i < translationEndpoints.length; i++) {
-                try {
-                    const response = await fetch(translationEndpoints[i], {
-                        method: "POST",
-                        body: JSON.stringify({
-                            q: textValue,
-                            source: sourceLang,
-                            target: targetLang,
-                            format: "text"
-                        }),
-                        headers: { "Content-Type": "application/json" }
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        outputField.value = data.translatedText;
-                        return; // Translation finished successfully!
-                    }
-                } catch (error) {
-                    console.warn(`Translation server mirror node ${i} failed. Advancing payload...`);
+            try {
+                const response = await fetch("/api/translate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text: textValue, source: sourceLang, target: targetLang })
+                });
+                const data = await response.json();
+                if (requestId !== translationRequestId) return;
+                if (!response.ok) {
+                    throw new Error(data.error || "The translation service is unavailable.");
+                }
+                outputField.value = data.translatedText;
+            } catch (error) {
+                if (requestId === translationRequestId) {
+                    outputField.value = error.message || "The translation service is unavailable.";
                 }
             }
-
-            outputField.value = "Error: All backup translation service nodes are handling high traffic. Please check back in a moment.";
         }
 
         // Live listening with 500ms delay window
         textInput.addEventListener('input', () => {
             clearTimeout(debounceTimer);
+            translationRequestId += 1;
             debounceTimer = setTimeout(() => {
                 performTranslation();
             }, 500);

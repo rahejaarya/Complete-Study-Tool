@@ -77,6 +77,32 @@ class AuthTests(unittest.TestCase):
         self.assertIn(b'Search Engine Results', response.data)
         self.assertIn(b'Algebra Basics', response.data)
 
+    def test_translate_endpoint_uses_server_side_translation(self):
+        self.client.post(
+            '/login',
+            data={'username': 'admin', 'password': 'admin123'},
+            follow_redirects=False,
+        )
+        upstream_response = unittest.mock.Mock()
+        upstream_response.json.return_value = {
+            'responseStatus': 200,
+            'responseData': {'translatedText': 'Hola'},
+        }
+
+        with patch('app.requests.get', return_value=upstream_response) as translate_request:
+            response = self.client.post(
+                '/api/translate',
+                json={'text': 'Hello', 'source': 'en', 'target': 'es'},
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), {'translatedText': 'Hola'})
+        translate_request.assert_called_once_with(
+            'https://api.mymemory.translated.net/get',
+            params={'q': 'Hello', 'langpair': 'en|es'},
+            timeout=10,
+        )
+
     def test_signup_rejects_duplicate_username(self):
         response = self.client.post(
             '/signup',

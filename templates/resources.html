@@ -227,9 +227,10 @@
     const outputField = document.getElementById('resource-tile-readonly');
     
     let debounceTimer;
+    let translationRequestId = 0;
 
-    // Core function to trigger translation API
     async function performTranslation() {
+        const requestId = ++translationRequestId;
         const textValue = textInput.value;
         const sourceLang = sourceLangSelect.value;
         const targetLang = targetLangSelect.value;
@@ -242,26 +243,21 @@
         outputField.value = "Translating...";
 
         try {
-            const response = await fetch("https://goos.org", {
+            const response = await fetch("/api/translate", {
                 method: "POST",
-                body: JSON.stringify({
-                    q: textValue,
-                    source: sourceLang,
-                    target: targetLang,
-                    format: "text"
-                }),
-                headers: { "Content-Type": "application/json" }
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: textValue, source: sourceLang, target: targetLang })
             });
-
-            if (response.ok) {
-                const data = await response.json();
-                outputField.value = data.translatedText;
-            } else {
-                outputField.value = "Error: Service busy. Retrying shortly...";
+            const data = await response.json();
+            if (requestId !== translationRequestId) return;
+            if (!response.ok) {
+                throw new Error(data.error || "The translation service is unavailable.");
             }
+            outputField.value = data.translatedText;
         } catch (error) {
-            outputField.value = "Error: Connection lost or free node down.";
-            console.error("Translation Engine Exception:", error);
+            if (requestId === translationRequestId) {
+                outputField.value = error.message || "The translation service is unavailable.";
+            }
         }
     }
 
@@ -269,6 +265,7 @@
     textInput.addEventListener('input', () => {
         // Clear previous timer on keystroke
         clearTimeout(debounceTimer);
+        translationRequestId += 1;
         
         // Start a new 500ms countdown before making the API request
         debounceTimer = setTimeout(() => {
