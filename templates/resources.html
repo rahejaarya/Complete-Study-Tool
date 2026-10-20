@@ -130,8 +130,11 @@
                             <!-- Input Block -->
                             <div class="resource-tile">
                                 <label class="resource-language-label" for="source-language-search">Translate from</label>
-                                <input class="resource-language-search" id="source-language-search" type="search" placeholder="Search languages" autocomplete="off">
-                                <select class="resource-language-select" id="source-language" name="source-language">
+                                <div class="resource-language-picker" id="source-language-picker">
+                                    <input class="resource-language-search" id="source-language-search" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="source-language-options" placeholder="Search languages" autocomplete="off">
+                                    <button class="language-picker-toggle" type="button" aria-label="Show source languages" aria-controls="source-language-options">⌄</button>
+                                    <div class="language-picker-options" id="source-language-options" role="listbox" hidden></div>
+                                <select class="resource-language-select" id="source-language" name="source-language" hidden aria-hidden="true" tabindex="-1">
                                     <option value="auto" selected>Auto-Detect</option>
                                     <option value="af">Afrikaans</option><option value="sq">Albanian</option><option value="am">Amharic</option><option value="ar">Arabic</option>
                                     <option value="hy">Armenian</option><option value="az">Azerbaijani</option><option value="eu">Basque</option><option value="bn">Bengali</option>
@@ -153,7 +156,14 @@
                                     <option value="te">Telugu</option><option value="th">Thai</option><option value="tr">Turkish</option><option value="uk">Ukrainian</option>
                                     <option value="ur">Urdu</option><option value="uz">Uzbek</option><option value="vi">Vietnamese</option><option value="cy">Welsh</option>
                                 </select>
-                                <label class="resource-language-label" for="resource-tile-input">Text to translate</label>
+                                </div>
+                                <div class="translator-field-heading">
+                                    <label class="resource-language-label" for="resource-tile-input">Text to translate</label>
+                                    <button class="translator-copy-button" id="copy-source-text" type="button" aria-label="Copy input text" title="Copy input text" disabled>
+                                        <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7" y="6" width="9" height="11" rx="1.5"></rect><path d="M13 6V4.8A1.8 1.8 0 0 0 11.2 3H5.8A1.8 1.8 0 0 0 4 4.8v7.4A1.8 1.8 0 0 0 5.8 14H7"></path></svg>
+                                        <span>Copy</span>
+                                    </button>
+                                </div>
                                 <textarea id="resource-tile-input" maxlength="5000" placeholder="Type here to translate automatically..."></textarea>
                                 <small class="translator-char-count" id="translator-char-count">0 / 5,000</small>
                             </div>
@@ -163,8 +173,11 @@
                             <!-- Output Block -->
                             <div class="resource-tile">
                                 <label class="resource-language-label" for="target-language-search">Translate to</label>
-                                <input class="resource-language-search" id="target-language-search" type="search" placeholder="Search languages" autocomplete="off">
-                                <select class="resource-language-select" id="target-language" name="target-language">
+                                <div class="resource-language-picker" id="target-language-picker">
+                                    <input class="resource-language-search" id="target-language-search" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="target-language-options" placeholder="Search languages" autocomplete="off">
+                                    <button class="language-picker-toggle" type="button" aria-label="Show target languages" aria-controls="target-language-options">⌄</button>
+                                    <div class="language-picker-options" id="target-language-options" role="listbox" hidden></div>
+                                <select class="resource-language-select" id="target-language" name="target-language" hidden aria-hidden="true" tabindex="-1">
                                     <option value="af">Afrikaans</option><option value="sq">Albanian</option><option value="am">Amharic</option><option value="ar">Arabic</option>
                                     <option value="hy">Armenian</option><option value="az">Azerbaijani</option><option value="eu">Basque</option><option value="bn">Bengali</option>
                                     <option value="bs">Bosnian</option><option value="bg">Bulgarian</option><option value="ca">Catalan</option><option value="zh">Chinese</option>
@@ -185,7 +198,14 @@
                                     <option value="te">Telugu</option><option value="th">Thai</option><option value="tr">Turkish</option><option value="uk">Ukrainian</option>
                                     <option value="ur">Urdu</option><option value="uz">Uzbek</option><option value="vi">Vietnamese</option><option value="cy">Welsh</option>
                                 </select>
-                                <label class="resource-language-label" for="resource-tile-readonly">Translation</label>
+                                </div>
+                                <div class="translator-field-heading">
+                                    <label class="resource-language-label" for="resource-tile-readonly">Translation</label>
+                                    <button class="translator-copy-button" id="copy-translated-text" type="button" aria-label="Copy translated text" title="Copy translated text" disabled>
+                                        <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7" y="6" width="9" height="11" rx="1.5"></rect><path d="M13 6V4.8A1.8 1.8 0 0 0 11.2 3H5.8A1.8 1.8 0 0 0 4 4.8v7.4A1.8 1.8 0 0 0 5.8 14H7"></path></svg>
+                                        <span>Copy</span>
+                                    </button>
+                                </div>
                                 <textarea id="resource-tile-readonly" placeholder="Translation will appear here..." readonly></textarea>
                                 <p class="translator-status" id="translator-status" role="status" aria-live="polite"></p>
                             </div>
@@ -296,30 +316,135 @@
         const targetLangSelect = document.getElementById('target-language');
         const sourceLangSearch = document.getElementById('source-language-search');
         const targetLangSearch = document.getElementById('target-language-search');
+        const sourceLanguagePicker = document.getElementById('source-language-picker');
+        const targetLanguagePicker = document.getElementById('target-language-picker');
         const swapLanguagesButton = document.getElementById('translator-swap');
         const outputField = document.getElementById('resource-tile-readonly');
         const translatorStatus = document.getElementById('translator-status');
         const translatorCharCount = document.getElementById('translator-char-count');
+        const copySourceButton = document.getElementById('copy-source-text');
+        const copyTranslationButton = document.getElementById('copy-translated-text');
         
         let debounceTimer;
         let translationRequestId = 0;
 
-        function connectLanguageSearch(searchField, selectField) {
-            searchField.addEventListener('input', () => {
+        function connectLanguageSearch(picker, searchField, selectField) {
+            const listbox = picker.querySelector('[role="listbox"]');
+            const toggle = picker.querySelector('.language-picker-toggle');
+            const optionButtons = Array.from(selectField.options).map((option, index) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'language-picker-option';
+                button.id = `${listbox.id}-option-${index}`;
+                button.setAttribute('role', 'option');
+                button.dataset.value = option.value;
+                button.textContent = option.textContent;
+                listbox.appendChild(button);
+                return button;
+            });
+            let activeIndex = -1;
+
+            function closePicker(restoreSelection = false) {
+                listbox.hidden = true;
+                searchField.setAttribute('aria-expanded', 'false');
+                searchField.removeAttribute('aria-activedescendant');
+                activeIndex = -1;
+                if (restoreSelection) {
+                    searchField.value = selectField.selectedOptions[0]?.textContent || '';
+                }
+            }
+
+            function filterOptions() {
                 const query = searchField.value.trim().toLocaleLowerCase();
-                Array.from(selectField.options).forEach(option => {
-                    option.hidden = option.value !== selectField.value &&
-                        !option.textContent.toLocaleLowerCase().includes(query);
+                let firstVisible = -1;
+                optionButtons.forEach((button, index) => {
+                    button.hidden = !button.textContent.toLocaleLowerCase().includes(query);
+                    button.setAttribute('aria-selected', String(button.dataset.value === selectField.value));
+                    if (firstVisible < 0 && !button.hidden) firstVisible = index;
                 });
+                activeIndex = firstVisible;
+                setActiveOption();
+            }
+
+            function setActiveOption() {
+                optionButtons.forEach(button => button.classList.remove('is-active'));
+                const active = optionButtons[activeIndex];
+                if (active && !active.hidden) {
+                    active.classList.add('is-active');
+                    searchField.setAttribute('aria-activedescendant', active.id);
+                } else {
+                    searchField.removeAttribute('aria-activedescendant');
+                }
+            }
+
+            function openPicker(clearQuery = true) {
+                if (clearQuery) searchField.value = '';
+                listbox.hidden = false;
+                searchField.setAttribute('aria-expanded', 'true');
+                filterOptions();
+            }
+
+            function chooseOption(button) {
+                if (!button || button.hidden) return;
+                selectField.value = button.dataset.value;
+                searchField.value = button.textContent;
+                closePicker();
+                selectField.dispatchEvent(new Event('change', { bubbles: true }));
+                searchField.blur();
+            }
+
+            searchField.value = selectField.selectedOptions[0]?.textContent || '';
+            searchField.addEventListener('focus', () => openPicker());
+            searchField.addEventListener('input', () => {
+                if (listbox.hidden) openPicker(false);
+                else filterOptions();
+            });
+            searchField.addEventListener('keydown', event => {
+                const visibleOptions = optionButtons.filter(button => !button.hidden);
+                if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    if (listbox.hidden) openPicker();
+                    const direction = event.key === 'ArrowDown' ? 1 : -1;
+                    const current = visibleOptions.findIndex(button => button === optionButtons[activeIndex]);
+                    const next = Math.max(0, Math.min(visibleOptions.length - 1, current + direction));
+                    activeIndex = optionButtons.indexOf(visibleOptions[next]);
+                    setActiveOption();
+                    visibleOptions[next]?.scrollIntoView({ block: 'nearest' });
+                } else if (event.key === 'Enter' && !listbox.hidden) {
+                    event.preventDefault();
+                    chooseOption(optionButtons[activeIndex]);
+                } else if (event.key === 'Escape') {
+                    closePicker(true);
+                    searchField.blur();
+                }
+            });
+            toggle.addEventListener('click', () => {
+                if (listbox.hidden) {
+                    searchField.focus();
+                    openPicker();
+                } else {
+                    closePicker(true);
+                }
+            });
+            listbox.addEventListener('click', event => {
+                chooseOption(event.target.closest('.language-picker-option'));
             });
             selectField.addEventListener('change', () => {
-                searchField.value = '';
-                Array.from(selectField.options).forEach(option => { option.hidden = false; });
+                searchField.value = selectField.selectedOptions[0]?.textContent || '';
+                closePicker();
             });
+            document.addEventListener('pointerdown', event => {
+                if (!picker.contains(event.target) && !listbox.hidden) closePicker(true);
+            });
+
+            return { closePicker, refreshLabel: () => {
+                searchField.value = selectField.selectedOptions[0]?.textContent || '';
+                closePicker();
+            } };
         }
 
-        connectLanguageSearch(sourceLangSearch, sourceLangSelect);
-        connectLanguageSearch(targetLangSearch, targetLangSelect);
+        const sourcePicker = connectLanguageSearch(sourceLanguagePicker, sourceLangSearch, sourceLangSelect);
+        const targetPicker = connectLanguageSearch(targetLanguagePicker, targetLangSearch, targetLangSelect);
 
         function updateSwapButton() {
             swapLanguagesButton.disabled = sourceLangSelect.value === 'auto';
@@ -333,14 +458,54 @@
             const previousSource = sourceLangSelect.value;
             sourceLangSelect.value = targetLangSelect.value;
             targetLangSelect.value = previousSource;
-            sourceLangSearch.value = '';
-            targetLangSearch.value = '';
+            sourcePicker.refreshLabel();
+            targetPicker.refreshLabel();
             updateSwapButton();
             performTranslation();
         });
 
         updateSwapButton();
         translatorCharCount.textContent = `${textInput.value.length.toLocaleString()} / 5,000`;
+
+        function updateCopyButtons() {
+            copySourceButton.disabled = !textInput.value;
+            copyTranslationButton.disabled = !outputField.value || outputField.value === 'Translating...';
+        }
+
+        async function copyField(field, button, successMessage) {
+            if (!field.value) return;
+            try {
+                if (navigator.clipboard?.writeText) {
+                    try {
+                        await navigator.clipboard.writeText(field.value);
+                    } catch (clipboardError) {
+                        field.focus();
+                        field.select();
+                        const copied = document.execCommand('copy');
+                        field.setSelectionRange(0, 0);
+                        if (!copied) throw clipboardError;
+                    }
+                } else {
+                    field.focus();
+                    field.select();
+                    const copied = document.execCommand('copy');
+                    field.setSelectionRange(0, 0);
+                    if (!copied) throw new Error('Copy is unavailable in this browser.');
+                }
+                translatorStatus.textContent = successMessage;
+                translatorStatus.removeAttribute('data-state');
+                const label = button.querySelector('span');
+                label.textContent = 'Copied';
+                window.setTimeout(() => { label.textContent = 'Copy'; }, 1400);
+            } catch (error) {
+                translatorStatus.textContent = 'Could not copy. Select the text and copy it manually.';
+                translatorStatus.dataset.state = 'error';
+            }
+        }
+
+        copySourceButton.addEventListener('click', () => copyField(textInput, copySourceButton, 'Input copied.'));
+        copyTranslationButton.addEventListener('click', () => copyField(outputField, copyTranslationButton, 'Translation copied.'));
+        updateCopyButtons();
 
         async function performTranslation() {
             const requestId = ++translationRequestId;
@@ -363,6 +528,7 @@
             }
 
             outputField.value = "Translating...";
+            updateCopyButtons();
             translatorStatus.textContent = "";
             translatorStatus.removeAttribute('data-state');
 
@@ -378,10 +544,12 @@
                     throw new Error(data.error || "The translation service is unavailable.");
                 }
                 outputField.value = data.translatedText;
+                updateCopyButtons();
                 translatorStatus.textContent = "";
             } catch (error) {
                 if (requestId === translationRequestId) {
                     outputField.value = "";
+                    updateCopyButtons();
                     translatorStatus.textContent = error.message || "Translation failed. Please try again.";
                     translatorStatus.dataset.state = 'error';
                 }
@@ -393,6 +561,7 @@
             clearTimeout(debounceTimer);
             translationRequestId += 1;
             translatorCharCount.textContent = `${textInput.value.length.toLocaleString()} / 5,000`;
+            updateCopyButtons();
             translatorStatus.textContent = "";
             translatorStatus.removeAttribute('data-state');
             debounceTimer = setTimeout(() => {
