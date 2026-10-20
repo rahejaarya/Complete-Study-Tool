@@ -45,7 +45,7 @@
     const soundVolumes = new Map(cards.map((card) => [card.dataset.sound, 1]));
 
     function updateNowPlaying() {
-        const playingLabels = Array.from(activeSounds.keys(), (soundId) => soundLabels[soundId]);
+        const playingLabels = window.studyToolGetAudioLabels();
         const hasAudio = playingLabels.length > 0;
         nowPlayingIndicator?.classList.toggle("is-playing", hasAudio);
         if (nowPlayingLabel) {
@@ -53,7 +53,33 @@
                 ? `Now playing · ${playingLabels.length > 2 ? `${playingLabels.length} sounds` : playingLabels.join(", ")}`
                 : "Nothing playing";
         }
+        window.dispatchEvent(new CustomEvent("studytool:now-playing", {
+            detail: { labels: playingLabels, isPlaying: hasAudio }
+        }));
     }
+
+    window.studyToolHasActiveAudio = () => activeSounds.size > 0
+        || Array.from(document.querySelectorAll("audio, video")).some((media) => !media.paused && !media.ended);
+    window.studyToolGetAudioLabels = () => {
+        const labels = Array.from(activeSounds.keys(), (soundId) => soundLabels[soundId]);
+        document.querySelectorAll("audio, video").forEach((media) => {
+            if (!media.paused && !media.ended) {
+                const title = media.closest(".sound-card")?.querySelector("h3")?.textContent?.trim();
+                labels.push(title || "Custom audio");
+            }
+        });
+        return [...new Set(labels)];
+    };
+    window.studyToolStopActiveAudio = () => {
+        activeSounds.forEach((sound, soundId) => {
+            sound.stop();
+            updateCard(soundId, false);
+        });
+        activeSounds.clear();
+        document.querySelectorAll("audio, video").forEach((media) => media.pause());
+        updateNowPlaying();
+        audioStatus.textContent = "All sounds stopped.";
+    };
 
     // Create the shared Web Audio graph once and apply the master volume.
     function getAudioContext() {
@@ -314,13 +340,13 @@
 
     // Stop all active sources and reset each corresponding card.
     document.getElementById("stop-all-sounds")?.addEventListener("click", () => {
-        activeSounds.forEach((sound, soundId) => {
-            sound.stop();
-            updateCard(soundId, false);
-        });
-        activeSounds.clear();
-        updateNowPlaying();
-        audioStatus.textContent = "All sounds stopped.";
+        window.studyToolStopActiveAudio();
+    });
+
+    document.querySelectorAll("audio, video").forEach((media) => {
+        media.addEventListener("play", updateNowPlaying);
+        media.addEventListener("pause", updateNowPlaying);
+        media.addEventListener("ended", updateNowPlaying);
     });
 
     // Apply master gain changes to both generated audio and the ocean recording.
