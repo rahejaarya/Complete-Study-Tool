@@ -4314,12 +4314,16 @@ body {
     font-size: 21px;
 }
 
-.brown-art { background: #e9d1b5; color: #6e4327; }
-.pink-art { background: #f4d0df; color: #a23a67; }
-.rain-art { background: #cbe6ef; color: #2a6d83; }
-.ocean-art { background: #c8dafa; color: #355ca1; }
-.lofi-art { background: #ded1f5; color: #6846a2; }
-.piano-art { background: #f3e0b7; color: #94651d; }
+.brown-art,
+.pink-art,
+.rain-art,
+.ocean-art,
+.lofi-art,
+.piano-art {
+    border: 1px solid var(--border);
+    background: var(--purple-light);
+    color: var(--purple);
+}
 
 .sound-card h3 {
     margin-top: 18px;

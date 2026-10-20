@@ -7,7 +7,7 @@
     <div class="ai-nav-row{% if request.endpoint == 'ai_help' %} active{% endif %}">
     <!-- The dropdown toggle exposes the saved-chat list alongside the AI entry. -->
         <a href="{{ url_for('ai_help') }}" class="nav-link{% if request.endpoint == 'ai_help' %} active{% endif %}"{% if request.endpoint == 'ai_help' %} aria-current="page"{% endif %}>
-            <span class="nav-icon">✦</span>
+            <span class="nav-icon">⟡</span>
             <span>Cypher</span>
         </a>
         <button
