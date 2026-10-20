@@ -10,7 +10,7 @@ import requests
 from datetime import datetime, timezone
 from functools import wraps
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from flask import (
     Flask,
@@ -61,6 +61,45 @@ USER_SONG_VIDEO_EXTENSIONS = {".mp4", ".mov", ".ogv", ".webm"}
 USER_SONG_MEDIA_EXTENSIONS = USER_SONG_AUDIO_EXTENSIONS | USER_SONG_VIDEO_EXTENSIONS
 MAX_USER_SONG_SIZE = 25 * 1024 * 1024
 MAX_USER_SONGS = 50
+
+
+def youtube_video_id(media_url):
+    """Extract a video ID from supported HTTPS YouTube URLs."""
+    try:
+        parsed_url = urlparse(media_url)
+        if (
+            parsed_url.scheme != "https"
+            or parsed_url.username
+            or parsed_url.password
+            or parsed_url.port not in {None, 443}
+        ):
+            return None
+    except ValueError:
+        return None
+
+    hostname = (parsed_url.hostname or "").lower()
+    if hostname in {"youtube.com", "www.youtube.com", "m.youtube.com"}:
+        if parsed_url.path == "/watch":
+            video_id = parse_qs(parsed_url.query).get("v", [""])[0]
+        else:
+            path_parts = parsed_url.path.strip("/").split("/")
+            video_id = (
+                path_parts[1]
+                if len(path_parts) == 2 and path_parts[0] in {"embed", "live", "shorts"}
+                else ""
+            )
+    elif hostname in {"youtu.be", "www.youtu.be"}:
+        video_id = parsed_url.path.strip("/").split("/")[0]
+    else:
+        return None
+    return video_id if re.fullmatch(r"[A-Za-z0-9_-]{11}", video_id) else None
+
+
+def youtube_embed_url(video_id):
+    """Build a privacy-enhanced YouTube embed URL from a validated ID."""
+    return f"https://www.youtube-nocookie.com/embed/{video_id}?rel=0"
+
+
 VALID_THEMES = {
     "light-lavender",
     "light-blue",
@@ -1095,7 +1134,12 @@ def translate_text():
         return jsonify({"error": "Enter text to translate."}), 400
     if len(text) > 5000:
         return jsonify({"error": "Text must be 5,000 characters or fewer."}), 400
-    if source not in languages or target not in languages - {"auto"}:
+    if (
+        not isinstance(source, str)
+        or not isinstance(target, str)
+        or source not in languages
+        or target not in languages - {"auto"}
+    ):
         return jsonify({"error": "Choose supported source and target languages."}), 400
 
     try:
@@ -1112,7 +1156,8 @@ def translate_text():
     except (requests.RequestException, ValueError):
         return jsonify({"error": "The translation service is unavailable."}), 502
 
-    translation = payload.get("responseData", {}).get("translatedText")
+    response_data = payload.get("responseData") if isinstance(payload, dict) else None
+    translation = response_data.get("translatedText") if isinstance(response_data, dict) else None
     if str(payload.get("responseStatus")) != "200" or not isinstance(translation, str):
         return jsonify({"error": "The translation service could not translate this text."}), 502
     return jsonify({"translatedText": translation})
@@ -1169,20 +1214,36 @@ def user_songs():
                     if filename != f"{song_id}{extension}":
                         raise ValueError("Saved song media filename is not valid.")
                     audio_url = url_for("user_song_audio", song_id=song_id)
+                    media_type = (
+                        "video" if extension in USER_SONG_VIDEO_EXTENSIONS else "audio"
+                    )
+                    embed_url = None
                 else:
                     audio_url = song.get("url")
                     if not isinstance(audio_url, str):
                         raise ValueError("Saved song media location is not valid.")
-                    extension = Path(urlparse(audio_url).path).suffix.lower()
-                if extension not in USER_SONG_MEDIA_EXTENSIONS:
-                    raise ValueError("Saved song media type is not valid.")
-                response_songs.append({
+                    video_id = youtube_video_id(audio_url)
+                    if video_id:
+                        media_type = "youtube"
+                        embed_url = youtube_embed_url(video_id)
+                    else:
+                        extension = Path(urlparse(audio_url).path).suffix.lower()
+                        if extension not in USER_SONG_MEDIA_EXTENSIONS:
+                            raise ValueError("Saved song media type is not valid.")
+                        media_type = (
+                            "video" if extension in USER_SONG_VIDEO_EXTENSIONS else "audio"
+                        )
+                        embed_url = None
+                response_song = {
                     "id": song_id,
                     "title": title,
                     "source": source,
                     "audio_url": audio_url,
-                    "media_type": "video" if extension in USER_SONG_VIDEO_EXTENSIONS else "audio",
-                })
+                    "media_type": media_type,
+                }
+                if embed_url:
+                    response_song["embed_url"] = embed_url
+                response_songs.append(response_song)
             return jsonify({"songs": response_songs})
 
         if len(songs) >= MAX_USER_SONGS:
@@ -1218,15 +1279,22 @@ def user_songs():
             song["filename"] = saved_media_path.name
         elif source == "link":
             audio_url = request.form.get("audio_url", "").strip()
-            parsed_url = urlparse(audio_url)
-            if (
-                parsed_url.scheme != "https"
-                or not parsed_url.netloc
-                or Path(parsed_url.path).suffix.lower() not in USER_SONG_MEDIA_EXTENSIONS
-            ):
-                return jsonify({
-                    "error": "Enter an HTTPS link directly to a supported audio or video file."
-                }), 400
+            youtube_id = youtube_video_id(audio_url)
+            if not youtube_id:
+                try:
+                    parsed_url = urlparse(audio_url)
+                except ValueError:
+                    return jsonify({
+                        "error": "Enter a YouTube link or an HTTPS link directly to an audio or video file."
+                    }), 400
+                if (
+                    parsed_url.scheme != "https"
+                    or not parsed_url.netloc
+                    or Path(parsed_url.path).suffix.lower() not in USER_SONG_MEDIA_EXTENSIONS
+                ):
+                    return jsonify({
+                        "error": "Enter a YouTube link or an HTTPS link directly to an audio or video file."
+                    }), 400
             song["url"] = audio_url
         else:
             return jsonify({"error": "Choose an upload or direct media link."}), 400
@@ -1243,12 +1311,19 @@ def user_songs():
             if source == "upload"
             else song["url"]
         )
-        media_extension = (
-            Path(song["filename"]).suffix.lower()
-            if source == "upload"
-            else Path(urlparse(song["url"]).path).suffix.lower()
-        )
-        song["media_type"] = "video" if media_extension in USER_SONG_VIDEO_EXTENSIONS else "audio"
+        if source == "upload":
+            media_extension = Path(song["filename"]).suffix.lower()
+            song["media_type"] = (
+                "video" if media_extension in USER_SONG_VIDEO_EXTENSIONS else "audio"
+            )
+        elif youtube_id:
+            song["media_type"] = "youtube"
+            song["embed_url"] = youtube_embed_url(youtube_id)
+        else:
+            media_extension = Path(urlparse(song["url"]).path).suffix.lower()
+            song["media_type"] = (
+                "video" if media_extension in USER_SONG_VIDEO_EXTENSIONS else "audio"
+            )
         return jsonify({"song": song}), 201
     except RequestEntityTooLarge:
         return jsonify({"error": "Media files must be 25 MB or smaller."}), 413
@@ -1312,75 +1387,6 @@ def delete_user_song(song_id):
             else:
                 extension = ""
             if filename == f"{song_id}{extension}" and extension in USER_SONG_MEDIA_EXTENSIONS:
-                audio_path = song_directory / filename
-                if audio_path.exists():
-                    audio_path.unlink()
-        return jsonify({"deleted": song_id})
-    except (OSError, sqlite3.Error, json.JSONDecodeError, ValueError) as error:
-        app.logger.exception("Could not delete user sound: %s", error)
-        return jsonify({"error": "Could not delete this saved sound."}), 500
-
-
-@app.route("/schedule")
-@login_required
-def schedule():
-    """Redirect the legacy schedule endpoint to the time-management page."""
-    return redirect(url_for("time_management"))
-
-
-@app.route("/time-management")
-@login_required
-def time_management():
-    """Render the combined scheduler and study timer page."""
-    return render_template("time_management.html")
-
-
-@app.route("/timeManagement.html")
-@login_required
-def legacy_time_management():
-    """Permanently redirect the old time-management URL to its current route."""
-    return redirect("/time-management", code=301)
-
-
-@app.route("/support")
-@login_required
-def support():
-    """Render the student support resource page."""
-    return render_template("support.html")
-
-
-@app.route("/peer-pressure-boundaries")
-@login_required
-def peer_pressure_boundaries():
-    """Render guidance about peer pressure and setting personal boundaries."""
-    return render_template("peerPreshAndBoundaries.html")
-
-
-@app.route("/procrastination-focus")
-@login_required
-def procrastination_focus():
-    """Render the procrastination and focus guidance page."""
-    return render_template("procrastination_focus.html")
-
-
-@app.route("/ai")
-@login_required
-def ai_help():
-    """Render the AI study assistant interface."""
-    return render_template("ai.html")
-
-
-@app.route("/notes")
-@login_required
-def notes():
-    """Render the notebook workspace for the current account."""
-    return render_template("notes.html", username=session.get("username", "User"))
-
-
-init_db()
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8000)), debug=False)DIA_EXTENSIONS:
                 audio_path = song_directory / filename
                 if audio_path.exists():
                     audio_path.unlink()

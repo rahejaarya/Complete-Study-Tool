@@ -1,6 +1,6 @@
 import unittest
 import uuid
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from app import app, init_db #
 
@@ -83,7 +83,7 @@ class AuthTests(unittest.TestCase):
             data={'username': 'admin', 'password': 'admin123'},
             follow_redirects=False,
         )
-        upstream_response = unittest.mock.Mock()
+        upstream_response = Mock()
         upstream_response.json.return_value = {
             'responseStatus': 200,
             'responseData': {'translatedText': 'Hola'},
