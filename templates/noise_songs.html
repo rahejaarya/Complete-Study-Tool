@@ -14,11 +14,8 @@
     <!-- App shell for the sound studio, with navigation shared across study pages. -->
     <div class="app">
         <aside class="sidebar">
-            <div class="logo">
-                <div class="logo-mark">✦</div>
-                <span>StudyTool</span>
-            </div>
-            <nav class="navigation">
+            {% include "_sidebar_header.html" %}
+            <nav class="navigation" id="primary-navigation">
                 <a href="{{ url_for('home') }}" class="nav-link"><span class="nav-icon">▦</span>Dashboard</a>
                 <a href="{{ url_for('resources') }}" class="nav-link"><span class="nav-icon">⌕</span>Study Resources</a>
                 <a href="{{ url_for('noise_songs') }}" class="nav-link active"><span class="nav-icon">♫</span>Noise &amp; Songs</a>
@@ -37,6 +34,7 @@
                 <div class="welcome">
                     <div class="welcome-icon">♫</div>
                     <div>
+                        <div class="eyebrow">Sound Studio</div>
                         <h1>Noise &amp; Songs</h1>
                     </div>
                 </div>
@@ -46,7 +44,6 @@
             <!-- Introduce the sound mixer and set the listening context for this page. -->
             <section class="sound-hero">
                 <div>
-                    <div class="eyebrow">SOUND STUDIO</div>
                     <h2>What are you working on?</h2>
                     <p>Choose an activity and get a starting mix. Keep it soft, layer sounds together, and make the space yours.</p>
                 </div>
@@ -57,7 +54,6 @@
             <section class="noise-section" aria-labelledby="activity-heading">
                 <div class="noise-section-heading">
                     <div>
-                        <div class="eyebrow">START WITH A TASK</div>
                         <h2 id="activity-heading">Find your focus sound</h2>
                     </div>
                     <span id="selected-activity-label" class="sound-status" aria-live="polite">Selected: Learning something new</span>
@@ -88,7 +84,6 @@
             <section class="noise-section" aria-labelledby="sound-heading">
                 <div class="noise-section-heading">
                     <div>
-                        <div class="eyebrow">BUILD YOUR MIX</div>
                         <h2 id="sound-heading">Sound library</h2>
                     </div>
                     <button id="stop-all-sounds" class="sound-stop-button" type="button">Stop all</button>

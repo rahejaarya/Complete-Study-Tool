@@ -11,9 +11,12 @@
 <body>
     <main class="settings-container">
         <header class="settings-top-bar">
+            <a class="logo settings-brand" href="{{ url_for('home') }}" aria-label="StudyTool dashboard">
+                <span class="logo-mark" aria-hidden="true">✦</span>
+                <span>StudyTool</span>
+            </a>
             <a class="appearance-back" href="{{ url_for('home') }}">← Back to dashboard</a>
             <div class="header-titles">
-                <div class="eyebrow">ACCOUNT MANAGEMENT</div>
                 <h1>Settings & Profile</h1>
             </div>
         </header>
@@ -82,7 +85,6 @@
                     <summary>
                         <div class="summary-header">
                             <h2>Appearance & Themes</h2>
-                            <p>Select a light or dark theme palette.</p>
                         </div>
                         <span class="chevron-icon">▼</span>
                     </summary>

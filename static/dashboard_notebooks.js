@@ -109,7 +109,7 @@
                 if (!response.ok) {
                     throw new Error(payload.error || `Save failed (${response.status}).`);
                 }
-                status.textContent = "Saved to your account";
+                status.textContent = "";
             })
             .catch((error) => {
                 status.textContent = "Could not save notebooks. Please try again.";
@@ -140,7 +140,7 @@
             card.querySelectorAll("textarea, input, button").forEach((control) => {
                 control.disabled = false;
             });
-            status.textContent = "Saved to your account";
+            status.textContent = "";
         } catch (error) {
             status.textContent = "Could not load notebooks. Refresh to try again.";
             console.error("Notebooks could not be loaded.", error);

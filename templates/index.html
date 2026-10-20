@@ -19,12 +19,9 @@
         <!-- Sidebar navigation for the main app sections. -->
         <aside class="sidebar">
 
-            <div class="logo">
-                <div class="logo-mark">✦</div>
-                <span>StudyTool</span>
-            </div>
+            {% include "_sidebar_header.html" %}
 
-            <nav class="navigation">
+            <nav class="navigation" id="primary-navigation">
 
                 <a href="{{ url_for('home') }}" class="nav-link active">
                     <span class="nav-icon">▦</span>
@@ -78,7 +75,7 @@
         <main class="main-content">
 
             <!-- Top bar with the welcome message, global search, and logout action. -->
-            <header class="topbar">
+            <header class="topbar dashboard-topbar">
 
 
                 <div class="dashboard-welcome">
@@ -88,7 +85,6 @@
                         </div>
                         <div>
                             <h1>Welcome back, {{ username }}</h1>
-                            <p>Ready to make some progress?</p>
                         </div>
                     </div>
                     <label class="global-search-trigger" for="global-search-open" title="Search all features (⌘K or Ctrl+K)">
@@ -260,7 +256,7 @@
                         </div>
 
                         <label class="notebook-quick-label" for="notebook-quick-note">
-                            Quick note · synced to your Quick Notes notebook
+                            Quick note
                         </label>
                         <textarea
                             class="notebook-textarea notebook-quick-note"

@@ -8,8 +8,9 @@
     <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+{% from "_support_icon.html" import support_icon %}
 
-<body>
+<body class="support-page">
 
     <!-- The student-support page groups wellbeing resources, emergency information,
          and practical advice into a single help area. -->
@@ -17,12 +18,9 @@
 
         <!-- Sidebar navigation for the support section and core app pages. -->
         <aside class="sidebar">
-            <div class="logo">
-                <div class="logo-mark">✦</div>
-                <span>StudyTool</span>
-            </div>
+            {% include "_sidebar_header.html" %}
 
-            <nav class="navigation">
+            <nav class="navigation" id="primary-navigation">
                 <a href="{{ url_for('home') }}" class="nav-link">
                     <span class="nav-icon">▦</span>
                     Dashboard
@@ -111,75 +109,18 @@
 
                 <div class="feature-grid">
 
-                    <a href="{{ url_for('focus') }}" class="feature-card" aria-label="Go to procrastination and focus help">
-                        <div class="feature-icon support-icon" aria-hidden="true">⏳</div>
-                        <div class="feature-content">
-                            <h3>Procrastination &amp; Focus</h3>
-                            <p>Overcome burnout, get started on tough tasks, and try manageable 15-minute micro-steps.</p>
-                        </div>
-                        <span class="card-arrow" aria-hidden="true">→</span>
+                    {% for topic in support_topics %}
+                    <a class="support-topic-card" href="{{ url_for('support_topic', topic_slug=topic.slug) }}">
+                        <span class="support-topic-icon">{{ support_icon(topic.slug) }}</span>
+                        <span class="support-topic-copy">
+                            <strong>{{ topic.title }}</strong>
+                            <span>{{ topic.summary }}</span>
+                            <span class="support-topic-open">Read practical steps <span aria-hidden="true">→</span></span>
+                        </span>
                     </a>
-
-                    <a href="{{ url_for('peer_pressure_boundaries') }}" class="feature-card" aria-label="Go to peer pressure and boundaries guidance">
-                        <div class="feature-icon support-icon" aria-hidden="true">👥</div>
-                        <div class="feature-content">
-                            <h3>Peer Pressure &amp; Boundaries</h3>
-                            <p>Find practical strategies and scripts for saying what feels right for you.</p>
-                        </div>
-                        <span class="card-arrow" aria-hidden="true">→</span>
-                    </a>
-
-                    <div class="feature-card">
-                        <div class="feature-icon support-icon" aria-hidden="true">🛑</div>
-                        <div class="feature-content">
-                            <h3>Bullying &amp; Cyberbullying</h3>
-                            <p>Learn to document online incidents, report safely, and protect your privacy.</p>
-                        </div>
-                        <span class="card-arrow" aria-hidden="true">→</span>
-                    </div>
-
-                    <div class="feature-card">
-                        <div class="feature-icon support-icon" aria-hidden="true">🧠</div>
-                        <div class="feature-content">
-                            <h3>Mental Health &amp; Mood</h3>
-                            <p>Try grounding exercises, manage anxiety, and find professional support.</p>
-                        </div>
-                        <span class="card-arrow" aria-hidden="true">→</span>
-                    </div>
-
-                    <div class="feature-card">
-                        <div class="feature-icon support-icon" aria-hidden="true">🚭</div>
-                        <div class="feature-content">
-                            <h3>Substance Awareness</h3>
-                            <p>Get unbiased facts about vaping, alcohol, and drugs, plus non-judgmental ways to get support.</p>
-                        </div>
-                        <span class="card-arrow" aria-hidden="true">→</span>
-                    </div>
-
-                    <div class="feature-card">
-                        <div class="feature-icon support-icon" aria-hidden="true">🔋</div>
-                        <div class="feature-content">
-                            <h3>Academic Burnout</h3>
-                            <p>Balance AP/IB demands, sports, and downtime without sacrificing sleep.</p>
-                        </div>
-                        <span class="card-arrow" aria-hidden="true">→</span>
-                    </div>
+                    {% endfor %}
 
                 </div>
-
-                <!-- Quick grounding exercise to help a student reset when feeling overwhelmed. -->
-                <section class="main-card grounding-card" aria-labelledby="grounding-title">
-                    <div class="eyebrow">A QUICK RESET</div>
-                    <h2 id="grounding-title">5-4-3-2-1 Sensory Grounding Technique</h2>
-                    <p class="grounding-intro">Pause, take a slow breath, and check off each step as you go.</p>
-                    <ul class="grounding-steps">
-                        <li><label><input type="checkbox"> <span><strong>5</strong> things you see</span></label></li>
-                        <li><label><input type="checkbox"> <span><strong>4</strong> things you feel</span></label></li>
-                        <li><label><input type="checkbox"> <span><strong>3</strong> things you hear</span></label></li>
-                        <li><label><input type="checkbox"> <span><strong>2</strong> things you smell</span></label></li>
-                        <li><label><input type="checkbox"> <span><strong>1</strong> positive thought</span></label></li>
-                    </ul>
-                </section>
 
             </section>
 

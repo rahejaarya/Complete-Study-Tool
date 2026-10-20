@@ -1524,7 +1524,103 @@ def legacy_time_management():
 @login_required
 def support():
     """Render the student support resource page."""
-    return render_template("support.html")
+    return render_template("support.html", support_topics=SUPPORT_TOPICS)
+
+
+SUPPORT_TOPICS = [
+    {
+        "slug": "school-stress",
+        "title": "School stress & getting unstuck",
+        "summary": "Break down school pressure, make a next-step plan, and ask for support.",
+        "intro": "When assignments, tests, activities, or concentration problems pile up, it can feel hard to start. You do not need to solve the whole week at once.",
+        "sections": [
+            {"title": "Try this right now", "items": ["Write down what is due and when. Circle the next deadline.", "Turn that task into one small action, such as opening the assignment or writing the first sentence.", "Work in a short, manageable block, then take a brief break and decide on the next step."]},
+            {"title": "Get help with the workload", "items": ["Tell a teacher what you have finished and where you are stuck; ask what to prioritize.", "If you have missed work across classes, ask a counselor or trusted adult to help you make one catch-up plan.", "Make room for meals, movement, rest, and sleep. If stress keeps affecting daily life, tell a trusted adult or health professional."]},
+        ],
+        "sources": [("CDC: Improve Your Emotional Well-Being", "https://www.cdc.gov/emotional-well-being/improve-your-emotional-well-being/"), ("CDC: Sleep and Health", "https://www.cdc.gov/healthy-schools/sleep/index.html")],
+        "contact_title": "Talk to someone at school",
+        "contact_text": "A teacher, school counselor, or trusted adult can help you sort out deadlines and find academic support. Use your school's official website or office to find the right contact.",
+    },
+    {
+        "slug": "mental-health",
+        "title": "Anxiety, low mood & grief",
+        "summary": "Notice when feelings are getting in the way and find a trusted person to talk to.",
+        "intro": "Worry, sadness, irritability, grief, or feeling disconnected can affect sleep, concentration, friendships, and school. These experiences can have many causes; a webpage cannot diagnose them, but support is available.",
+        "sections": [
+            {"title": "What you can do", "items": ["Tell a trusted adult what has changed and when it started. You can write it down or show them this page if speaking feels hard.", "Ask a parent or guardian, school counselor, nurse, or doctor to help you find a qualified mental health professional.", "If the first person does not listen, keep telling safe adults until someone helps you get support."]},
+            {"title": "If you may be in danger", "items": ["If you might hurt yourself or someone else, tell an adult immediately and call emergency services if there is immediate danger.", "In the United States, call or text 988 for the Suicide & Crisis Lifeline. It is free and confidential; call 911 for immediate physical danger."]},
+        ],
+        "sources": [("NIMH: Teen Depression", "https://www.nimh.nih.gov/health/publications/teen-depression"), ("MedlinePlus: Teen Mental Health", "https://medlineplus.gov/teenmentalhealth.html"), ("988 Suicide & Crisis Lifeline", "https://988lifeline.org/")],
+        "contact_title": "Talk or text with a crisis counselor",
+        "contact_text": "Call or text 988 in the U.S. if you are in emotional distress or worried about someone else. If there is immediate danger, call 911.",
+        "contact_url": "https://988lifeline.org/",
+        "contact_label": "Visit 988lifeline.org",
+    },
+    {
+        "slug": "bullying",
+        "title": "Bullying & cyberbullying",
+        "summary": "Get support, save online evidence, and make a plan to feel safer.",
+        "intro": "Bullying can happen at school, on the way home, in group chats, or on social media. If you feel targeted or unsafe, you deserve help even if you are unsure what to call it.",
+        "sections": [
+            {"title": "If it is happening to you", "items": ["Tell a trusted adult at home or school. Be specific about what happened, where, when, and who was there.", "Ask the adult to help create a plan for safety and follow-up. If the first adult does not help, tell another one.", "For online incidents, save screenshots and dates, do not reply or forward the messages, and block or report the account when safe."]},
+            {"title": "If you witness it", "items": ["Do not join in, share hurtful posts, or put yourself in danger trying to intervene.", "Offer support privately to the person targeted and report what you saw to a trusted adult.", "If someone faces immediate physical danger, get an adult and contact emergency services."]},
+        ],
+        "sources": [("StopBullying.gov: What Teens Can Do", "https://www.stopbullying.gov/resources/teens"), ("StopBullying.gov: Report Cyberbullying", "https://www.stopbullying.gov/cyberbullying/how-to-report")],
+        "contact_title": "Report it through your school",
+        "contact_text": "A teacher, counselor, principal, or school safety staff member can explain the school's reporting process. Use the school's official website or office contact; reporting rules vary by location.",
+    },
+    {
+        "slug": "friendships-boundaries",
+        "title": "Friendships, pressure & boundaries",
+        "summary": "Practice saying no, leaving uncomfortable situations, and getting backup.",
+        "intro": "It can be hard to disagree with friends, leave a situation, or say no when you worry about being left out. Your comfort and safety matter, even when other people are pushing.",
+        "sections": [
+            {"title": "A simple boundary plan", "items": ["Decide what you are and are not okay with before you are under pressure.", "Use a short line: “No, I’m not doing that,” “I’m leaving now,” or “Please stop asking.” You do not have to debate your decision.", "Suggest another activity, leave with a friend, or contact a trusted adult for a ride or help."]},
+            {"title": "When a relationship feels unsafe", "items": ["Talk with a trusted adult if someone threatens, controls, humiliates, or repeatedly ignores your boundaries.", "For online pressure, pause before sharing personal information or images, and ask an adult you trust for help with reporting or blocking.", "Healthy friends respect a no. If you feel afraid, prioritize getting to a safe place and telling an adult."]},
+        ],
+        "sources": [("American Academy of Pediatrics: 13-Year Checkup Checklist", "https://www.healthychildren.org/English/ages-stages/Your-Childs-Checkups/Pages/your-checkup-checklist-13-years-old.aspx"), ("CDC: Enhance Student Connectedness", "https://www.cdc.gov/mental-health-action-guide/strategies/enhance-connectedness.html")],
+        "contact_title": "Find a trusted adult",
+        "contact_text": "A caregiver, school counselor, coach, nurse, or another adult you trust can help you plan what to say and how to stay safe. If one person dismisses you, try another safe adult.",
+    },
+    {
+        "slug": "substance-support",
+        "title": "Vaping, alcohol & other substances",
+        "summary": "Get clear information and confidential help for yourself or a friend.",
+        "intro": "Curiosity, pressure, stress, or trying to fit in can lead young people to try substances. Nicotine is addictive, and most e-cigarettes contain it. If you have used something, asking for help is a strong next step.",
+        "sections": [
+            {"title": "If you have used or want to quit", "items": ["Talk honestly with a trusted adult, school nurse, or health care professional about what you used and how you feel.", "For vaping, free youth resources include Teen.smokefree.gov and the quitline at 1-800-QUIT-NOW; ask a trusted adult to help you connect.", "If you are worried about privacy or consequences, you can start by asking a health professional what they can keep confidential. Rules vary by location and age."]},
+            {"title": "If a friend may be in danger", "items": ["If someone is unconscious, hard to wake, having trouble breathing, or seriously unwell, call emergency services now and stay with them if it is safe.", "Do not leave a person who may be overdosing alone. Tell emergency responders what you know.", "You can ask a trusted adult for support even if you are unsure what happened."]},
+        ],
+        "sources": [("CDC: Protecting Youth From the Harms of Vaping", "https://www.cdc.gov/tobacco/e-cigarettes/protecting-youth.html"), ("CDC: Resources to Help Youth Quit Vaping", "https://www.cdc.gov/tobacco/e-cigarettes/youth-quitting.html"), ("National Cancer Institute: Smokefree Teen", "https://teen.smokefree.gov/")],
+        "contact_title": "Free help to quit vaping",
+        "contact_text": "Teen.smokefree.gov offers resources for teens. In the U.S., 1-800-QUIT-NOW connects callers to state quitline support.",
+        "contact_url": "https://teen.smokefree.gov/",
+        "contact_label": "Visit Teen.smokefree.gov",
+    },
+    {
+        "slug": "sleep-burnout",
+        "title": "Sleep, energy & burnout",
+        "summary": "Understand teen sleep needs and make a realistic plan for rest and school.",
+        "intro": "For ages 13–18, the CDC reports a recommended 8–10 hours of sleep per 24 hours. Ongoing tiredness can make mood, attention, behavior, and learning harder.",
+        "sections": [
+            {"title": "Small changes to try", "items": ["Keep bedtime and wake time fairly regular when possible.", "Create a wind-down routine and put away schoolwork with enough time to settle before bed.", "Plan homework realistically; ask a teacher, caregiver, or counselor for help if workload repeatedly crowds out sleep."]},
+            {"title": "When to ask for help", "items": ["Tell a caregiver or health care provider if sleep problems, exhaustion, or low mood keep affecting your day.", "Ask for help reviewing activities and deadlines if you have no time to rest or recover.", "If you feel hopeless or unsafe, tell a trusted adult right away; in the U.S. you can call or text 988 for crisis support."]},
+        ],
+        "sources": [("CDC: Sleep and Health", "https://www.cdc.gov/healthy-schools/sleep/index.html"), ("CDC: Improve Your Emotional Well-Being", "https://www.cdc.gov/emotional-well-being/improve-your-emotional-well-being/")],
+        "contact_title": "Ask for help adjusting the load",
+        "contact_text": "A caregiver, teacher, or counselor can help you review your schedule and connect you with a health professional if sleep or fatigue is affecting you.",
+    },
+]
+
+
+@app.route("/support/<topic_slug>")
+@login_required
+def support_topic(topic_slug):
+    """Render one student support topic guide."""
+    topic = next((item for item in SUPPORT_TOPICS if item["slug"] == topic_slug), None)
+    if topic is None:
+        return redirect(url_for("support"))
+    return render_template("support_topic.html", topic=topic)
 
 
 @app.route("/peer-pressure-boundaries")

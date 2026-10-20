@@ -1,0 +1,15 @@
+<div class="sidebar-heading">
+    <a class="logo" href="{{ url_for('home') }}" aria-label="StudyTool dashboard">
+        <span class="logo-mark" aria-hidden="true">✦</span>
+        <span class="logo-name">StudyTool</span>
+    </a>
+    <button
+        class="sidebar-toggle"
+        type="button"
+        aria-label="Collapse navigation"
+        aria-expanded="true"
+        aria-controls="primary-navigation"
+        title="Collapse navigation"
+    >‹</button>
+</div>
+<script src="{{ url_for('static', filename='sidebar.js') }}" defer></script>

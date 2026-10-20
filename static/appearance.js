@@ -2,7 +2,7 @@
     // Controls for previewing and saving the theme selected on the settings page.
     const storageKey = "studytool_color_theme_v1";
     const themeNames = {
-        "light-lavender": "Lavender",
+        "light-lavender": "Classroom",
         "light-blue": "Blue",
         "light-coral": "Coral",
         "light-cobalt": "Cobalt",
@@ -50,7 +50,7 @@
     applyButton.addEventListener("click", async () => {
         document.documentElement.dataset.theme = selectedTheme;
         applyButton.disabled = true;
-        status.textContent = "Saving your theme to your account...";
+        status.textContent = "Saving theme…";
         try {
             window.localStorage.setItem(storageKey, selectedTheme);
         } catch (error) {
@@ -65,9 +65,9 @@
             if (!response.ok) {
                 throw new Error(`Theme save failed with status ${response.status}.`);
             }
-            status.textContent = `${themeNames[selectedTheme]} is now saved to your account.`;
+            status.textContent = "";
         } catch (error) {
-            status.textContent = "The theme is previewed but could not be saved to your account. Please try again.";
+            status.textContent = "Theme could not be saved. Please try again.";
             console.error("Color theme could not be saved to the account.", error);
         } finally {
             applyButton.disabled = false;

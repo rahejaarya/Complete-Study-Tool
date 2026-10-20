@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ topic.title }} - Student Support</title>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+{% from "_support_icon.html" import support_icon %}
+<body class="support-page">
+    <div class="app">
+        <aside class="sidebar">
+            {% include "_sidebar_header.html" %}
+            <nav class="navigation" id="primary-navigation">
+                <a href="{{ url_for('home') }}" class="nav-link"><span class="nav-icon">▦</span>Dashboard</a>
+                <a href="{{ url_for('resources') }}" class="nav-link"><span class="nav-icon">⌕</span>Study Resources</a>
+                <a href="{{ url_for('noise_songs') }}" class="nav-link"><span class="nav-icon">♫</span>Noise &amp; Songs</a>
+                <a href="{{ url_for('time_management') }}" class="nav-link"><span class="nav-icon">✓</span>Time Management</a>
+                <a href="{{ url_for('support') }}" class="nav-link active"><span class="nav-icon">♡</span>Student Support</a>
+                {% include "_ai_nav.html" %}
+            </nav>
+            <div class="sidebar-bottom">
+                <a href="{{ url_for('settings') }}" class="nav-link"><span class="nav-icon">⚙</span>Settings</a>
+                <a href="{{ url_for('support') }}" class="nav-link"><span class="nav-icon">?</span>Help</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <a href="{{ url_for('support') }}" class="back-link">&larr; Back to Student Support</a>
+            <header class="topbar">
+                <div class="welcome support-topic-welcome">
+                    <span class="support-topic-icon">{{ support_icon(topic.slug) }}</span>
+                    <div>
+                        <h1>{{ topic.title }}</h1>
+                        <p>{{ topic.summary }}</p>
+                    </div>
+                </div>
+            </header>
+
+            <section class="dashboard support-topic-layout">
+                <section class="main-card support-topic-intro">
+                    <p>{{ topic.intro }}</p>
+                </section>
+
+                <div class="support-topic-sections">
+                    {% for section in topic.sections %}
+                    <section class="main-card support-topic-section">
+                        <h2>{{ section.title }}</h2>
+                        <ul>
+                            {% for item in section["items"] %}
+                            <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </section>
+                    {% endfor %}
+                </div>
+
+                <section class="main-card support-contact-card">
+                    <div>
+                        <h2>{{ topic.contact_title }}</h2>
+                        <p>{{ topic.contact_text }}</p>
+                    </div>
+                    {% if topic.contact_url %}
+                    <a class="support-contact-link" href="{{ topic.contact_url }}" target="_blank" rel="noopener noreferrer">{{ topic.contact_label }} <span aria-hidden="true">↗</span></a>
+                    {% endif %}
+                </section>
+
+                <section class="support-sources" aria-labelledby="support-sources-title">
+                    <h2 id="support-sources-title">Trusted sources &amp; more help</h2>
+                    <ul>
+                        {% for label, href in topic.sources %}
+                        <li><a href="{{ href }}" target="_blank" rel="noopener noreferrer">{{ label }} <span aria-hidden="true">↗</span></a></li>
+                        {% endfor %}
+                    </ul>
+                    <p>These resources offer general information, not a diagnosis. For immediate danger, contact local emergency services.</p>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <nav class="mobile-navigation">
+        <a href="{{ url_for('home') }}" class="mobile-link"><span>▦</span><small>Dashboard</small></a>
+        <a href="{{ url_for('resources') }}" class="mobile-link"><span>⌕</span><small>Resources</small></a>
+        <a href="{{ url_for('noise_songs') }}" class="mobile-link"><span>♫</span><small>Noise &amp; Songs</small></a>
+        <a href="{{ url_for('time_management') }}" class="mobile-link"><span>✓</span><small>Time</small></a>
+        <a href="{{ url_for('support') }}" class="mobile-link active"><span>♡</span><small>Support</small></a>
+        <a href="{{ url_for('ai_help') }}" class="mobile-link"><span>✦</span><small>Cypher</small></a>
+    </nav>
+</body>
+</html>

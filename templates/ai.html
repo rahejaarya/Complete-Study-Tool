@@ -15,12 +15,9 @@
         <!-- Sidebar -->
         <aside class="sidebar">
 
-            <div class="logo">
-                <div class="logo-mark">✦</div>
-                <span>StudyTool</span>
-            </div>
+            {% include "_sidebar_header.html" %}
 
-            <nav class="navigation">
+            <nav class="navigation" id="primary-navigation">
 
                 <a href="{{ url_for('home') }}" class="nav-link">
                     <span class="nav-icon">▦</span>
@@ -85,7 +82,6 @@
 
                     <div>
                         <h1>AI Study Help</h1>
-                        <p>Get assistance with your homework, summaries, and revision</p>
                     </div>
 
                 </div>
@@ -106,15 +102,7 @@
                             text-align: center;
                             margin-bottom: 18px;
                         ">
-                            <div class="eyebrow">
-                                AI ASSISTANT
-                            </div>
-
                             <h2>Ask a question or request notes summary</h2>
-
-                            <p>
-                                Type your prompt below to get instant study help.
-                            </p>
                         </div>
 
 
