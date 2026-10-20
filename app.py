@@ -61,6 +61,7 @@ USER_SONG_VIDEO_EXTENSIONS = {".mp4", ".mov", ".ogv", ".webm"}
 USER_SONG_MEDIA_EXTENSIONS = USER_SONG_AUDIO_EXTENSIONS | USER_SONG_VIDEO_EXTENSIONS
 MAX_USER_SONG_SIZE = 25 * 1024 * 1024
 MAX_USER_SONGS = 50
+MAX_PROFILE_PICTURE_SIZE = 5 * 1024 * 1024
 
 
 def youtube_video_id(media_url):
@@ -166,6 +167,31 @@ def user_save_directory(user_id):
         write_json_atomically(memory_path, {"explicit_facts": [], "facts": []})
     migrate_database_preferences(user_id, user_dir)
     return user_dir
+
+
+def profile_picture_mimetype(image_data):
+    """Identify supported raster image formats from their file signatures."""
+    if (
+        image_data.startswith(b"\x89PNG\r\n\x1a\n")
+        and len(image_data) >= 33
+        and image_data[12:16] == b"IHDR"
+    ):
+        return "image/png"
+    if image_data.startswith(b"\xff\xd8\xff") and image_data.endswith(b"\xff\xd9"):
+        return "image/jpeg"
+    if (
+        len(image_data) >= 30
+        and image_data[:4] == b"RIFF"
+        and image_data[8:12] == b"WEBP"
+        and image_data[12:16] in {b"VP8 ", b"VP8L", b"VP8X"}
+    ):
+        return "image/webp"
+    return None
+
+
+def user_profile_picture_path(user_id):
+    """Return the private profile-image path for an account."""
+    return user_save_directory(user_id) / "Settings" / "profile_picture"
 
 
 def write_json_atomically(path, data):
@@ -1014,6 +1040,13 @@ def logout():
 @login_required
 def home():
     """Render the dashboard and provide page routes for global search indexing."""
+    picture_path = user_profile_picture_path(session["user_id"])
+    profile_picture_url = None
+    if picture_path.is_file():
+        profile_picture_url = url_for(
+            "profile_picture",
+            v=picture_path.stat().st_mtime_ns,
+        )
     search_routes = [
         {"path": rule.rule, "endpoint": rule.endpoint}
         for rule in app.url_map.iter_rules()
@@ -1025,8 +1058,30 @@ def home():
     return render_template(
         "index.html",
         username=session.get("username", "User"),
+        profile_picture_url=profile_picture_url,
         search_routes=search_routes,
     )
+
+
+@app.route("/profile-picture")
+@login_required
+def profile_picture():
+    """Serve the signed-in user's profile picture without exposing account files."""
+    try:
+        picture_path = user_profile_picture_path(session["user_id"])
+        if not picture_path.is_file():
+            return "", 404
+        image_data = picture_path.read_bytes()
+        image_mimetype = profile_picture_mimetype(image_data)
+        if image_mimetype is None:
+            return "", 404
+        response = send_file(picture_path, mimetype=image_mimetype, conditional=False)
+        response.headers["Cache-Control"] = "private, no-store"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
+    except (OSError, sqlite3.Error, ValueError):
+        app.logger.exception("Could not load profile picture for the signed-in user.")
+        return "", 404
 
 
 @app.route("/appearance", methods=["GET", "POST"])
@@ -1061,6 +1116,41 @@ def settings():
                 db.commit()
                 success = "Password changed successfully!"
                 user = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+
+        elif action == "upload_profile_picture":
+            if request.content_length and request.content_length > MAX_PROFILE_PICTURE_SIZE + 128 * 1024:
+                error = "Profile pictures must be 5 MB or smaller."
+            else:
+                picture = request.files.get("profile_picture")
+                if picture is None or not picture.filename:
+                    error = "Choose a JPG, PNG, or WebP image to upload."
+                else:
+                    image_data = picture.stream.read(MAX_PROFILE_PICTURE_SIZE + 1)
+                    if len(image_data) > MAX_PROFILE_PICTURE_SIZE:
+                        error = "Profile pictures must be 5 MB or smaller."
+                    else:
+                        image_mimetype = profile_picture_mimetype(image_data)
+                        if image_mimetype is None:
+                            error = "Use a valid JPG, PNG, or WebP image."
+                        else:
+                            temporary_path = None
+                            try:
+                                picture_path = user_profile_picture_path(user_id)
+                                temporary_path = picture_path.with_name(
+                                    f".profile_picture.{uuid.uuid4().hex}.tmp"
+                                )
+                                temporary_path.write_bytes(image_data)
+                                os.replace(temporary_path, picture_path)
+                                success = "Profile picture updated."
+                            except OSError as picture_error:
+                                if temporary_path and temporary_path.exists():
+                                    temporary_path.unlink()
+                                app.logger.exception(
+                                    "Could not save profile picture for user %s: %s",
+                                    user_id,
+                                    picture_error,
+                                )
+                                error = "Your profile picture could not be saved. Please try again."
 
         elif action == "change_username":
             new_username = request.form.get("new_username", "").strip()
@@ -1147,9 +1237,17 @@ def settings():
                     return redirect(url_for("login"))
 
     db.close()
+    picture_path = user_profile_picture_path(user_id)
+    profile_picture_url = None
+    if picture_path.is_file():
+        profile_picture_url = url_for(
+            "profile_picture",
+            v=picture_path.stat().st_mtime_ns,
+        )
     return render_template(
         "settings.html",
         username=user["username"],
+        profile_picture_url=profile_picture_url,
         error=error,
         success=success,
     )

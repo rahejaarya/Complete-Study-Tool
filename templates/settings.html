@@ -32,9 +32,22 @@
             <section class="settings-card profile-card">
                 <div class="avatar-wrapper">
                     <div class="avatar-circle">
+                        {% if profile_picture_url %}
+                        <img src="{{ profile_picture_url }}" alt="Your profile picture">
+                        {% else %}
                         <span>{{ session.get("username", "A")[0]|upper }}</span>
+                        {% endif %}
                     </div>
                 </div>
+                <form method="POST" action="{{ url_for('settings') }}" class="settings-form profile-picture-form" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="upload_profile_picture">
+                    <div class="form-group">
+                        <label for="profile_picture">Profile picture</label>
+                        <input type="file" id="profile_picture" name="profile_picture" accept="image/png,image/jpeg,image/webp" required>
+                        <small>JPG, PNG, or WebP, up to 5 MB.</small>
+                    </div>
+                    <button type="submit" class="save-btn">Upload picture</button>
+                </form>
                 <h2>{{ username }}</h2>
                 <p class="user-role">Student Account</p>
                 <form method="POST" action="{{ url_for('settings') }}" class="settings-form account-username-form">

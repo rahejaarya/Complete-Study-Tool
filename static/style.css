@@ -6119,3 +6119,33 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .main-content {
         flex-direction: column;
     }
 }
+
+.avatar-circle img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile-card .profile-picture-form {
+    width: 100%;
+    margin: 0 0 1rem;
+    text-align: left;
+}
+
+.profile-picture-form input[type="file"] {
+    padding: 8px;
+    font-size: 0.88rem;
+}
+
+.profile-picture-form small {
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.welcome-profile-picture {
+    flex: 0 0 42px;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+}
