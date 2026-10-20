@@ -5381,6 +5381,16 @@ body {
     background: transparent;
 }
 
+.profile-card .account-username-form {
+    width: 100%;
+    margin: 0.25rem 0 1.1rem;
+    text-align: left;
+}
+
+.profile-card .account-username-form label {
+    color: var(--text);
+}
+
 .resource-tile,
 .appearance-mode,
 .theme-card {

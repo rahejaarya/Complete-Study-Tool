@@ -37,6 +37,18 @@
                 </div>
                 <h2>{{ username }}</h2>
                 <p class="user-role">Student Account</p>
+                <form method="POST" action="{{ url_for('settings') }}" class="settings-form account-username-form">
+                    <input type="hidden" name="action" value="change_username">
+                    <div class="form-group">
+                        <label for="new_username">Change username (also used to sign in)</label>
+                        <input type="text" id="new_username" name="new_username" value="{{ username }}" minlength="3" maxlength="64" pattern="[A-Za-z0-9_-]{3,64}" autocomplete="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="username_current_password">Current password</label>
+                        <input type="password" id="username_current_password" name="username_current_password" autocomplete="current-password" required placeholder="Confirm to update username">
+                    </div>
+                    <button type="submit" class="save-btn">Update Username</button>
+                </form>
                 <a class="logout-btn" href="{{ url_for('logout') }}">Log out ➔</a>
             </section>
 
@@ -63,17 +75,17 @@
 
                     <div class="form-group">
                         <label for="old_password">Current Password</label>
-                        <input type="password" id="old_password" name="old_password" required placeholder="••••••••">
+                        <input type="password" id="old_password" name="old_password" autocomplete="current-password" required placeholder="••••••••">
                     </div>
 
                     <div class="form-group">
                         <label for="new_password">New Password</label>
-                        <input type="password" id="new_password" name="new_password" required placeholder="New password">
+                        <input type="password" id="new_password" name="new_password" minlength="6" maxlength="16" pattern="(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9_]{6,16}" title="Use 6–16 letters, numbers, or underscores, including at least one letter and one number." autocomplete="new-password" required placeholder="New password">
                     </div>
 
                     <div class="form-group">
                         <label for="confirm_password">Confirm New Password</label>
-                        <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm new password">
+                        <input type="password" id="confirm_password" name="confirm_password" minlength="6" maxlength="16" pattern="(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9_]{6,16}" title="Use 6–16 letters, numbers, or underscores, including at least one letter and one number." autocomplete="new-password" required placeholder="Confirm new password">
                     </div>
 
                     <button type="submit" class="save-btn">Change Password</button>

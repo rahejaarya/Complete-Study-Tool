@@ -130,6 +130,11 @@ def get_db():
     return conn
 
 
+def is_valid_password(password):
+    """Require 6–16 ASCII letters, digits, or underscores, including a letter and a digit."""
+    return re.fullmatch(r"(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9_]{6,16}", password) is not None
+
+
 def ai_user_directory():
     """Return the signed-in user's persistent AI data directory."""
     return user_save_directory(session.get("user_id"))
@@ -683,8 +688,8 @@ def signup():
 
         if not 3 <= len(username) <= 64 or not username.replace("_", "").replace("-", "").isalnum():
             error = "Username must be 3-64 letters, numbers, underscores, or hyphens."
-        elif not 4 <= len(password) <= 128:
-            error = "Password must be between 4 and 128 characters."
+        elif not is_valid_password(password):
+            error = "Password must be 6–16 characters with at least one letter and one number. Use only letters, numbers, and underscores."
         elif password != password_confirmation:
             error = "Passwords do not match."
         else:
@@ -1048,14 +1053,70 @@ def settings():
                 error = "Incorrect current password."
             elif new_password != confirm_password:
                 error = "New passwords do not match."
-            elif not 8 <= len(new_password) <= 128:
-                error = "Password must be between 8 and 128 characters."
+            elif not is_valid_password(new_password):
+                error = "Password must be 6–16 characters with at least one letter and one number. Use only letters, numbers, and underscores."
             else:
                 new_hash = generate_password_hash(new_password)
                 db.execute("UPDATE users SET password_hash = ? WHERE id = ?", (new_hash, user_id))
                 db.commit()
                 success = "Password changed successfully!"
                 user = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+
+        elif action == "change_username":
+            new_username = request.form.get("new_username", "").strip()
+            current_password = request.form.get("username_current_password", "")
+
+            if not re.fullmatch(r"[A-Za-z0-9_-]{3,64}", new_username):
+                error = "Username must be 3–64 characters using letters, numbers, underscores, or hyphens."
+            elif not check_password_hash(user["password_hash"], current_password):
+                error = "Enter your current password to change your username."
+            elif new_username == user["username"]:
+                success = "That is already your username."
+            else:
+                duplicate = db.execute(
+                    "SELECT id FROM users WHERE username = ? AND id != ?",
+                    (new_username, user_id),
+                ).fetchone()
+                if duplicate:
+                    error = "That username is already taken. Choose another one."
+                else:
+                    old_username = user["username"]
+                    storage_moves = [
+                        (Path(app.config["SAVE_DATA_DIR"]) / old_username,
+                         Path(app.config["SAVE_DATA_DIR"]) / new_username),
+                        (Path(app.config["USER_SONGS_DIR"]) / old_username,
+                         Path(app.config["USER_SONGS_DIR"]) / new_username),
+                    ]
+                    moved_paths = []
+                    try:
+                        for old_path, new_path in storage_moves:
+                            if new_path.exists():
+                                raise FileExistsError(f"Account data already exists for {new_username}.")
+                            if old_path.exists():
+                                os.replace(old_path, new_path)
+                                moved_paths.append((old_path, new_path))
+
+                        db.execute(
+                            "UPDATE users SET username = ? WHERE id = ?",
+                            (new_username, user_id),
+                        )
+                        db.commit()
+                    except (OSError, sqlite3.IntegrityError) as rename_error:
+                        db.rollback()
+                        for old_path, new_path in reversed(moved_paths):
+                            try:
+                                os.replace(new_path, old_path)
+                            except OSError:
+                                app.logger.exception("Could not restore account storage after username change failed.")
+                        if isinstance(rename_error, sqlite3.IntegrityError):
+                            error = "That username is already taken. Choose another one."
+                        else:
+                            app.logger.exception("Could not move account storage for username change.")
+                            error = "Your username could not be changed right now. Please try again."
+                    else:
+                        session["username"] = new_username
+                        user = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+                        success = "Username updated successfully."
 
         # ACTION 3: DELETE ACCOUNT
         elif action == "delete_account":
@@ -1081,9 +1142,11 @@ def settings():
                 else:
                     db.execute("DELETE FROM users WHERE id = ?", (user_id,))
                     db.commit()
+                    db.close()
                     session.clear()
                     return redirect(url_for("login"))
 
+    db.close()
     return render_template(
         "settings.html",
         username=user["username"],
