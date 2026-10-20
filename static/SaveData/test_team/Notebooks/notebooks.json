@@ -1,0 +1,17 @@
+{
+  "notebooks": [
+    {
+      "id": "958c546970f144669ea952da462d7e2d",
+      "name": "Quick Notes",
+      "content": "",
+      "quick_note": ""
+    },
+    {
+      "id": "14df5d2f58fb47d3a5c9ef962bab82e9",
+      "name": "My Notebook",
+      "content": "",
+      "quick_note": ""
+    }
+  ],
+  "active_id": "958c546970f144669ea952da462d7e2d"
+}
