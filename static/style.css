@@ -4908,6 +4908,29 @@ body {
     margin-bottom: 2rem;
 }
 
+.settings-top-bar .appearance-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    margin: 0 0 18px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--white);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+}
+
+.settings-top-bar .appearance-back:hover {
+    border-color: var(--purple);
+    background: var(--purple-light);
+    color: var(--purple);
+}
+
 /* Profile and security sit above the aligned danger and appearance cards. */
 .settings-grid {
     display: grid;
