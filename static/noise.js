@@ -34,6 +34,8 @@
     const selectedActivityLabel = document.getElementById("selected-activity-label");
     const loadRecommendationsButton = document.getElementById("load-recommendations");
     const audioStatus = document.getElementById("audio-status");
+    const nowPlayingIndicator = document.getElementById("now-playing-indicator");
+    const nowPlayingLabel = document.getElementById("now-playing-label");
     const volumeInput = document.getElementById("master-volume");
     const volumeValue = document.getElementById("volume-value");
     const oceanAudio = document.getElementById("ocean-waves-audio");
@@ -41,6 +43,17 @@
     let masterGain;
     const activeSounds = new Map();
     const soundVolumes = new Map(cards.map((card) => [card.dataset.sound, 1]));
+
+    function updateNowPlaying() {
+        const playingLabels = Array.from(activeSounds.keys(), (soundId) => soundLabels[soundId]);
+        const hasAudio = playingLabels.length > 0;
+        nowPlayingIndicator?.classList.toggle("is-playing", hasAudio);
+        if (nowPlayingLabel) {
+            nowPlayingLabel.textContent = hasAudio
+                ? `Now playing · ${playingLabels.length > 2 ? `${playingLabels.length} sounds` : playingLabels.join(", ")}`
+                : "Nothing playing";
+        }
+    }
 
     // Create the shared Web Audio graph once and apply the master volume.
     function getAudioContext() {
@@ -108,23 +121,40 @@
         gain.gain.value = baseVolume * soundVolumes.get(kind);
         gain.connect(masterGain);
         let noteIndex = 0;
-        const playNote = () => {
-            const oscillator = context.createOscillator();
-            const noteGain = context.createGain();
-            oscillator.type = profile.type;
-            oscillator.frequency.value = profile.notes[noteIndex % profile.notes.length];
-            noteGain.gain.setValueAtTime(0, context.currentTime);
-            noteGain.gain.linearRampToValueAtTime(0.7, context.currentTime + 0.04);
-            noteGain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + profile.decay);
-            oscillator.connect(noteGain).connect(gain);
-            oscillator.start();
-            oscillator.stop(context.currentTime + profile.decay + 0.1);
-            noteIndex += 1;
+        const scheduledOscillators = new Set();
+        let nextNoteTime = context.currentTime;
+        const scheduleNotes = () => {
+            const scheduleThrough = context.currentTime + 8;
+            while (nextNoteTime < scheduleThrough) {
+                const oscillator = context.createOscillator();
+                const noteGain = context.createGain();
+                oscillator.type = profile.type;
+                oscillator.frequency.value = profile.notes[noteIndex % profile.notes.length];
+                noteGain.gain.setValueAtTime(0, nextNoteTime);
+                noteGain.gain.linearRampToValueAtTime(0.7, nextNoteTime + 0.04);
+                noteGain.gain.exponentialRampToValueAtTime(0.001, nextNoteTime + profile.decay);
+                oscillator.connect(noteGain).connect(gain);
+                oscillator.onended = () => {
+                    scheduledOscillators.delete(oscillator);
+                    oscillator.disconnect();
+                    noteGain.disconnect();
+                };
+                scheduledOscillators.add(oscillator);
+                oscillator.start(nextNoteTime);
+                oscillator.stop(nextNoteTime + profile.decay + 0.1);
+                noteIndex += 1;
+                nextNoteTime += profile.interval / 1000;
+            }
         };
-        playNote();
-        const interval = window.setInterval(playNote, profile.interval);
+        scheduleNotes();
+        const interval = window.setInterval(scheduleNotes, 4000);
         return {
-            stop: () => window.clearInterval(interval),
+            stop: () => {
+                window.clearInterval(interval);
+                scheduledOscillators.forEach((oscillator) => oscillator.stop());
+                scheduledOscillators.clear();
+                gain.disconnect();
+            },
             setVolume: (value) => { gain.gain.setTargetAtTime(baseVolume * value, context.currentTime, 0.02); }
         };
     }
@@ -185,6 +215,7 @@
             activeSounds.get(soundId).stop();
             activeSounds.delete(soundId);
             updateCard(soundId, false);
+            updateNowPlaying();
             audioStatus.textContent = `${soundLabels[soundId]} stopped.`;
             return;
         }
@@ -224,6 +255,7 @@
         }
         activeSounds.set(soundId, sound);
         updateCard(soundId, true);
+        updateNowPlaying();
         audioStatus.textContent = `${soundLabels[soundId]} is playing.`;
     }
 
@@ -287,6 +319,7 @@
             updateCard(soundId, false);
         });
         activeSounds.clear();
+        updateNowPlaying();
         audioStatus.textContent = "All sounds stopped.";
     });
 
@@ -298,5 +331,13 @@
         activeSounds.forEach((sound, soundId) => {
             sound.setVolume?.(soundVolumes.get(soundId), value / 100);
         });
+    });
+
+    // Browsers may suspend Web Audio when a page returns from the background.
+    // Resume only an audio context that already has sounds playing.
+    document.addEventListener("visibilitychange", () => {
+        if (!document.hidden && activeSounds.size && audioContext?.state === "suspended") {
+            void audioContext.resume();
+        }
     });
 })();

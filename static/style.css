@@ -3921,6 +3921,55 @@ body {
     margin-bottom: 24px;
 }
 
+.now-playing-indicator {
+    min-width: 150px;
+    max-width: min(320px, 45vw);
+    min-height: 38px;
+    padding: 8px 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 9px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+.now-playing-dot {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--muted);
+}
+
+.now-playing-indicator.is-playing {
+    border-color: var(--purple);
+    color: var(--text);
+}
+
+.now-playing-indicator.is-playing .now-playing-dot {
+    background: var(--purple);
+    box-shadow: 0 0 0 3px var(--purple-light);
+}
+
+.now-playing-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .now-playing-indicator {
+        min-width: 38px;
+        max-width: 46vw;
+        padding-inline: 10px;
+    }
+}
+
 .sound-hero {
     min-height: 220px;
     margin-bottom: 28px;
