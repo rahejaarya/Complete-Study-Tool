@@ -103,6 +103,33 @@ class AuthTests(unittest.TestCase):
             timeout=10,
         )
 
+    def test_translate_endpoint_falls_back_when_primary_provider_fails(self):
+        self.client.post(
+            '/login',
+            data={'username': 'admin', 'password': 'admin123'},
+            follow_redirects=False,
+        )
+        primary_response = Mock()
+        primary_response.json.return_value = {'responseStatus': 429}
+        fallback_response = Mock()
+        fallback_response.json.return_value = {'translatedText': 'Hola'}
+
+        with patch('app.requests.get', return_value=primary_response), patch(
+            'app.requests.post', return_value=fallback_response
+        ) as fallback_request:
+            response = self.client.post(
+                '/api/translate',
+                json={'text': 'Hello', 'source': 'en', 'target': 'es'},
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), {'translatedText': 'Hola'})
+        fallback_request.assert_called_once_with(
+            'https://translate.argosopentech.com/translate',
+            json={'q': 'Hello', 'source': 'en', 'target': 'es', 'format': 'text'},
+            timeout=10,
+        )
+
     def test_signup_rejects_duplicate_username(self):
         response = self.client.post(
             '/signup',

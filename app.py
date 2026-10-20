@@ -1142,6 +1142,7 @@ def translate_text():
     ):
         return jsonify({"error": "Choose supported source and target languages."}), 400
 
+    translation = None
     try:
         response = requests.get(
             "https://api.mymemory.translated.net/get",
@@ -1153,22 +1154,42 @@ def translate_text():
         )
         response.raise_for_status()
         payload = response.json()
+        response_data = payload.get("responseData") if isinstance(payload, dict) else None
+        if isinstance(response_data, dict) and str(payload.get("responseStatus")) == "200":
+            translation = response_data.get("translatedText")
     except (requests.RequestException, ValueError):
-        return jsonify({"error": "The translation service is unavailable."}), 502
+        pass
 
-    response_data = payload.get("responseData") if isinstance(payload, dict) else None
-    translation = response_data.get("translatedText") if isinstance(response_data, dict) else None
-    if str(payload.get("responseStatus")) != "200" or not isinstance(translation, str):
+    if not isinstance(translation, str):
+        for endpoint in (
+            "https://translate.argosopentech.com/translate",
+            "https://translate.terraprint.co/translate",
+        ):
+            try:
+                response = requests.post(
+                    endpoint,
+                    json={
+                        "q": text,
+                        "source": source,
+                        "target": target,
+                        "format": "text",
+                    },
+                    timeout=10,
+                )
+                response.raise_for_status()
+                payload = response.json()
+                candidate = payload.get("translatedText") if isinstance(payload, dict) else None
+                if isinstance(candidate, str):
+                    translation = candidate
+                    break
+            except (requests.RequestException, ValueError):
+                continue
+
+    if not isinstance(translation, str):
         return jsonify({"error": "The translation service could not translate this text."}), 502
     return jsonify({"translatedText": translation})
 
 
-@app.route("/test-study-resources")
-@login_required
-def test_study_resources():
-    """Render the test study resources page."""
-    query = request.args.get("query", "").strip()
-    return render_template("testStudyResources.html", query=query)
 
 
 @app.route("/focus")
