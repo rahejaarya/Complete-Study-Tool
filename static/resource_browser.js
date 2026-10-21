@@ -31,6 +31,33 @@
         const description = document.createElement("p");
         description.className = "resource-browser-result-description";
         description.textContent = resource.description || "Open this link to explore the topic.";
+        if (type === "Video" && /^[A-Za-z0-9_-]{11}$/.test(resource.video_id || "")) {
+            const preview = document.createElement("a");
+            preview.className = "resource-browser-video-preview";
+            preview.href = resource.url;
+            preview.target = "_blank";
+            preview.rel = "noopener noreferrer";
+            preview.setAttribute("aria-label", `Watch ${resource.title} on YouTube`);
+            const image = document.createElement("img");
+            image.src = `https://img.youtube.com/vi/${resource.video_id}/hqdefault.jpg`;
+            image.alt = `YouTube preview for ${resource.title}`;
+            image.loading = "lazy";
+            image.referrerPolicy = "no-referrer";
+            image.addEventListener("error", () => {
+                if (!image.dataset.fallbackTried) {
+                    image.dataset.fallbackTried = "true";
+                    image.src = `https://img.youtube.com/vi/${resource.video_id}/mqdefault.jpg`;
+                } else {
+                    preview.hidden = true;
+                }
+            });
+            const play = document.createElement("span");
+            play.className = "resource-browser-video-play";
+            play.setAttribute("aria-hidden", "true");
+            play.textContent = "▶";
+            preview.append(image, play);
+            card.append(preview);
+        }
         card.append(heading, metadata, description);
         return card;
     }
@@ -72,10 +99,21 @@
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || "The search could not be completed.");
 
-            topicHeading.textContent = data.query;
+            const searchedTopic = data.corrected_query || data.query;
+            topicHeading.textContent = searchedTopic;
             summary.textContent = "Preparing your overview…";
             sourceNote.textContent = data.search_note || "Descriptions are search-result summaries. Open a source to read its full content.";
-            renderList(videosContainer, data.video_results || [], "Video", "No matching videos came back. Try another wording.");
+            const videoResults = data.video_results || [];
+            renderList(videosContainer, videoResults, "Video", "No direct video matches came back.");
+            if (!videoResults.length) {
+                const fallback = document.createElement("a");
+                fallback.className = "resource-browser-youtube-search";
+                fallback.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${searchedTopic} lesson`)}`;
+                fallback.target = "_blank";
+                fallback.rel = "noopener noreferrer";
+                fallback.textContent = `Search YouTube for “${searchedTopic}”`;
+                videosContainer.append(fallback);
+            }
             renderList(webContainer, data.web_results || [], "Website or resource", "No matching websites came back. Try another wording.");
             results.hidden = false;
             results.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -85,7 +123,7 @@
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    query: data.query,
+                    query: searchedTopic,
                     web_results: data.web_results || [],
                     video_results: data.video_results || []
                 }),
@@ -94,10 +132,10 @@
                 .then(async (summaryResponse) => {
                     const summaryData = await summaryResponse.json();
                     if (!summaryResponse.ok) throw new Error(summaryData.error || "Overview unavailable.");
-                    if (topicHeading.textContent === data.query) summary.textContent = summaryData.summary;
+                    if (topicHeading.textContent === searchedTopic) summary.textContent = summaryData.summary;
                 })
                 .catch((summaryError) => {
-                    if (summaryError.name !== "AbortError" && topicHeading.textContent === data.query) {
+                    if (summaryError.name !== "AbortError" && topicHeading.textContent === searchedTopic) {
                         summary.textContent = summaryError.message || "Cypher could not prepare an overview right now.";
                     }
                 });

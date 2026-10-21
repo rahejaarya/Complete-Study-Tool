@@ -8,6 +8,7 @@ import tempfile
 import uuid
 import requests
 from concurrent.futures import ThreadPoolExecutor
+from difflib import get_close_matches
 from datetime import datetime, timezone
 from functools import wraps
 from pathlib import Path
@@ -31,6 +32,7 @@ try:
     from static.ai import (  # type: ignore[reportMissingImports]
         ask_ai,
         bound_conversation_history,
+        correct_study_query,
         find_resources,
         search_educational_videos,
         search_web,
@@ -43,6 +45,7 @@ except ModuleNotFoundError:  # pragma: no cover
     from app.static.ai import (  # type: ignore
         ask_ai,
         bound_conversation_history,
+        correct_study_query,
         find_resources,
         search_educational_videos,
         search_web,
@@ -1305,12 +1308,78 @@ def resource_browser_search():
     if len(query) > 180:
         return jsonify({"error": "Keep the topic under 180 characters."}), 400
 
-    # Both remote searches are independent, so run them together to reduce wait time.
-    with ThreadPoolExecutor(max_workers=2) as search_pool:
-        web_future = search_pool.submit(search_web, f"{query} educational resources")
-        video_future = search_pool.submit(search_educational_videos, query)
-        web_results = web_future.result()
-        video_results = video_future.result()
+    def search_topic(search_query):
+        # Keep video search, general web search, and a YouTube-only text fallback
+        # in parallel so a failed video index does not leave the page empty.
+        with ThreadPoolExecutor(max_workers=3) as search_pool:
+            futures = (
+                search_pool.submit(search_web, f"{search_query} educational resources"),
+                search_pool.submit(search_educational_videos, search_query),
+                search_pool.submit(search_web, f"site:youtube.com/watch {search_query} lesson"),
+            )
+            try:
+                web_results = futures[0].result()
+            except Exception:
+                app.logger.exception("Web resource search failed for %r", search_query)
+                web_results = []
+            try:
+                video_results = futures[1].result()
+            except Exception:
+                app.logger.exception("Video search failed for %r", search_query)
+                video_results = []
+            try:
+                youtube_pages = futures[2].result()
+            except Exception:
+                app.logger.exception("YouTube fallback search failed for %r", search_query)
+                youtube_pages = []
+
+        seen_video_urls = {str(item.get("url") or "") for item in video_results if isinstance(item, dict)}
+        for page in youtube_pages:
+            if not isinstance(page, dict):
+                continue
+            url = str(page.get("url") or "").strip()
+            video_id = youtube_video_id(url)
+            if not video_id:
+                continue
+            normalized_url = f"https://www.youtube.com/watch?v={video_id}"
+            if normalized_url in seen_video_urls:
+                continue
+            video_results.append({
+                "title": page.get("title") or "YouTube lesson",
+                "url": normalized_url,
+                "video_id": video_id,
+                "thumbnail": f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg",
+                "description": page.get("description") or "Open this YouTube lesson to learn more about the topic.",
+                "publisher": "YouTube",
+            })
+            seen_video_urls.add(normalized_url)
+            if len(video_results) >= 5:
+                break
+        return web_results, video_results
+
+    web_results, video_results = search_topic(query)
+    corrected_query = query
+    # Search titles can reveal a near-match (for example, "photosynthsis" vs
+    # "photosynthesis"). Ask Cypher to correct only when results are missing or
+    # the sources suggest a likely typo, so ordinary searches stay fast.
+    result_words = {
+        word.casefold()
+        for result in [*web_results, *video_results]
+        if isinstance(result, dict)
+        for word in re.findall(r"[A-Za-z]{4,}", f"{result.get('title', '')} {result.get('description', '')}")
+    }
+    query_words = [word.casefold() for word in re.findall(r"[A-Za-z]{5,}", query)]
+    spelling_clue = any(
+        word not in result_words and get_close_matches(word, result_words, n=1, cutoff=0.82)
+        for word in query_words
+    )
+    if not web_results or not video_results or spelling_clue:
+        suggestion = correct_study_query(query).strip()
+        if suggestion and suggestion.casefold() != query.casefold():
+            corrected_web, corrected_videos = search_topic(suggestion)
+            if spelling_clue or len(corrected_web) + len(corrected_videos) > len(web_results) + len(video_results):
+                corrected_query = suggestion
+                web_results, video_results = corrected_web, corrected_videos
 
     def safe_results(results, limit):
         safe = []
@@ -1340,9 +1409,13 @@ def resource_browser_search():
     video_results = safe_results(video_results, 5)
     return jsonify({
         "query": query,
+        "corrected_query": corrected_query,
         "web_results": web_results,
         "video_results": video_results,
-        "search_note": "Descriptions are search-result summaries. Open a source to read its full content." if web_results or video_results else "No web results were returned. Try a more specific topic or search again later.",
+        "search_note": (
+            f"Showing results for {corrected_query!r}, with spelling corrected from your search. "
+            if corrected_query != query else ""
+        ) + ("Descriptions are search-result summaries. Open a source to read its full content." if web_results or video_results else "No web results were returned. Check your connection or try another topic."),
     })
 
 

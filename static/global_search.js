@@ -20,7 +20,7 @@
     function addItem(item) {
         const key = `${item.category}|${item.url}|${item.title}`;
         if (!pageIndex.some((existing) => existing.key === key)) {
-            pageIndex.push({ ...item, key, searchText: `${item.title} ${item.description || ""} ${item.keywords || ""}`.toLowerCase() });
+            pageIndex.push({ ...item, key, searchText: `${item.title} ${item.keywords || ""}`.toLowerCase() });
         }
     }
 
@@ -58,6 +58,7 @@
                 const { path, endpoint, document } = page;
                 const pageTitle = readableText(document.querySelector("h1")) || document.title || endpoint;
                 addItem({
+                    type: "page",
                     title: pageTitle,
                     category: routeCategory(path),
                     description: `${endpoint.replaceAll("_", " ")} page`,
@@ -246,18 +247,23 @@
         }
 
         const terms = normalizedQuery.split(/\s+/);
-        const matches = indexedFeatures
+        const rankedMatches = indexedFeatures
             .map((item) => {
                 const termScores = terms.map((term) => {
                     if (item.title.toLowerCase().includes(term)) return 5;
-                    if ((item.description || "").toLowerCase().includes(term)) return 2;
                     if (item.searchText.includes(term)) return 1;
                     return 0;
                 });
                 return { item, score: termScores.reduce((total, score) => total + score, 0), matchesAllTerms: termScores.every((score) => score > 0) };
             })
             .filter((match) => match.matchesAllTerms)
-            .sort((first, second) => second.score - first.score || first.item.title.localeCompare(second.item.title))
+            .sort((first, second) => second.score - first.score || first.item.title.localeCompare(second.item.title));
+
+        const directPagePaths = new Set(rankedMatches
+            .filter(({ item }) => item.type === "page" && terms.every((term) => item.title.toLowerCase().includes(term)))
+            .map(({ item }) => new URL(item.url, window.location.origin).pathname));
+        const matches = rankedMatches
+            .filter(({ item }) => !directPagePaths.has(new URL(item.url, window.location.origin).pathname) || item.type === "page")
             .slice(0, 60);
 
         if (matches.length === 0) {

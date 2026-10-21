@@ -1,6 +1,6 @@
 import json
 import re
-from urllib.parse import quote_plus, urlsplit
+from urllib.parse import parse_qs, quote_plus, urlsplit
 from datetime import date
 
 import ollama
@@ -800,10 +800,11 @@ def search_educational_videos(topic, max_results=5):
     """Search for videos related to a student's topic and return safe link data."""
     try:
         results = DDGS().videos(
-            topic,
+            f"{topic} lesson",
             region="us-en",
             safesearch="moderate",
             max_results=max_results,
+            license_videos="youtube",
         )
     except Exception as error:
         print(f"Video search error: {error}")
@@ -815,17 +816,31 @@ def search_educational_videos(topic, max_results=5):
         url = str(result.get("content") or result.get("embed_url") or "").strip()
         description = str(result.get("description") or "").strip()
         parsed_url = urlsplit(url)
+        hostname = (parsed_url.hostname or "").lower()
+        video_id = ""
+        if hostname in {"youtube.com", "www.youtube.com", "m.youtube.com", "youtube-nocookie.com", "www.youtube-nocookie.com"}:
+            if parsed_url.path == "/watch":
+                video_id = parse_qs(parsed_url.query).get("v", [""])[0]
+            else:
+                parts = parsed_url.path.strip("/").split("/")
+                if len(parts) == 2 and parts[0] in {"embed", "shorts", "live"}:
+                    video_id = parts[1]
+        elif hostname in {"youtu.be", "www.youtu.be"}:
+            video_id = parsed_url.path.strip("/").split("/")[0]
         if (
             not title
             or parsed_url.scheme not in {"http", "https"}
-            or not parsed_url.hostname
+            or not hostname
+            or not re.fullmatch(r"[A-Za-z0-9_-]{11}", video_id)
         ):
             continue
         images = result.get("images") or {}
         statistics = result.get("statistics") or {}
         cleaned.append({
             "title": title[:240],
-            "url": url,
+            "url": f"https://www.youtube.com/watch?v={video_id}",
+            "video_id": video_id,
+            "thumbnail": f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg",
             "description": description[:700],
             "publisher": str(result.get("publisher") or result.get("uploader") or "").strip()[:120],
             "duration": str(result.get("duration") or "").strip()[:40],
@@ -844,6 +859,34 @@ def search_educational_videos(topic, max_results=5):
             "publisher": "YouTube search",
         })
     return cleaned
+
+
+def correct_study_query(query):
+    """Correct clear spelling mistakes in a topic, without rewriting its meaning."""
+    try:
+        response = ollama.chat(
+            model=MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "Correct only clear spelling mistakes in a student's search topic. "
+                        "Keep names, abbreviations, wording, and meaning unchanged. "
+                        "Return only the corrected topic, with no explanation. If no clear typo exists, return it unchanged."
+                    ),
+                },
+                {"role": "user", "content": query},
+            ],
+            think=False,
+            stream=False,
+            options={"temperature": 0, "num_predict": 48},
+        )
+        suggestion = response.get("message", {}).get("content", "").strip().strip("\"'` ")
+        if 1 <= len(suggestion) <= 180 and "\n" not in suggestion:
+            return suggestion
+    except Exception as error:
+        print(f"Study query spelling correction error: {error}")
+    return query
 
 
 def summarize_study_topic(topic, web_results, video_results):
