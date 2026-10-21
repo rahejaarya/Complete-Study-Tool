@@ -99,22 +99,32 @@
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || "The search could not be completed.");
 
-            const searchedTopic = data.corrected_query || data.query;
+            const searchedTopic = data.query;
             topicHeading.textContent = searchedTopic;
             summary.textContent = "Preparing your overview…";
             sourceNote.textContent = data.search_note || "Descriptions are search-result summaries. Open a source to read its full content.";
             const videoResults = data.video_results || [];
-            renderList(videosContainer, videoResults, "Video", "No direct video matches came back.");
+            renderList(videosContainer, videoResults, "Video", "Explore related video lessons for this topic.");
             if (!videoResults.length) {
                 const fallback = document.createElement("a");
-                fallback.className = "resource-browser-youtube-search";
-                fallback.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${searchedTopic} lesson`)}`;
+                fallback.className = "resource-browser-fallback-link";
+                fallback.href = data.video_search_url || `https://www.youtube.com/results?search_query=${encodeURIComponent(`${searchedTopic} lesson explained`)}`;
                 fallback.target = "_blank";
                 fallback.rel = "noopener noreferrer";
-                fallback.textContent = `Search YouTube for “${searchedTopic}”`;
+                fallback.textContent = `Browse related lessons on YouTube`;
                 videosContainer.append(fallback);
             }
-            renderList(webContainer, data.web_results || [], "Website or resource", "No matching websites came back. Try another wording.");
+            const webResults = data.web_results || [];
+            renderList(webContainer, webResults, "Website or resource", "Explore more study resources for this topic.");
+            if (!webResults.length) {
+                const fallback = document.createElement("a");
+                fallback.className = "resource-browser-fallback-link";
+                fallback.href = data.web_search_url || `https://www.google.com/search?q=${encodeURIComponent(`${searchedTopic} learning resources`)}`;
+                fallback.target = "_blank";
+                fallback.rel = "noopener noreferrer";
+                fallback.textContent = "See more learning resources on Google";
+                webContainer.append(fallback);
+            }
             results.hidden = false;
             results.scrollIntoView({ behavior: "smooth", block: "start" });
 

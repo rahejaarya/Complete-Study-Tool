@@ -3983,7 +3983,7 @@ body {
     transform: translate(-50%, -50%);
 }
 
-.resource-browser-youtube-search {
+.resource-browser-fallback-link {
     display: inline-flex;
     align-items: center;
     width: fit-content;
@@ -3998,8 +3998,8 @@ body {
     text-decoration: none;
 }
 
-.resource-browser-youtube-search:hover,
-.resource-browser-youtube-search:focus-visible {
+.resource-browser-fallback-link:hover,
+.resource-browser-fallback-link:focus-visible {
     border-color: var(--accent-strong);
     outline: none;
 }

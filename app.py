@@ -8,11 +8,10 @@ import tempfile
 import uuid
 import requests
 from concurrent.futures import ThreadPoolExecutor
-from difflib import get_close_matches
 from datetime import datetime, timezone
 from functools import wraps
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse, urlsplit
+from urllib.parse import parse_qs, quote_plus, urlparse, urlsplit
 
 from flask import (
     Flask,
@@ -32,11 +31,11 @@ try:
     from static.ai import (  # type: ignore[reportMissingImports]
         ask_ai,
         bound_conversation_history,
-        correct_study_query,
         find_resources,
         search_educational_videos,
         search_web,
         should_recommend_resources,
+        study_search_terms,
         summarize_conversation,
         summarize_study_topic,
         update_user_memory,
@@ -45,11 +44,11 @@ except ModuleNotFoundError:  # pragma: no cover
     from app.static.ai import (  # type: ignore
         ask_ai,
         bound_conversation_history,
-        correct_study_query,
         find_resources,
         search_educational_videos,
         search_web,
         should_recommend_resources,
+        study_search_terms,
         summarize_conversation,
         summarize_study_topic,
         update_user_memory,
@@ -1311,11 +1310,12 @@ def resource_browser_search():
     def search_topic(search_query):
         # Keep video search, general web search, and a YouTube-only text fallback
         # in parallel so a failed video index does not leave the page empty.
+        search_terms = study_search_terms(search_query)
         with ThreadPoolExecutor(max_workers=3) as search_pool:
             futures = (
-                search_pool.submit(search_web, f"{search_query} educational resources"),
-                search_pool.submit(search_educational_videos, search_query),
-                search_pool.submit(search_web, f"site:youtube.com/watch {search_query} lesson"),
+                search_pool.submit(search_web, f"{search_terms} learning resources"),
+                search_pool.submit(search_educational_videos, search_terms),
+                search_pool.submit(search_web, f"site:youtube.com/watch {search_terms} lesson"),
             )
             try:
                 web_results = futures[0].result()
@@ -1358,28 +1358,6 @@ def resource_browser_search():
         return web_results, video_results
 
     web_results, video_results = search_topic(query)
-    corrected_query = query
-    # Search titles can reveal a near-match (for example, "photosynthsis" vs
-    # "photosynthesis"). Ask Cypher to correct only when results are missing or
-    # the sources suggest a likely typo, so ordinary searches stay fast.
-    result_words = {
-        word.casefold()
-        for result in [*web_results, *video_results]
-        if isinstance(result, dict)
-        for word in re.findall(r"[A-Za-z]{4,}", f"{result.get('title', '')} {result.get('description', '')}")
-    }
-    query_words = [word.casefold() for word in re.findall(r"[A-Za-z]{5,}", query)]
-    spelling_clue = any(
-        word not in result_words and get_close_matches(word, result_words, n=1, cutoff=0.82)
-        for word in query_words
-    )
-    if not web_results or not video_results or spelling_clue:
-        suggestion = correct_study_query(query).strip()
-        if suggestion and suggestion.casefold() != query.casefold():
-            corrected_web, corrected_videos = search_topic(suggestion)
-            if spelling_clue or len(corrected_web) + len(corrected_videos) > len(web_results) + len(video_results):
-                corrected_query = suggestion
-                web_results, video_results = corrected_web, corrected_videos
 
     def safe_results(results, limit):
         safe = []
@@ -1409,13 +1387,11 @@ def resource_browser_search():
     video_results = safe_results(video_results, 5)
     return jsonify({
         "query": query,
-        "corrected_query": corrected_query,
         "web_results": web_results,
         "video_results": video_results,
-        "search_note": (
-            f"Showing results for {corrected_query!r}, with spelling corrected from your search. "
-            if corrected_query != query else ""
-        ) + ("Descriptions are search-result summaries. Open a source to read its full content." if web_results or video_results else "No web results were returned. Check your connection or try another topic."),
+        "video_search_url": f"https://www.youtube.com/results?search_query={quote_plus(study_search_terms(query) + ' lesson explained')}",
+        "web_search_url": f"https://www.google.com/search?q={quote_plus(study_search_terms(query) + ' learning resources')}",
+        "search_note": "Descriptions are search-result summaries. Open a source to read its full content." if web_results or video_results else "No search listings were returned. Use the related video search below or try another topic.",
     })
 
 
