@@ -12,7 +12,9 @@
     <main class="settings-container">
         <header class="settings-top-bar">
             <a class="logo settings-brand" href="{{ url_for('home') }}" aria-label="Meridian dashboard">
-                <span class="logo-mark" aria-hidden="true">✦</span>
+                <span class="logo-mark" aria-hidden="true">
+                    <img src="{{ url_for('static', filename='meridian-logo.png') }}" alt="">
+                </span>
                 <span>Meridian</span>
             </a>
             <a class="appearance-back" href="{{ url_for('home') }}">← Back to dashboard</a>

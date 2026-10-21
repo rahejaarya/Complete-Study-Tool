@@ -1,6 +1,8 @@
 <div class="sidebar-heading">
     <a class="logo" href="{{ url_for('home') }}" aria-label="Meridian dashboard">
-        <span class="logo-mark" aria-hidden="true">✦</span>
+        <span class="logo-mark" aria-hidden="true">
+            <img src="{{ url_for('static', filename='meridian-logo.png') }}" alt="">
+        </span>
         <span class="logo-name">Meridian</span>
     </a>
     <button

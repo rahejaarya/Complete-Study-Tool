@@ -93,7 +93,9 @@
                         </div>
                     </div>
                     <label class="global-search-trigger" for="global-search-open" title="Search all features (⌘K or Ctrl+K)">
-                        <span aria-hidden="true">⌕</span>
+                        <span class="global-search-brand-mark" aria-hidden="true">
+                            <img src="{{ url_for('static', filename='meridian-logo.png') }}" alt="">
+                        </span>
                         <input id="global-search-open" type="search" placeholder="Search features..." readonly aria-haspopup="dialog" aria-controls="global-search-dialog" aria-expanded="false">
                         <kbd>⌘/Ctrl K</kbd>
                     </label>
@@ -357,10 +359,10 @@
     <!-- Global search overlay for jumping across the app without navigating manually. -->
     <div class="global-search-overlay" id="global-search-overlay" hidden>
         <section class="global-search-dialog" id="global-search-dialog" role="dialog" aria-modal="true" aria-labelledby="global-search-title">
-            <h2 class="visually-hidden" id="global-search-title">Search StudyTool</h2>
+            <h2 class="visually-hidden" id="global-search-title">Search Meridian</h2>
             <label class="global-search-input-wrap">
                 <span aria-hidden="true">⌕</span>
-                <input id="global-search-input" type="search" autocomplete="off" placeholder="Search pages, sounds, timers, settings..." aria-label="Search all StudyTool features" aria-controls="global-search-results">
+                <input id="global-search-input" type="search" autocomplete="off" placeholder="Search pages, sounds, timers, settings..." aria-label="Search all Meridian features" aria-controls="global-search-results">
                 <kbd>ESC</kbd>
                 <button class="global-search-close" id="global-search-close" type="button" aria-label="Close search">×</button>
             </label>
