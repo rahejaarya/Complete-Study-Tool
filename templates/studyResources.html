@@ -76,7 +76,7 @@
                     <div class="welcome-icon">{{ app_icon("resources") }}</div>
                     <div>
                         <h1>What do you want to learn?</h1>
-                        <p>Ask the AI to explain a topic, help with an assignment, or find study resources.</p>
+                        <p>Find free resources for any subject or topic.</p>
                     </div>
                 </div>
 
@@ -86,28 +86,35 @@
             <!-- Resources Dashboard Wireframe -->
             <section class="dashboard">
 
+                <!-- Search Input Form -->
                 <div class="main-card study-card">
-                    <div id="study-chat-layout" class="study-chat-layout">
-                        <div id="study-chat-greeting" class="study-chat-greeting">
-                            <span class="study-chat-sparkle" aria-hidden="true">✦</span>
-                            <h2>What can I help you study?</h2>
-                            <p>Ask a question, get an explanation, or request helpful learning resources.</p>
+
+                    <form id="resource-search-form" action="{{ url_for('resources') }}" method="GET">
+
+                        <div class="search-box" style="margin: 0; background: var(--bg, #f4f5f7); border: 1px solid var(--border-color, #e0e0e0); border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; gap: 10px;">
+                            <span class="search-icon">🔍</span>
+                            <input 
+                                type="text" 
+                                id="search-input"
+                                name="query" 
+                                value="{{ query if query else '' }}"
+                                placeholder="Search a topic, subject, or assignment..." 
+                                style="border:none; background:transparent; width:100%; outline:none; font-size:15px; color:#111111;"
+                            >
                         </div>
-                    <div id="study-chat-messages" class="chat-messages" aria-live="polite" aria-label="Study conversation"></div>
-                    <form id="study-ai-form" class="study-ai-form">
-                        <label class="visually-hidden" for="study-ai-input">Your study prompt</label>
-                        <span class="search-icon" aria-hidden="true">✦</span>
-                        <input id="study-ai-input" type="text" autocomplete="off" placeholder="Ask anything about what you're studying...">
-                        <button id="study-ai-send" type="submit">Ask AI</button>
+
                     </form>
-                    </div>
-                    </form>
+
                 </div>
 
 
                 <!-- Your Recent Searches -->
                 <div class="section-heading">
                     <h2>Your Recent Searches</h2>
+                </div>
+
+                <div id="recent-searches-list" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px;">
+                    <!-- Recent search chips will render here -->
                 </div>
 
                 <!-- Translator Section -->
