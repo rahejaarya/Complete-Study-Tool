@@ -1272,7 +1272,7 @@ def resources():
         filtered_resources = all_resources
 
     return render_template(
-        "resources.html",
+        "studyResources.html",
         resources=filtered_resources,
         query=query,
         web_results=web_results,
