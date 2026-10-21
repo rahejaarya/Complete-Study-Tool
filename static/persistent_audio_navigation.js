@@ -10,6 +10,7 @@
     let routeLayer;
     let nowPlaying;
     let nowPlayingText;
+    let pauseButton;
     let stopButton;
 
     function isInternalUrl(rawUrl) {
@@ -20,15 +21,19 @@
         }
     }
 
-    function updatePlayer(labels = window.studyToolGetAudioLabels?.() || []) {
+    function updatePlayer(state = window.studyToolGetAudioState?.()) {
         if (!nowPlaying) return;
-        const playing = Boolean(window.studyToolHasActiveAudio?.());
-        nowPlaying.hidden = !playing;
-        nowPlaying.classList.toggle("is-playing", playing);
-        nowPlayingText.textContent = labels.length
-            ? `Now playing · ${labels.length > 2 ? `${labels.length} sounds` : labels.join(", ")}`
+        state ||= { labels: [], hasAudio: false, paused: false };
+        nowPlaying.hidden = !state.hasAudio;
+        nowPlaying.classList.toggle("is-playing", state.hasAudio && !state.paused);
+        nowPlaying.classList.toggle("is-paused", state.hasAudio && state.paused);
+        nowPlayingText.textContent = state.labels?.length
+            ? `${state.paused ? "Paused" : "Now playing"} · ${state.labels.join(", ")}`
             : "Audio is playing";
-        stopButton.hidden = !playing;
+        pauseButton.hidden = !state.hasAudio;
+        pauseButton.textContent = state.paused ? "Resume" : "Pause";
+        pauseButton.setAttribute("aria-label", state.paused ? "Resume audio" : "Pause audio");
+        stopButton.hidden = !state.hasAudio;
     }
 
     function createPlayer() {
@@ -42,12 +47,17 @@
         const dot = document.createElement("span");
         dot.className = "now-playing-dot";
         dot.setAttribute("aria-hidden", "true");
+        pauseButton = document.createElement("button");
+        pauseButton.type = "button";
+        pauseButton.className = "persistent-now-playing-control";
+        pauseButton.textContent = "Pause";
+        pauseButton.addEventListener("click", () => void window.studyToolToggleAudioPause?.());
         stopButton = document.createElement("button");
         stopButton.type = "button";
         stopButton.className = "persistent-now-playing-stop";
         stopButton.textContent = "Stop";
         stopButton.addEventListener("click", () => window.studyToolStopActiveAudio?.());
-        nowPlaying.append(dot, nowPlayingText, stopButton);
+        nowPlaying.append(dot, nowPlayingText, pauseButton, stopButton);
         document.body.append(nowPlaying);
         updatePlayer();
     }
@@ -105,7 +115,7 @@
         routeTo(link.href);
     }, true);
 
-    window.addEventListener("studytool:now-playing", (event) => updatePlayer(event.detail?.labels));
+    window.addEventListener("studytool:now-playing", (event) => updatePlayer(event.detail));
     window.addEventListener("popstate", (event) => {
         if (event.state?.studyToolAudioRoute) {
             routeTo(location.href, false);

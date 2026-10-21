@@ -3962,11 +3962,105 @@ body {
     white-space: nowrap;
 }
 
+.now-playing-control,
+.persistent-now-playing-control {
+    flex: 0 0 auto;
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--control-bg);
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+}
+
+.now-playing-control:hover,
+.persistent-now-playing-control:hover {
+    border-color: var(--purple);
+}
+
+body.audio-route-open {
+    overflow: hidden;
+}
+
+.audio-route-background {
+    visibility: hidden;
+}
+
+.persistent-audio-route-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: var(--page-bg);
+}
+
+.persistent-audio-route-frame {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border: 0;
+    background: var(--page-bg);
+}
+
+.persistent-now-playing {
+    position: fixed;
+    top: 16px;
+    right: 22px;
+    z-index: 10002;
+    max-width: min(420px, calc(100vw - 32px));
+    min-height: 42px;
+    padding: 8px 10px 8px 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--purple);
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--text);
+    box-shadow: 0 5px 20px var(--card-shadow);
+    font-size: 12px;
+}
+
+.persistent-now-playing[hidden] {
+    display: none;
+}
+
+.persistent-now-playing-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.persistent-now-playing-stop {
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--control-bg);
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+}
+
+.persistent-now-playing-control[hidden],
+.persistent-now-playing-stop[hidden] {
+    display: none;
+}
+
+.persistent-now-playing-stop:hover {
+    border-color: var(--purple);
+}
+
 @media (max-width: 640px) {
     .now-playing-indicator {
         min-width: 38px;
         max-width: 46vw;
         padding-inline: 10px;
+    }
+
+    .persistent-now-playing {
+        top: 10px;
+        right: 12px;
+        max-width: calc(100vw - 24px);
     }
 }
 

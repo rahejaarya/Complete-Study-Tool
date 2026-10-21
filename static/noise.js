@@ -36,39 +36,51 @@
     const audioStatus = document.getElementById("audio-status");
     const nowPlayingIndicator = document.getElementById("now-playing-indicator");
     const nowPlayingLabel = document.getElementById("now-playing-label");
+    const pauseAudioButton = document.getElementById("toggle-audio-pause");
     const volumeInput = document.getElementById("master-volume");
     const volumeValue = document.getElementById("volume-value");
     const oceanAudio = document.getElementById("ocean-waves-audio");
     let audioContext;
     let masterGain;
+    let masterPaused = false;
     const activeSounds = new Map();
     const soundVolumes = new Map(cards.map((card) => [card.dataset.sound, 1]));
 
     function updateNowPlaying() {
-        const playingLabels = window.studyToolGetAudioLabels();
-        const hasAudio = playingLabels.length > 0;
-        nowPlayingIndicator?.classList.toggle("is-playing", hasAudio);
+        const state = window.studyToolGetAudioState();
+        const { labels, hasAudio, paused } = state;
+        nowPlayingIndicator?.classList.toggle("is-playing", hasAudio && !paused);
+        nowPlayingIndicator?.classList.toggle("is-paused", hasAudio && paused);
         if (nowPlayingLabel) {
             nowPlayingLabel.textContent = hasAudio
-                ? `Now playing · ${playingLabels.length > 2 ? `${playingLabels.length} sounds` : playingLabels.join(", ")}`
+                ? `${paused ? "Paused" : "Now playing"} · ${labels.join(", ")}`
                 : "Nothing playing";
         }
+        if (pauseAudioButton) {
+            pauseAudioButton.hidden = !hasAudio;
+            pauseAudioButton.textContent = paused ? "Resume" : "Pause";
+            pauseAudioButton.setAttribute("aria-label", paused ? "Resume audio" : "Pause audio");
+        }
         window.dispatchEvent(new CustomEvent("studytool:now-playing", {
-            detail: { labels: playingLabels, isPlaying: hasAudio }
+            detail: state
         }));
     }
 
-    window.studyToolHasActiveAudio = () => activeSounds.size > 0
-        || Array.from(document.querySelectorAll("audio, video")).some((media) => !media.paused && !media.ended);
+    window.studyToolHasActiveAudio = () => window.studyToolGetAudioState().hasAudio;
     window.studyToolGetAudioLabels = () => {
-        const labels = Array.from(activeSounds.keys(), (soundId) => soundLabels[soundId]);
-        document.querySelectorAll("audio, video").forEach((media) => {
-            if (!media.paused && !media.ended) {
-                const title = media.closest(".sound-card")?.querySelector("h3")?.textContent?.trim();
-                labels.push(title || "Custom audio");
-            }
-        });
+        const customLabels = (window.studyToolGetCustomMediaState?.() || [])
+            .filter((track) => track.active)
+            .map((track) => track.title);
+        const labels = [...customLabels, ...Array.from(activeSounds.keys(), (soundId) => soundLabels[soundId])];
         return [...new Set(labels)];
+    };
+    window.studyToolGetAudioState = () => {
+        const labels = window.studyToolGetAudioLabels();
+        const customTracks = (window.studyToolGetCustomMediaState?.() || []).filter((track) => track.active);
+        const hasGeneratedAudio = activeSounds.size > 0;
+        const hasAudio = hasGeneratedAudio || customTracks.length > 0;
+        const paused = hasAudio && (masterPaused || (!hasGeneratedAudio && customTracks.every((track) => !track.playing)));
+        return { labels, hasAudio, paused, isPlaying: hasAudio && !paused };
     };
     window.studyToolStopActiveAudio = () => {
         activeSounds.forEach((sound, soundId) => {
@@ -76,10 +88,36 @@
             updateCard(soundId, false);
         });
         activeSounds.clear();
-        document.querySelectorAll("audio, video").forEach((media) => media.pause());
+        masterPaused = false;
+        window.studyToolStopCustomMedia?.();
         updateNowPlaying();
         audioStatus.textContent = "All sounds stopped.";
     };
+
+    window.studyToolToggleAudioPause = async () => {
+        const state = window.studyToolGetAudioState();
+        if (!state.hasAudio) return;
+        masterPaused = !state.paused;
+        if (masterPaused) {
+            if (audioContext?.state === "running") await audioContext.suspend();
+            if (activeSounds.has("ocean")) oceanAudio.pause();
+            window.studyToolPauseCustomMedia?.();
+            audioStatus.textContent = "Audio paused.";
+        } else {
+            if (audioContext?.state === "suspended") await audioContext.resume();
+            if (activeSounds.has("ocean")) {
+                try {
+                    await oceanAudio.play();
+                } catch {
+                    audioStatus.textContent = "Ocean Waves could not resume. Press Play on its card to restart it.";
+                }
+            }
+            window.studyToolResumeCustomMedia?.();
+            audioStatus.textContent = "Audio resumed.";
+        }
+        updateNowPlaying();
+    };
+    pauseAudioButton?.addEventListener("click", () => void window.studyToolToggleAudioPause());
 
     // Create the shared Web Audio graph once and apply the master volume.
     function getAudioContext() {
@@ -245,6 +283,11 @@
             audioStatus.textContent = `${soundLabels[soundId]} stopped.`;
             return;
         }
+        if (masterPaused) {
+            masterPaused = false;
+            if (audioContext?.state === "suspended") await audioContext.resume();
+            window.studyToolResumeCustomMedia?.();
+        }
         let sound;
         if (soundId === "ocean") {
             oceanAudio.volume = soundVolumes.get(soundId) * Number(volumeInput.value) / 100;
@@ -343,11 +386,10 @@
         window.studyToolStopActiveAudio();
     });
 
-    document.querySelectorAll("audio, video").forEach((media) => {
-        media.addEventListener("play", updateNowPlaying);
-        media.addEventListener("pause", updateNowPlaying);
-        media.addEventListener("ended", updateNowPlaying);
+    ["play", "pause", "ended"].forEach((eventName) => {
+        document.addEventListener(eventName, updateNowPlaying, true);
     });
+    window.addEventListener("studytool:custom-media-state", updateNowPlaying);
 
     // Apply master gain changes to both generated audio and the ocean recording.
     volumeInput.addEventListener("input", () => {
@@ -357,12 +399,13 @@
         activeSounds.forEach((sound, soundId) => {
             sound.setVolume?.(soundVolumes.get(soundId), value / 100);
         });
+        window.studyToolSetCustomMediaVolume?.(value / 100);
     });
 
     // Browsers may suspend Web Audio when a page returns from the background.
     // Resume only an audio context that already has sounds playing.
     document.addEventListener("visibilitychange", () => {
-        if (!document.hidden && activeSounds.size && audioContext?.state === "suspended") {
+        if (!document.hidden && !masterPaused && activeSounds.size && audioContext?.state === "suspended") {
             void audioContext.resume();
         }
     });
