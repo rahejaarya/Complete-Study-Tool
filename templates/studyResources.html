@@ -117,6 +117,26 @@
                     <!-- Recent search chips will render here -->
                 </div>
 
+                {% if query %}
+                <section class="resource-search-results" aria-labelledby="resource-search-results-heading">
+                    <div class="section-heading">
+                        <h2 id="resource-search-results-heading">Search Engine Results</h2>
+                    </div>
+                    {% if web_results %}
+                    <div class="resource-search-results-list">
+                        {% for result in web_results %}
+                        <a class="resource-search-result" href="{{ result.url }}" target="_blank" rel="noopener noreferrer">
+                            <strong>{{ result.title }}</strong>
+                            {% if result.description %}<span>{{ result.description }}</span>{% endif %}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="resource-search-empty">No results found for "{{ query }}".</p>
+                    {% endif %}
+                </section>
+                {% endif %}
+
                 <!-- Translator Section -->
                 <div class="translator-widget">
                     <button class="translator-toggle" id="translator-toggle" type="button" aria-expanded="false" aria-controls="translator-panel">
@@ -453,13 +473,24 @@
 
         swapLanguagesButton.addEventListener('click', () => {
             if (swapLanguagesButton.disabled) return;
+            clearTimeout(debounceTimer);
+            translationRequestId += 1;
+            const previousSourceText = textInput.value;
+            const previousTargetText = outputField.value === 'Translating...'
+                ? ''
+                : outputField.value;
             const previousSource = sourceLangSelect.value;
             sourceLangSelect.value = targetLangSelect.value;
             targetLangSelect.value = previousSource;
+            textInput.value = previousTargetText;
+            outputField.value = previousSourceText;
+            translatorCharCount.textContent = `${textInput.value.length.toLocaleString()} / 5,000`;
+            translatorStatus.textContent = '';
+            translatorStatus.removeAttribute('data-state');
             sourcePicker.refreshLabel();
             targetPicker.refreshLabel();
             updateSwapButton();
-            performTranslation();
+            updateCopyButtons();
         });
 
         updateSwapButton();

@@ -3621,6 +3621,44 @@ body {
     cursor: pointer;
 }
 
+.resource-search-results {
+    margin-bottom: 30px;
+}
+
+.resource-search-results-list {
+    display: grid;
+    gap: 10px;
+}
+
+.resource-search-result {
+    min-width: 0;
+    padding: 14px 16px;
+    display: grid;
+    gap: 4px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--white);
+    color: var(--text);
+    text-decoration: none;
+}
+
+.resource-search-result:hover,
+.resource-search-result:focus-visible {
+    border-color: var(--purple);
+    outline: none;
+}
+
+.resource-search-result strong {
+    color: var(--purple);
+    font-size: 15px;
+}
+
+.resource-search-result span,
+.resource-search-empty {
+    color: var(--muted);
+    font-size: 13px;
+}
+
 .translator-widget {
     margin-bottom: 30px;
 }
