@@ -1,4 +1,9 @@
 {
-  "explicit_facts": [],
-  "facts": []
+  "explicit_facts": [
+    "User needs to study for ap euro"
+  ],
+  "facts": [
+    "User is preparing for an AP European History test.",
+    "User is studying the Enlightenment era."
+  ]
 }

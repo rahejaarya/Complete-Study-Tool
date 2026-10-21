@@ -18,7 +18,7 @@
 
             {% include "_sidebar_header.html" %}
 
-            <nav class="navigation" id="primary-navigation">
+            <nav class="navigation" id="primary-navigation"></nav>
 
                 <a href="{{ url_for('home') }}" class="nav-link">
                     <span class="nav-icon">⌂</span>
@@ -71,39 +71,22 @@
         <!-- Main Content -->
         <main class="main-content">
 
-            <!-- Top Bar -->
-            <header class="topbar">
-
-
-                <div class="welcome">
-
-                    <div class="welcome-icon">
-                        {{ app_icon("assistant") }}
-                    </div>
-
-                    <div>
-                        <h1>AI Study Help</h1>
-                    </div>
-
-                </div>
-
-            </header>
-
 
             <!-- Dashboard / Tools Section -->
             <section class="dashboard">
 
-                    <div style="
+                    <div id="cypher-chat-layout" style="
                         width: 100%;
                         max-width: 850px;
-                        margin: 0 auto 30px auto;
+                        margin: 0 auto;
+                        box-sizing: border-box;
                     ">
 
-                        <div style="
+                        <div id="cypher-greeting-container" style="
                             text-align: center;
                             margin-bottom: 18px;
                         ">
-                            <h2>Ask a question or request notes summary</h2>
+                            <h2 id="cypher-greeting"></h2>
                         </div>
 
 
@@ -111,13 +94,17 @@
                         <div id="chat-messages" class="chat-messages" style="display: none;"></div>
 
 
-                        <!-- Input -->
+                        
+                        <!-- Input island -->
                         <div id="ai-prompt-container" class="search-box" style="
-                            width: 100%;
+                            width: 100% !important;
+                            max-width: 850px !important;
+                            min-width: 0;
+                            box-sizing: border-box;
                             margin: 0 auto;
+                            flex-shrink: 0;
                         ">
-
-                            <span class="search-icon">{{ app_icon("assistant") }}</span>
+                            <span class="search-icon">✦</span>
 
                             <input 
                                 id="ai-input"
@@ -127,6 +114,8 @@
                                     border: none;
                                     background: transparent;
                                     width: 100%;
+                                    min-width: 0;
+                                    flex: 1;
                                     outline: none;
                                     font-size: 14px;
                                     color: var(--text);
@@ -139,15 +128,10 @@
 
                         </div>
 
+
                     </div>
 
-               
-
-
-                    
-                    
-
-                </div>
+                
 
             </section>
 
@@ -158,30 +142,32 @@
 
     <!-- Mobile Bottom Navigation -->
     <nav class="mobile-navigation">
-        <a href="/" class="mobile-link">
-            <span>⌂</span>
-            <small>Dashboard</small>
+
+        <a href="{{ url_for('home') }}" class="mobile-link">
+            <span>▦</span>
+            <small>Home</small>
         </a>
-        <a href="/resources" class="mobile-link">
-            <span>{{ app_icon("resources") }}</span>
-            <small>Study Resources</small>
+
+        <a href="{{ url_for('resources') }}" class="mobile-link">
+            <span>📚</span>
+            <small>Resources</small>
         </a>
-        <a href="/noise-songs" class="mobile-link">
+
+        <a href="{{ url_for('noise_songs') }}" class="mobile-link">
             <span>♫</span>
-            <small>Noise &amp; Songs</small>
+            <small>Sounds</small>
         </a>
-        <a href="/time-management" class="mobile-link">
-            <span>◷</span>
-            <small>Time Management</small>
+
+        <a href="{{ url_for('time_management') }}" class="mobile-link">
+            <span>✓</span>
+            <small>Schedule</small>
         </a>
-        <a href="/support" class="mobile-link">
+
+        <a href="{{ url_for('support') }}" class="mobile-link">
             <span>♡</span>
             <small>Support</small>
         </a>
-        <a href="/ai" class="mobile-link active">
-            <span>{{ app_icon("assistant") }}</span>
-            <small>Cypher</small>
-        </a>
+
     </nav>
 
     <dialog id="chat-dialog" class="chat-dialog" aria-labelledby="chat-dialog-title">
@@ -204,15 +190,12 @@
 
 <script>
 
-// Cache chat controls and track which conversation/action is currently active.
 const aiInput = document.getElementById("ai-input");
 const aiSend = document.getElementById("ai-send");
 
 const chatMessages = document.getElementById("chat-messages");
 const aiDashboard = document.querySelector(".dashboard");
 const aiPromptContainer = document.getElementById("ai-prompt-container");
-const featureGrid = document.querySelector(".feature-grid");
-const sectionHeading = document.querySelector(".section-heading");
 const chatList = document.querySelector(".chat-list");
 const newChatButton = document.getElementById("new-chat-button");
 const chatDialog = document.getElementById("chat-dialog");
@@ -307,7 +290,6 @@ function formatAIResponse(text) {
 }
 
 
-// Insert a message or resource at a stable position in the ordered transcript.
 function insertChatEntry(entry, beforeElement = null) {
     const reference = beforeElement?.parentElement === chatMessages
         ? beforeElement
@@ -324,12 +306,10 @@ function insertChatEntry(entry, beforeElement = null) {
         });
 }
 
-// Keep the newest transcript entry visible after rendering or streaming updates.
 function scrollChatToLatest() {
     chatMessages.lastElementChild?.scrollIntoView({ block: "end" });
 }
 
-// Render a user or assistant bubble and switch the page into active-chat layout.
 function addMessage(message, sender) {
 
     const messageDiv = document.createElement("div");
@@ -353,16 +333,23 @@ function addMessage(message, sender) {
 
     chatMessages.style.display = "flex";
     aiDashboard.classList.add("has-active-chat");
+    positionCypherChat();
 
     scrollChatToLatest();
+    updateScrollBottomButton();
 
     return bubble;
 }
 
+function addMemoryWarning(message) {
+    const warning = document.createElement("div");
+    warning.className = "ai-memory-warning";
+    warning.textContent = message;
+    insertChatEntry(warning);
+}
 
-// Render a trusted search result as a linked card in the conversation transcript.
-function addResourceCard(resource, beforeElement = null) {
 
+function addResourceCard(resource, afterElement = null) {
     const card = document.createElement("a");
 
     card.className = "ai-resource-card";
@@ -370,81 +357,126 @@ function addResourceCard(resource, beforeElement = null) {
     card.target = "_blank";
     card.rel = "noopener noreferrer";
 
-    let image = null;
     if (resource.image) {
-        image = document.createElement("img");
+        const image = document.createElement("img");
         image.className = "ai-resource-image";
         image.src = resource.image;
         image.alt = "";
-    }
-
-    // Add an accessible notice when memory persistence fails after a reply.
-    function addMemoryWarning(message) {
-        const warning = document.createElement("div");
-        warning.className = "ai-memory-warning";
-        warning.textContent = message;
-        insertChatEntry(warning);
+        card.appendChild(image);
     }
 
     const content = document.createElement("div");
-
     content.className = "ai-resource-content";
 
     const type = document.createElement("div");
-
     type.className = "ai-resource-type";
     type.textContent = resource.type || "Resource";
 
     const title = document.createElement("div");
-
     title.className = "ai-resource-title";
     title.textContent = resource.title;
 
     const description = document.createElement("div");
-
     description.className = "ai-resource-description";
     description.textContent = resource.description;
 
-    content.appendChild(type);
-    content.appendChild(title);
-    content.appendChild(description);
-
-    if (image) {
-        card.appendChild(image);
-    }
+    content.append(type, title, description);
     card.appendChild(content);
 
-    if (beforeElement) {
-        insertChatEntry(card, beforeElement);
+    // Add-to-Study-Resources button
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "ai-resource-add-button";
+    addButton.textContent = "+";
+    addButton.title = "Add to Study Resources";
+    addButton.setAttribute("aria-label", "Add to Study Resources");
+
+    addButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+    });
+
+    card.appendChild(addButton);
+
+    // Insert AFTER the AI response or previous resource card.
+    if (afterElement && afterElement.parentElement === chatMessages) {
+        insertChatEntry(card, afterElement.nextElementSibling);
     } else {
         insertChatEntry(card);
     }
-    aiDashboard.classList.add("has-active-chat");
 
+    aiDashboard.classList.add("has-active-chat");
     scrollChatToLatest();
+
+    return card;
 }
 
-// Reset the transcript and restore the initial AI landing-page content.
+
 function clearConversationView() {
     chatMessages.replaceChildren();
+    updateScrollBottomButton();
     chatMessages.style.display = "none";
     aiDashboard.classList.remove("has-active-chat");
-    featureGrid.style.display = "";
-    sectionHeading.style.display = "";
-}
-
-// Dispatch a stored transcript entry to the matching message/resource renderer.
-function renderSavedMessage(message) {
-    if (message.role === "user") {
-        addMessage(message.content, "user");
-    } else if (message.role === "assistant") {
-        addMessage(message.content, "ai");
-    } else if (message.role === "resource" && message.resource) {
-        addResourceCard(message.resource);
+    positionCypherChat();
+    const greetingContainer = document.getElementById("cypher-greeting-container");
+    if (greetingContainer) {
+        greetingContainer.style.display = "";
     }
 }
 
-// Fetch saved conversations and rebuild the sidebar list with action menus.
+
+function renderSavedMessages(messages) {
+    let lastAssistantEntry = null;
+    let pendingResources = [];
+
+    for (const message of messages) {
+
+        if (message.role === "user") {
+            addMessage(message.content, "user");
+            lastAssistantEntry = null;
+        }
+
+        else if (message.role === "assistant") {
+            const bubble = addMessage(message.content, "ai");
+            lastAssistantEntry = bubble.parentElement;
+
+            // Attach resources that were saved BEFORE
+            // their corresponding AI response.
+            for (const resource of pendingResources) {
+                lastAssistantEntry = addResourceCard(
+                    resource,
+                    lastAssistantEntry
+                );
+            }
+
+            pendingResources = [];
+        }
+
+        else if (message.role === "resource" && message.resource) {
+
+            if (lastAssistantEntry) {
+                // Attach resources immediately after the
+                // most recent AI response or resource card.
+                lastAssistantEntry = addResourceCard(
+                    message.resource,
+                    lastAssistantEntry
+                );
+            } else {
+                // Wait until the corresponding AI response
+                // is rendered.
+                pendingResources.push(message.resource);
+            }
+        }
+    }
+
+    // Fallback for resource records without a following
+    // assistant message in the saved conversation.
+    for (const resource of pendingResources) {
+        addResourceCard(resource);
+    }
+}
+
+
 async function loadChatList() {
     const response = await fetch("/api/ai/chats");
     if (!response.ok) {
@@ -452,6 +484,7 @@ async function loadChatList() {
     }
 
     const data = await response.json();
+    if (!chatList) return;
     chatList.replaceChildren();
 
     for (const chat of data.chats) {
@@ -531,7 +564,6 @@ async function loadChatList() {
     }
 }
 
-// Fetch one conversation, restore its transcript, and select it in the list.
 async function openSavedChat(chatId) {
     if (isSendingMessage) {
         return;
@@ -546,24 +578,19 @@ async function openSavedChat(chatId) {
     currentChatId = chat.id;
     clearConversationView();
 
-    for (const message of chat.messages) {
-        renderSavedMessage(message);
-    }
+    renderSavedMessages(chat.messages);
+
     scrollChatToLatest();
     if (chat.messages.length) {
-        featureGrid.style.display = "none";
-        sectionHeading.style.display = "none";
     }
     await loadChatList();
 }
 
-// Hide a chat's action menu and reset the trigger's expanded state.
 function closeChatActionsMenu(menu, button) {
     menu.hidden = true;
     button.setAttribute("aria-expanded", "false");
 }
 
-// Support Escape and arrow-key navigation for chat action menus.
 document.addEventListener("keydown", (event) => {
     const openMenu = document.querySelector(".chat-actions-menu:not([hidden])");
     if (event.key === "Escape" && openMenu) {
@@ -582,7 +609,6 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
-// Close open chat menus when a click lands outside their conversation row.
 document.addEventListener("click", (event) => {
     document.querySelectorAll(".chat-actions-menu:not([hidden])").forEach(
         (menu) => {
@@ -596,7 +622,6 @@ document.addEventListener("click", (event) => {
     );
 });
 
-// Configure and open the shared rename/delete confirmation dialog.
 function showChatDialog(chat, action) {
     chatDialogAction = {chat, action};
     chatDialogError.textContent = "";
@@ -621,17 +646,14 @@ function showChatDialog(chat, action) {
     }
 }
 
-// Open the dialog in rename mode for the selected saved conversation.
 async function renameSavedChat(chat) {
     showChatDialog(chat, "rename");
 }
 
-// Open the dialog in delete-confirmation mode for the selected conversation.
 async function deleteSavedChat(chat) {
     showChatDialog(chat, "delete");
 }
 
-// Submit rename/delete requests and refresh the transcript list after success.
 chatDialogCancel.addEventListener("click", () => chatDialog.close());
 chatDialogForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -677,21 +699,22 @@ chatDialogForm.addEventListener("submit", async (event) => {
     }
 });
 
-// Start a blank conversation and refresh the active state in the chat list.
-newChatButton.addEventListener("click", function () {
-    if (isSendingMessage) {
-        return;
-    }
-    currentChatId = null;
-    clearConversationView();
-    loadChatList();
-});
+if (newChatButton) {
+    newChatButton.addEventListener("click", function () {
+        if (isSendingMessage) {
+            return;
+        }
+        currentChatId = null;
+        clearConversationView();
+        loadChatList().catch(console.error);
+    });
+}
 
 
-// Post a message, consume the streamed NDJSON events, and render the response.
 async function sendMessage() {
 
     const message = aiInput.value.trim();
+    const resourceRequest = true;
 
     if (!message || isSendingMessage) {
         return;
@@ -702,10 +725,11 @@ async function sendMessage() {
     newChatButton.disabled = true;
     loadChatList();
 
-    // Hide the four feature cards
-    featureGrid.style.display = "none";
-    sectionHeading.style.display = "none";
-
+    // Hide greeting once the user starts chatting
+    const greetingContainer = document.getElementById("cypher-greeting-container");
+    if (greetingContainer) {
+        greetingContainer.style.display = "none";
+    }
 
     // Display user message
     addMessage(message, "user");
@@ -722,7 +746,7 @@ async function sendMessage() {
     // Show temporary thinking message
     const thinkingBubble =
         addMessage("Thinking...", "ai");
-
+    let lastResourceAnchor = thinkingBubble.parentElement;
 
     try {
 
@@ -792,10 +816,12 @@ async function sendMessage() {
 
                 else if (event.type === "resource") {
 
-                    addResourceCard(
-                        event.resource,
-                        thinkingBubble.parentElement
-                    );
+                    if (resourceRequest && event.resource) {
+                        lastResourceAnchor = addResourceCard(
+                            event.resource,
+                            lastResourceAnchor
+                        );
+                    }
 
                 }
 
@@ -838,7 +864,6 @@ async function sendMessage() {
 }
 
 
-// Send on button activation or Enter, while allowing Shift+Enter for new lines.
 aiSend.addEventListener(
     "click",
     sendMessage
@@ -867,27 +892,19 @@ const aiChatDropdown =
     document.getElementById("ai-chat-dropdown");
 
 
-// Expand/collapse the saved-chat list and keep its accessibility state current.
-aiChatsToggle.addEventListener("click", function () {
+if (aiChatsToggle && aiChatDropdown) {
+    aiChatsToggle.addEventListener("click", function () {
+        const isOpen = aiChatDropdown.classList.toggle("open");
 
-    const isOpen =
-        aiChatDropdown.classList.toggle("open");
-
-    aiChatsToggle.setAttribute(
-        "aria-expanded",
-        isOpen
-    );
-    aiChatsToggle.setAttribute(
-        "aria-label",
-        isOpen ? "Hide saved chats" : "Show saved chats"
-    );
-
-    aiChatsToggle.textContent =
-        isOpen ? "▴" : "▾";
-
-    aiChatsToggle.title =
-        isOpen ? "Hide chats" : "Show chats";
-});
+        aiChatsToggle.setAttribute("aria-expanded", String(isOpen));
+        aiChatsToggle.setAttribute(
+            "aria-label",
+            isOpen ? "Hide saved chats" : "Show saved chats"
+        );
+        aiChatsToggle.textContent = isOpen ? "▴" : "▾";
+        aiChatsToggle.title = isOpen ? "Hide chats" : "Show chats";
+    });
+}
 
 loadChatList().catch((error) => {
     console.error(error);
@@ -899,6 +916,237 @@ if (requestedChatId) {
         console.error(error);
     });
 }
+
+const cypherGreeting = document.getElementById("cypher-greeting");
+
+const cypherMessages = [
+    "Hi, I'm Cypher",
+    "Ask me anything",
+    "I know about a million things.",
+    "How's your day going?"
+];
+
+const greeting = cypherMessages[
+    Math.floor(Math.random() * cypherMessages.length)
+];
+
+let greetingIndex = 0;
+
+function typeCypherGreeting() {
+    if (!cypherGreeting) return;
+
+    if (greetingIndex < greeting.length) {
+        cypherGreeting.textContent += greeting.charAt(greetingIndex);
+        greetingIndex++;
+
+        setTimeout(typeCypherGreeting, 65);
+    }
+}
+
+typeCypherGreeting();
+
+
+const chatLayout = document.getElementById("cypher-chat-layout");
+const greetingContainer = document.getElementById("cypher-greeting-container");
+
+
+
+function positionCypherChat() {
+    if (!chatLayout || !aiPromptContainer || !aiDashboard) return;
+
+    const activeChat = aiDashboard.classList.contains("has-active-chat");
+    const mainContent = document.querySelector(".main-content");
+
+    if (!mainContent) return;
+
+    const mainRect = mainContent.getBoundingClientRect();
+
+    // Match the first script's width and centering behavior.
+    const chatWidth = Math.min(850, mainRect.width - 40);
+    const inputWidth = chatWidth;
+    const chatLeft = mainRect.left + (mainRect.width / 2);
+
+    chatLayout.style.width = `${chatWidth}px`;
+    chatLayout.style.maxWidth = "850px";
+    chatLayout.style.boxSizing = "border-box";
+
+    if (activeChat) {
+        // Keep the conversation in the normal page layout.
+        chatLayout.style.position = "relative";
+        chatLayout.style.margin = "0 auto";
+        chatLayout.style.top = "0";
+        chatLayout.style.left = "auto";
+        chatLayout.style.bottom = "auto";
+        chatLayout.style.transform = "none";
+
+        // Pin the input to the bottom center of the main area.
+        Object.assign(aiPromptContainer.style, {
+            position: "fixed",
+            left: `${chatLeft}px`,
+            right: "auto",
+            bottom: "24px",
+            top: "auto",
+            transform: "translateX(-50%)",
+            width: `${inputWidth}px`,
+            minWidth: "0",
+            maxWidth: `${inputWidth}px`,
+            boxSizing: "border-box",
+            zIndex: "1000",
+            margin: "0"
+        });
+
+        // Keep the final messages visible above the input.
+        chatMessages.style.paddingBottom = "120px";
+
+    } else {
+        // Center the greeting and input before the first message.
+        chatLayout.style.position = "absolute";
+        chatLayout.style.top = "50%";
+        chatLayout.style.left = `${chatLeft}px`;
+        chatLayout.style.bottom = "auto";
+        chatLayout.style.transform = "translate(-50%, -50%)";
+        chatLayout.style.margin = "0";
+
+        Object.assign(aiPromptContainer.style, {
+            position: "relative",
+            left: "auto",
+            right: "auto",
+            bottom: "auto",
+            top: "auto",
+            transform: "none",
+            width: "100%",
+            minWidth: "0",
+            maxWidth: "850px",
+            boxSizing: "border-box",
+            zIndex: "",
+            margin: "0 auto"
+        });
+
+        chatMessages.style.paddingBottom = "";
+    }
+}
+
+
+positionCypherChat();
+window.addEventListener("resize", positionCypherChat);
+
+function scrollChatToLatest() {
+    chatMessages.lastElementChild?.scrollIntoView({ block: "end" });
+}
+
+
+/* Scroll-to-bottom button */
+const scrollBottomButton = document.createElement("button");
+
+scrollBottomButton.id = "chat-scroll-bottom";
+scrollBottomButton.type = "button";
+scrollBottomButton.textContent = "↓";
+scrollBottomButton.title = "Scroll to latest message";
+scrollBottomButton.setAttribute("aria-label", "Scroll to the bottom of the chat");
+scrollBottomButton.hidden = true;
+
+document.body.appendChild(scrollBottomButton);
+
+/* Button styling */
+const scrollBottomStyles = document.createElement("style");
+
+scrollBottomStyles.textContent = `
+    #chat-scroll-bottom {
+        position: fixed;
+        right: 28px;
+        bottom: 100px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 1px solid var(--border, #444);
+        background: var(--surface, #222);
+        color: var(--text, #fff);
+        font-size: 24px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 1100;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.18);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(8px);
+        transition:
+            opacity 0.2s ease,
+            transform 0.2s ease,
+            visibility 0.2s ease;
+    }
+
+    #chat-scroll-bottom.visible {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    #chat-scroll-bottom:hover {
+        filter: brightness(1.15);
+    }
+
+    #chat-scroll-bottom:focus-visible {
+        outline: 2px solid var(--text, #fff);
+        outline-offset: 3px;
+    }
+
+    @media (max-width: 600px) {
+        #chat-scroll-bottom {
+            right: 16px;
+            bottom: 100px;
+        }
+    }
+`;
+
+document.head.appendChild(scrollBottomStyles);
+
+/* Show the button when the latest message is below the viewport */
+function updateScrollBottomButton() {
+    const lastMessage = chatMessages.lastElementChild;
+    const hasActiveChat =
+        aiDashboard.classList.contains("has-active-chat");
+
+    if (!lastMessage || !hasActiveChat) {
+        scrollBottomButton.classList.remove("visible");
+        scrollBottomButton.hidden = true;
+        return;
+    }
+
+    const lastMessageRect = lastMessage.getBoundingClientRect();
+
+    const isScrolledUp =
+        lastMessageRect.bottom > window.innerHeight + 40;
+
+    scrollBottomButton.hidden = false;
+    scrollBottomButton.classList.toggle("visible", isScrolledUp);
+}
+
+/* Clicking the arrow takes the user to the very end */
+scrollBottomButton.addEventListener("click", () => {
+    const lastMessage = chatMessages.lastElementChild;
+
+    if (lastMessage) {
+        lastMessage.scrollIntoView({
+            behavior: "smooth",
+            block: "end"
+        });
+    }
+});
+
+/* Detect scrolling in either the page or the chat */
+window.addEventListener("scroll", updateScrollBottomButton, {
+    passive: true
+});
+
+chatMessages.addEventListener("scroll", updateScrollBottomButton, {
+    passive: true
+});
+
+window.addEventListener("resize", updateScrollBottomButton);
+
 
 </script>
 

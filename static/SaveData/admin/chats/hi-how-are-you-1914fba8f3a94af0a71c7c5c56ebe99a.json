@@ -1,0 +1,26 @@
+{
+  "id": "1914fba8f3a94af0a71c7c5c56ebe99a",
+  "title": "Hi how are you?",
+  "created_at": "2026-10-21T01:34:32.457786+00:00",
+  "updated_at": "2026-10-21T01:35:00.501202+00:00",
+  "summary": "",
+  "summary_through": 0,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hi how are you?"
+    },
+    {
+      "role": "assistant",
+      "content": "Hi! I'm here and ready to help. What are you working on today?"
+    },
+    {
+      "role": "user",
+      "content": "I need to study for ap euro"
+    },
+    {
+      "role": "assistant",
+      "content": "Great goal! AP European History covers a lot of material from the late Middle Ages through the Cold War and beyond. To get started, could you tell me:  \n- Which unit or time period you’re focusing on right now?  \n- What kind of help would be most useful—practice questions, key dates/themes, essay tips, or source analysis?  \n\nOnce I know your focus, I can tailor study resources and strategies for you."
+    }
+  ]
+}
