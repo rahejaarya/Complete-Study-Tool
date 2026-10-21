@@ -7,10 +7,11 @@ import sqlite3
 import tempfile
 import uuid
 import requests
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from functools import wraps
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlparse, urlsplit
 
 from flask import (
     Flask,
@@ -31,9 +32,11 @@ try:
         ask_ai,
         bound_conversation_history,
         find_resources,
+        search_educational_videos,
         search_web,
         should_recommend_resources,
         summarize_conversation,
+        summarize_study_topic,
         update_user_memory,
     )
 except ModuleNotFoundError:  # pragma: no cover
@@ -41,9 +44,11 @@ except ModuleNotFoundError:  # pragma: no cover
         ask_ai,
         bound_conversation_history,
         find_resources,
+        search_educational_videos,
         search_web,
         should_recommend_resources,
         summarize_conversation,
+        summarize_study_topic,
         update_user_memory,
     )
 
@@ -1277,6 +1282,88 @@ def resources():
         query=query,
         web_results=web_results,
     )
+
+
+@app.route("/resource-browser")
+@login_required
+def resource_browser():
+    """Render the AI-assisted topic browser."""
+    return render_template("resource_browser.html")
+
+
+@app.route("/api/resource-browser/search", methods=["POST"])
+@login_required
+def resource_browser_search():
+    """Search the web and generate a study overview for a requested topic."""
+    data = request.get_json(silent=True) or {}
+    query = data.get("query", "")
+    if not isinstance(query, str):
+        return jsonify({"error": "Enter a topic to search."}), 400
+    query = query.strip()
+    if len(query) < 2:
+        return jsonify({"error": "Enter at least two characters."}), 400
+    if len(query) > 180:
+        return jsonify({"error": "Keep the topic under 180 characters."}), 400
+
+    # Both remote searches are independent, so run them together to reduce wait time.
+    with ThreadPoolExecutor(max_workers=2) as search_pool:
+        web_future = search_pool.submit(search_web, f"{query} educational resources")
+        video_future = search_pool.submit(search_educational_videos, query)
+        web_results = web_future.result()
+        video_results = video_future.result()
+
+    def safe_results(results, limit):
+        safe = []
+        seen_urls = set()
+        for result in results:
+            if not isinstance(result, dict):
+                continue
+            url = str(result.get("url") or "").strip()
+            parsed = urlsplit(url)
+            if parsed.scheme not in {"http", "https"} or not parsed.hostname or url in seen_urls:
+                continue
+            title = str(result.get("title") or "").strip()
+            if not title:
+                continue
+            safe.append({
+                **result,
+                "title": title[:240],
+                "url": url,
+                "description": str(result.get("description") or "").strip()[:700],
+            })
+            seen_urls.add(url)
+            if len(safe) >= limit:
+                break
+        return safe
+
+    web_results = safe_results(web_results, 6)
+    video_results = safe_results(video_results, 5)
+    return jsonify({
+        "query": query,
+        "web_results": web_results,
+        "video_results": video_results,
+        "search_note": "Descriptions are search-result summaries. Open a source to read its full content." if web_results or video_results else "No web results were returned. Try a more specific topic or search again later.",
+    })
+
+
+@app.route("/api/resource-browser/summary", methods=["POST"])
+@login_required
+def resource_browser_summary():
+    """Generate the slower local-model overview after search results appear."""
+    data = request.get_json(silent=True) or {}
+    query = data.get("query", "")
+    if not isinstance(query, str) or not 2 <= len(query.strip()) <= 180:
+        return jsonify({"error": "Enter a topic between 2 and 180 characters."}), 400
+    try:
+        summary = summarize_study_topic(
+            query.strip(),
+            data.get("web_results", [])[:6],
+            data.get("video_results", [])[:5],
+        )
+        return jsonify({"summary": summary})
+    except Exception:
+        app.logger.exception("Could not generate study overview for %r", query)
+        return jsonify({"error": "Cypher could not generate the overview right now."}), 503
 
 
 def _translate_with_google_web(text, source, target):

@@ -37,6 +37,9 @@
                         <p>{{ topic.summary }}</p>
                     </div>
                 </div>
+                {% if topic.slug == "school-stress" %}
+                <a class="support-topic-back" href="{{ url_for('support') }}">← Back to Student Support</a>
+                {% endif %}
             </header>
 
             <section class="dashboard support-topic-layout">

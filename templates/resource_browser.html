@@ -1,0 +1,103 @@
+{% from "_app_icon.html" import app_icon %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse &amp; Learn - StudyTool</title>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='resource_browser.js') }}" defer></script>
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            {% include "_sidebar_header.html" %}
+            <nav class="navigation" id="primary-navigation">
+                <a href="{{ url_for('home') }}" class="nav-link"><span class="nav-icon">⌂</span>Dashboard</a>
+                <a href="{{ url_for('resources') }}" class="nav-link active"><span class="nav-icon">{{ app_icon("resources") }}</span>Study Resources</a>
+                <a href="{{ url_for('noise_songs') }}" class="nav-link"><span class="nav-icon">♫</span>Noise &amp; Songs</a>
+                <a href="{{ url_for('time_management') }}" class="nav-link"><span class="nav-icon">◷</span>Time Management</a>
+                <a href="{{ url_for('support') }}" class="nav-link"><span class="nav-icon">♡</span>Student Support</a>
+                {% include "_ai_nav.html" %}
+            </nav>
+            <div class="sidebar-bottom">
+                <a href="{{ url_for('settings') }}" class="nav-link"><span class="nav-icon">⚙</span>Settings</a>
+                <a href="{{ url_for('support') }}" class="nav-link"><span class="nav-icon">?</span>Help</a>
+            </div>
+        </aside>
+
+        <main class="main-content resource-browser-page">
+            <header class="topbar resource-browser-topbar">
+                <div class="welcome">
+                    <div class="welcome-icon" aria-hidden="true">⌕</div>
+                    <div>
+                        <h1>Browse &amp; Learn</h1>
+                        <p>Get a quick overview, then explore videos and useful sites.</p>
+                    </div>
+                </div>
+                <a class="resource-browser-back" href="{{ url_for('resources') }}">← Study Resources</a>
+            </header>
+
+            <section class="resource-browser-search-panel" aria-labelledby="browse-search-heading">
+                <div class="resource-browser-search-copy">
+                    <p class="resource-browser-eyebrow">EXPLORE A TOPIC</p>
+                    <h2 id="browse-search-heading">What are you studying?</h2>
+                    <p>Cypher will summarize the topic and find related learning resources.</p>
+                </div>
+                <form id="resource-browser-form" class="resource-browser-form">
+                    <label class="sr-only" for="resource-browser-query">Topic to browse</label>
+                    <input id="resource-browser-query" name="query" type="search" maxlength="180" placeholder="Try “how photosynthesis works”" autocomplete="off" required>
+                    <button class="resource-browser-submit" type="submit">Search</button>
+                </form>
+                <p class="resource-browser-error" id="resource-browser-error" role="alert" hidden></p>
+            </section>
+
+            <div class="resource-browser-loading" id="resource-browser-loading" role="status" aria-live="polite" hidden>
+                <span class="resource-browser-spinner" aria-hidden="true"></span>
+                <span>Searching for useful sources and preparing your overview…</span>
+            </div>
+
+            <section class="resource-browser-results" id="resource-browser-results" aria-live="polite" hidden>
+                <article class="resource-browser-summary">
+                    <div class="resource-browser-summary-heading">
+                        <div>
+                            <p class="resource-browser-eyebrow">CYPHER OVERVIEW</p>
+                            <h2 id="resource-browser-topic"></h2>
+                        </div>
+                        <span class="resource-browser-summary-mark" aria-hidden="true">✦</span>
+                    </div>
+                    <div class="resource-browser-summary-text" id="resource-browser-summary"></div>
+                    <p class="resource-browser-source-note" id="resource-browser-source-note"></p>
+                </article>
+
+                <div class="resource-browser-section-heading">
+                    <div>
+                        <p class="resource-browser-eyebrow">KEEP EXPLORING</p>
+                        <h2>Videos &amp; websites</h2>
+                    </div>
+                </div>
+                <div class="resource-browser-columns">
+                    <section class="resource-browser-list-section" aria-labelledby="browse-videos-heading">
+                        <h3 id="browse-videos-heading">Videos</h3>
+                        <div class="resource-browser-list" id="resource-browser-videos"></div>
+                    </section>
+                    <section class="resource-browser-list-section" aria-labelledby="browse-web-heading">
+                        <h3 id="browse-web-heading">Websites &amp; study resources</h3>
+                        <div class="resource-browser-list" id="resource-browser-web"></div>
+                    </section>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <nav class="mobile-navigation">
+        <a href="{{ url_for('home') }}" class="mobile-link"><span>⌂</span><small>Dashboard</small></a>
+        <a href="{{ url_for('resources') }}" class="mobile-link active"><span>{{ app_icon("resources") }}</span><small>Resources</small></a>
+        <a href="{{ url_for('noise_songs') }}" class="mobile-link"><span>♫</span><small>Noise &amp; Songs</small></a>
+        <a href="{{ url_for('time_management') }}" class="mobile-link"><span>◷</span><small>Schedule</small></a>
+        <a href="{{ url_for('support') }}" class="mobile-link"><span>♡</span><small>Support</small></a>
+        <a href="{{ url_for('ai_help') }}" class="mobile-link"><span>{{ app_icon("assistant") }}</span><small>Cypher</small></a>
+    </nav>
+</body>
+</html>

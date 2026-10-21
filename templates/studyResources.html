@@ -86,63 +86,28 @@
             <!-- Resources Dashboard Wireframe -->
             <section class="dashboard">
 
-                <!-- Search Input Form -->
-                <div class="main-card study-card">
+                <div class="resource-tools-grid">
+                    <a class="resource-browser-launch" href="{{ url_for('resource_browser') }}">
+                        <span class="resource-browser-launch-mark" aria-hidden="true">⌕</span>
+                        <span class="resource-browser-launch-copy">
+                            <span class="resource-browser-launch-kicker">BROWSE &amp; LEARN</span>
+                            <strong>Explore a topic with Cypher</strong>
+                            <span>Get an overview and find related videos and study websites.</span>
+                        </span>
+                        <span class="resource-browser-launch-action">Open <span aria-hidden="true">→</span></span>
+                    </a>
 
-                    <form id="resource-search-form" action="{{ url_for('resources') }}" method="GET">
-
-                        <div class="search-box" style="margin: 0; background: var(--bg, #f4f5f7); border: 1px solid var(--border-color, #e0e0e0); border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; gap: 10px;">
-                            <span class="search-icon">🔍</span>
-                            <input 
-                                type="text" 
-                                id="search-input"
-                                name="query" 
-                                value="{{ query if query else '' }}"
-                                placeholder="Search a topic, subject, or assignment..." 
-                                style="border:none; background:transparent; width:100%; outline:none; font-size:15px; color:#111111;"
-                            >
-                        </div>
-
-                    </form>
-
-                </div>
-
-
-                <!-- Your Recent Searches -->
-                <div class="section-heading">
-                    <h2>Your Recent Searches</h2>
-                </div>
-
-                <div id="recent-searches-list" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px;">
-                    <!-- Recent search chips will render here -->
-                </div>
-
-                {% if query %}
-                <section class="resource-search-results" aria-labelledby="resource-search-results-heading">
-                    <div class="section-heading">
-                        <h2 id="resource-search-results-heading">Search Engine Results</h2>
-                    </div>
-                    {% if web_results %}
-                    <div class="resource-search-results-list">
-                        {% for result in web_results %}
-                        <a class="resource-search-result" href="{{ result.url }}" target="_blank" rel="noopener noreferrer">
-                            <strong>{{ result.title }}</strong>
-                            {% if result.description %}<span>{{ result.description }}</span>{% endif %}
-                        </a>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <p class="resource-search-empty">No results found for "{{ query }}".</p>
-                    {% endif %}
-                </section>
-                {% endif %}
-
-                <!-- Translator Section -->
-                <div class="translator-widget">
-                    <button class="translator-toggle" id="translator-toggle" type="button" aria-expanded="false" aria-controls="translator-panel">
-                        <span>Translate</span>
-                        <span class="translator-toggle-icon" aria-hidden="true"></span>
-                    </button>
+                    <!-- Translator Section: keep the translator itself unchanged. -->
+                    <div class="translator-widget">
+                        <button class="translator-toggle" id="translator-toggle" type="button" aria-expanded="false" aria-controls="translator-panel">
+                            <span class="resource-browser-launch-mark" aria-hidden="true">文</span>
+                            <span class="resource-browser-launch-copy">
+                                <span class="resource-browser-launch-kicker">LANGUAGE TOOL</span>
+                                <strong>Translate</strong>
+                                <span>Translate text between supported languages.</span>
+                            </span>
+                            <span class="resource-browser-launch-action">Open <span aria-hidden="true">→</span></span>
+                        </button>
                     <div class="translator-panel" id="translator-panel" hidden>
                         <div class="resource-tiles">
                             <!-- Input Block -->
@@ -267,56 +232,7 @@
 
         <!-- App Logic Scripts -->
     <script>
-        /* ========================================================
-           1. RECENT SEARCH CHIPS LOGIC
-           ======================================================== */
-        const DEFAULT_SEARCHES = ["Newton's Laws", "Quadratic Equations", "AP Euro Renaissance"];
-        const searchInput = document.getElementById('search-input');
-        const searchForm = document.getElementById('resource-search-form');
-        const recentSearchesContainer = document.getElementById('recent-searches-list');
-
-        function getRecentSearches() {
-            const saved = localStorage.getItem('recent_study_searches');
-            if (saved) {
-                return JSON.parse(saved);
-            }
-            return DEFAULT_SEARCHES;
-        }
-
-        function saveSearch(query) {
-            if (!query.trim()) return;
-            let current = getRecentSearches().filter(item => item.toLowerCase() !== query.toLowerCase());
-            current.unshift(query);
-            if (current.length > 5) current.pop(); 
-            localStorage.setItem('recent_study_searches', JSON.stringify(current));
-        }
-
-        function renderChips() {
-            recentSearchesContainer.innerHTML = '';
-            const searches = getRecentSearches();
-            searches.forEach(search => {
-                const button = document.createElement('button');
-                button.className = 'recent-search-chip';
-                button.type = 'button';
-                button.innerText = search;
-                button.style.cursor = 'pointer';
-                button.addEventListener('click', () => {
-                    searchInput.value = search;
-                    searchForm.submit();
-                });
-                recentSearchesContainer.appendChild(button);
-            });
-        }
-
-        searchForm.addEventListener('submit', () => {
-            saveSearch(searchInput.value);
-        });
-
-        renderChips();
-
-        /* ========================================================
-           2. TRANSLATOR TRAY DRAWER TOGGLE LOGIC
-           ======================================================== */
+        /* Translator tray drawer toggle logic */
         const translatorToggle = document.getElementById('translator-toggle');
         const translatorPanel = document.getElementById('translator-panel');
 
@@ -326,9 +242,7 @@
             translatorPanel.hidden = isExpanded;
         });
 
-        /* ========================================================
-           3. LIVE DEBOUNCED AUTOMATIC TRANSLATION WITH ENGINE FALLBACK
-           ======================================================== */
+        /* Live debounced automatic translation with engine fallback */
         const textInput = document.getElementById('resource-tile-input');
         const sourceLangSelect = document.getElementById('source-language');
         const targetLangSelect = document.getElementById('target-language');
