@@ -1,4 +1,4 @@
-# Complete Study Tool — Project Guide for AI Assistants
+# Meridian — Project Guide for AI Assistants
 
 This document is a code-grounded guide to the current repository. Treat the source
 code as authoritative if it disagrees with this guide. The site is an evolving
@@ -8,7 +8,7 @@ before changing it.
 
 ## 1. Product summary
 
-The Complete Study Tool is a Flask web app for students. It combines:
+Meridian is a Flask web app for students. It combines:
 
 - A signed-in dashboard with links to study resources, the AI helper, sounds,
   time management, student support, and an account/theme settings page.
@@ -212,7 +212,7 @@ Desktop page frame:
 ```text
 ┌──────────────────┬────────────────────────────────────────────────────┐
 │ Fixed sidebar    │ Welcome + global search + logout                    │
-│ StudyTool logo   ├────────────────────────────────────────────────────┤
+│ Meridian logo    ├────────────────────────────────────────────────────┤
 │ Dashboard        │ STUDY TODAY card                                    │
 │ Resources        │  └─ Study Resources shortcut                        │
 │ Noise & Songs    ├────────────────────────────────────────────────────┤
@@ -437,7 +437,7 @@ the grid collapses to one column.
   Segoe UI, sans-serif); no custom web font was found.
 - Global CSS variables provide background, card surface, text, muted text,
   border, accent, soft surface, control surface, and semantic icon colors.
-- Desktop sidebar: fixed left, 245px wide; StudyTool logo at top; vertical
+- Desktop sidebar: fixed left, 245px wide; Meridian logo at top; vertical
   navigation; settings/help pinned to the bottom.
 - Main content: width `calc(100% - 245px)`, left margin 245px, padding
   `35px 55px 70px`. Standard content/dashboard max width is 1200px.

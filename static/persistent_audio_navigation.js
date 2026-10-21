@@ -69,7 +69,7 @@
             routeLayer.className = "persistent-audio-route-layer";
             routeFrame = document.createElement("iframe");
             routeFrame.className = "persistent-audio-route-frame";
-            routeFrame.title = "Study Tool page";
+            routeFrame.title = "Meridian page";
             routeFrame.addEventListener("load", handleFrameLoad);
             routeLayer.append(routeFrame);
             document.body.append(routeLayer);
@@ -127,7 +127,7 @@
             document.body.classList.remove("audio-route-open");
             nowPlaying?.remove();
             nowPlaying = null;
-            document.title = document.querySelector("title")?.textContent || "Study Tool";
+            document.title = document.querySelector("title")?.textContent || "Meridian";
         }
     });
 })();

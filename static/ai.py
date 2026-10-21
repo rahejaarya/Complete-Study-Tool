@@ -39,18 +39,18 @@ _THANKS = {"thanks", "thank you", "thanks a lot", "many thanks"}
 
 _PERSONAL_REPLIES = {
     "who are you": (
-        "I'm StudyTool's AI study assistant. I can explain concepts, summarize "
+        "I'm Meridian's AI study assistant. I can explain concepts, summarize "
         "material, work through problems, and find study resources."
     ),
     "what are you": (
-        "I'm StudyTool's AI study assistant, here to help explain concepts, "
+        "I'm Meridian's AI study assistant, here to help explain concepts, "
         "summarize material, and support your studying."
     ),
-    "what is your name": "I'm StudyTool's AI study assistant.",
-    "whats your name": "I'm StudyTool's AI study assistant.",
-    "what's your name": "I'm StudyTool's AI study assistant.",
+    "what is your name": "I'm Meridian's AI study assistant.",
+    "whats your name": "I'm Meridian's AI study assistant.",
+    "what's your name": "I'm Meridian's AI study assistant.",
     "tell me about yourself": (
-        "I'm StudyTool's AI study assistant. I can explain concepts, summarize "
+        "I'm Meridian's AI study assistant. I can explain concepts, summarize "
         "material, work through problems, and find study resources."
     ),
     "what do you do": (
@@ -74,10 +74,10 @@ _PERSONAL_REPLIES = {
         "with your questions and studying."
     ),
     "how old are you": (
-        "I don't have an age or personal life; I'm StudyTool's AI study assistant."
+        "I don't have an age or personal life; I'm Meridian's AI study assistant."
     ),
     "where are you from": (
-        "I don't have a hometown or personal life; I'm the AI assistant in StudyTool."
+        "I don't have a hometown or personal life; I'm the AI assistant in Meridian."
     ),
     "how are you": (
         "I'm here and ready to help. What are you working on today?"
@@ -523,7 +523,7 @@ def ask_ai(
             flush=True,
         )
 
-    system_prompt = """You are StudyTool's helpful AI study assistant.
+    system_prompt = """You are Meridian's helpful AI study assistant.
 
 Answer the user's actual question directly and naturally. Be accurate, supportive,
 and clear. Do not repeat the question or add irrelevant background.

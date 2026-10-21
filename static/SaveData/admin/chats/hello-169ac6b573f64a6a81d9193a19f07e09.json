@@ -1,0 +1,26 @@
+{
+  "id": "169ac6b573f64a6a81d9193a19f07e09",
+  "title": "hello",
+  "created_at": "2026-10-21T15:15:41.600681+00:00",
+  "updated_at": "2026-10-21T15:16:17.797780+00:00",
+  "summary": "",
+  "summary_through": 0,
+  "messages": [
+    {
+      "role": "user",
+      "content": "hello"
+    },
+    {
+      "role": "assistant",
+      "content": "Hello! What would you like help studying today?"
+    },
+    {
+      "role": "user",
+      "content": "what is synthetic division"
+    },
+    {
+      "role": "assistant",
+      "content": "Synthetic division is a shortcut method used to divide a polynomial by a linear factor of the form $(x - c)$. It's faster and less cluttered than long division.\n\nThe process uses only the coefficients of the dividend and the constant $c$ from the divisor. It helps you quickly find the quotient and the remainder, which can then be used to determine if $(x - c)$ is a factor of the polynomial (via the Remainder Theorem)."
+    }
+  ]
+}
