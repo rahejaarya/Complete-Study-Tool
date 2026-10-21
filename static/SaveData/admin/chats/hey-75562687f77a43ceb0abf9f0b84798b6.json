@@ -1,0 +1,26 @@
+{
+  "id": "75562687f77a43ceb0abf9f0b84798b6",
+  "title": "hey",
+  "created_at": "2026-10-21T03:59:35.111925+00:00",
+  "updated_at": "2026-10-21T03:59:43.678491+00:00",
+  "summary": "",
+  "summary_through": 0,
+  "messages": [
+    {
+      "role": "user",
+      "content": "hey"
+    },
+    {
+      "role": "assistant",
+      "content": "Hey! What would you like help studying today?"
+    },
+    {
+      "role": "user",
+      "content": "what is photosynthesis"
+    },
+    {
+      "role": "assistant",
+      "content": "Photosynthesis is the process plants use to turn sunlight, water, and carbon dioxide into glucose (food) and oxygen.\n\n**Equation:**  \ncarbon dioxide + water + light energy → glucose + oxygen\n\nPlants capture sunlight in their leaves using chlorophyll, which makes them green."
+    }
+  ]
+}
