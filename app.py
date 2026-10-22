@@ -568,24 +568,19 @@ def clean_notebook_data(data):
     """Validate notebook fields, unique IDs, and the selected active notebook."""
     notebooks = data.get("notebooks")
     active_id = data.get("active_id")
-    if not isinstance(notebooks, list) or not notebooks:
-        raise ValueError("Add at least one notebook.")
+    if not isinstance(notebooks, list):
+        raise ValueError("Notebooks must be a list.")
     if not isinstance(active_id, str):
         raise ValueError("Choose an active notebook.")
 
     clean_notebooks = []
     seen_ids = set()
-    quick_notes_count = 0
     for notebook in notebooks:
         if not isinstance(notebook, dict):
             raise ValueError("Each notebook must be an object.")
         notebook_id = notebook.get("id")
         name = notebook.get("name")
         content = notebook.get("content")
-        quick_note = notebook.get("quick_note", "")
-        is_quick_notes = notebook.get(
-            "is_quick_notes", isinstance(name, str) and name.strip().lower() == "quick notes"
-        )
         whiteboard = notebook.get("whiteboard", {"strokes": []})
         kind = notebook.get("kind", "notes")
         if (
@@ -597,9 +592,6 @@ def clean_notebook_data(data):
             or len(name.strip()) > 80
             or not isinstance(content, str)
             or len(content) > 200_000
-            or not isinstance(quick_note, str)
-            or len(quick_note) > 20_000
-            or not isinstance(is_quick_notes, bool)
             or not isinstance(whiteboard, dict)
             or not isinstance(kind, str)
             or kind not in {"notes", "whiteboard"}
@@ -609,21 +601,23 @@ def clean_notebook_data(data):
         ):
             raise ValueError("A notebook contains invalid fields.")
         seen_ids.add(notebook_id)
-        quick_notes_count += int(is_quick_notes)
+        clean_name = name.strip()
+        if clean_name.lower() == "quick notes":
+            clean_name = "Notes"
         clean_notebooks.append({
             "id": notebook_id,
-            "name": name.strip(),
+            "name": clean_name,
             "content": content,
-            "quick_note": quick_note,
             "whiteboard": whiteboard,
-            "is_quick_notes": is_quick_notes,
             "kind": kind,
         })
 
-    if quick_notes_count > 1:
-        raise ValueError("Only one notebook can be Quick Notes.")
-    if active_id not in seen_ids:
+    if active_id and active_id not in seen_ids:
         raise ValueError("The active notebook could not be found.")
+    if not clean_notebooks:
+        active_id = ""
+    elif not active_id:
+        active_id = clean_notebooks[0]["id"]
     return {"notebooks": clean_notebooks, "active_id": active_id}
 
 
@@ -645,22 +639,7 @@ def user_notebooks():
                     raise ValueError("Saved notebooks must be an object.")
                 return jsonify(clean_notebook_data(saved_data))
 
-            quick_notes_notebook = {
-                "id": uuid.uuid4().hex,
-                "name": "Quick Notes",
-                "content": "",
-                "quick_note": "",
-            }
-            first_notebook = {
-                "id": uuid.uuid4().hex,
-                "name": "My Notebook",
-                "content": "",
-                "quick_note": "",
-            }
-            data = {
-                "notebooks": [quick_notes_notebook, first_notebook],
-                "active_id": quick_notes_notebook["id"],
-            }
+            data = {"notebooks": [], "active_id": ""}
             write_json_atomically(notebooks_path, data)
             return jsonify(data)
         except (sqlite3.Error, OSError, json.JSONDecodeError, ValueError) as error:
@@ -1977,6 +1956,201 @@ def notes():
 
 
 init_db()
+
+from pathlib import Path
+import json
+import shutil
+import uuid
+
+from flask import jsonify, request, session
+
+# Static/SaveData/<username>/Folders/<folder name>/
+SAVE_DATA_ROOT = Path(app.root_path) / "static" / "SaveData"
+
+
+def get_user_folders_dir():
+    username = session.get("username")
+
+    if (
+        not isinstance(username, str)
+        or not username.strip()
+        or username in {".", ".."}
+        or "/" in username
+        or "\\" in username
+        or "\0" in username
+    ):
+        return None
+
+    folders_dir = SAVE_DATA_ROOT / username / "Folders"
+    folders_dir.mkdir(parents=True, exist_ok=True)
+
+    return folders_dir
+
+
+def read_folder_data(folder_path):
+    metadata_file = folder_path / ".folder.json"
+
+    if metadata_file.exists():
+        with metadata_file.open("r", encoding="utf-8") as file:
+            data = json.load(file)
+
+        if (
+            isinstance(data, dict)
+            and isinstance(data.get("id"), str)
+            and isinstance(data.get("items"), list)
+        ):
+            data["name"] = folder_path.name
+            return data
+
+    # Recognize folders that already exist on disk.
+    return {
+        "id": str(uuid.uuid4()),
+        "name": folder_path.name,
+        "items": []
+    }
+
+
+def write_folder_data(folder_path, folder):
+    metadata_file = folder_path / ".folder.json"
+    temporary_file = folder_path / ".folder.tmp"
+
+    with temporary_file.open("w", encoding="utf-8") as file:
+        json.dump(folder, file, ensure_ascii=False, indent=2)
+
+    temporary_file.replace(metadata_file)
+
+
+@app.route("/api/saved-folders", methods=["GET"])
+def load_saved_folders():
+    folders_dir = get_user_folders_dir()
+
+    if folders_dir is None:
+        return jsonify({"error": "Please sign in first."}), 401
+
+    try:
+        folders = []
+
+        for folder_path in folders_dir.iterdir():
+            if not folder_path.is_dir():
+                continue
+
+            folder = read_folder_data(folder_path)
+            folder["name"] = folder_path.name
+
+            # Store stable IDs for existing folders.
+            write_folder_data(folder_path, folder)
+            folders.append(folder)
+
+        folders.sort(key=lambda folder: folder["name"].casefold())
+
+        return jsonify(folders)
+
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not load saved folders")
+        return jsonify({"error": "Could not load folders."}), 500
+
+
+@app.route("/api/saved-folders", methods=["PUT"])
+def save_saved_folders():
+    folders_dir = get_user_folders_dir()
+
+    if folders_dir is None:
+        return jsonify({"error": "Please sign in first."}), 401
+
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, list) or len(data) > 500:
+        return jsonify({"error": "Invalid folder list."}), 400
+
+    seen_ids = set()
+    seen_names = set()
+
+    # Validate the full list before modifying directories.
+    for folder in data:
+        if not isinstance(folder, dict):
+            return jsonify({"error": "Invalid folder data."}), 400
+
+        folder_id = folder.get("id")
+        name = folder.get("name")
+        items = folder.get("items")
+
+        if (
+            not isinstance(folder_id, str)
+            or not folder_id
+            or not isinstance(name, str)
+            or not name.strip()
+            or len(name.strip()) > 100
+            or name.strip() in {".", ".."}
+            or "/" in name
+            or "\\" in name
+            or "\0" in name
+            or any(ord(char) < 32 for char in name)
+            or not isinstance(items, list)
+        ):
+            return jsonify({"error": "Invalid folder name or data."}), 400
+
+        normalized_name = name.strip().casefold()
+
+        if (
+            folder_id in seen_ids
+            or normalized_name in seen_names
+        ):
+            return jsonify({
+                "error": "Folder IDs and names must be unique."
+            }), 400
+
+        seen_ids.add(folder_id)
+        seen_names.add(normalized_name)
+
+    try:
+        # Match existing directories to their stable IDs.
+        existing = {}
+
+        for path in folders_dir.iterdir():
+            if path.is_dir():
+                folder = read_folder_data(path)
+                existing[folder["id"]] = path
+
+        # Create new directories or rename existing directories.
+        for folder in data:
+            folder_id = folder["id"]
+            name = folder["name"].strip()
+            old_path = existing.get(folder_id)
+            new_path = folders_dir / name
+
+            if old_path is not None and old_path != new_path:
+                if new_path.exists():
+                    return jsonify({
+                        "error": f"A folder named '{name}' already exists."
+                    }), 409
+
+                old_path.rename(new_path)
+                new_path = folders_dir / name
+
+            elif old_path is None and new_path.exists():
+                return jsonify({
+                    "error": f"A folder named '{name}' already exists."
+                }), 409
+
+            new_path.mkdir(parents=True, exist_ok=True)
+
+            write_folder_data(new_path, {
+                "id": folder_id,
+                "name": name,
+                "items": folder["items"]
+            })
+
+        # Remove directories for folders deleted in the interface.
+        for folder_id, path in existing.items():
+            if folder_id not in seen_ids and path.exists():
+                shutil.rmtree(path)
+
+        return jsonify({"success": True})
+
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not save folders")
+        return jsonify({"error": "Could not save folders."}), 500
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8000)), debug=False)

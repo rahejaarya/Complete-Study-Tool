@@ -269,38 +269,79 @@
             return;
         }
 
-        const STORAGE_KEY = "meridian.savedContentFolders.v1";
         let folders = [];
         let openFolderId = null;
         let menu = null;
         let modal = null;
 
-        try {
-            const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-            if (Array.isArray(stored)) {
+        async function loadFolders() {
+            try {
+                const response = await fetch("/api/saved-folders", {
+                    method: "GET",
+                    headers: {
+                        "Accept": "application/json"
+                    },
+                    credentials: "same-origin"
+                });
+
+                if (!response.ok) {
+                    throw new Error("Could not load saved folders.");
+                }
+
+                const stored = await response.json();
+
+                if (!Array.isArray(stored)) {
+                    throw new Error("Invalid saved folder data.");
+                }
+
                 folders = stored.filter(folder =>
                     folder &&
                     typeof folder.id === "string" &&
                     typeof folder.name === "string" &&
                     Array.isArray(folder.items)
                 );
+
+                render();
+            } catch (error) {
+                console.error("Could not load saved folders:", error);
+
+                if (feedback) {
+                    feedback.textContent =
+                        "Unable to load folders. Please refresh and try again.";
+                }
             }
-        } catch (error) {
-            console.error("Could not load saved folders:", error);
         }
 
-        function saveFolders() {
+        async function saveFolders() {
             try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(folders));
+                const response = await fetch("/api/saved-folders", {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    credentials: "same-origin",
+                    body: JSON.stringify(folders)
+                });
+
+                if (!response.ok) {
+                    throw new Error("Server could not save folders.");
+                }
+
                 if (feedback) feedback.textContent = "";
                 return true;
             } catch (error) {
+                console.error("Could not save folders:", error);
+
                 if (feedback) {
-                    feedback.textContent = "Unable to save folders in this browser.";
+                    feedback.textContent =
+                        "Unable to save folders. Please try again.";
                 }
+
                 return false;
             }
         }
+
                 
         function closeMenu() {
             if (menu) menu.remove();
@@ -452,13 +493,16 @@
             };
 
             folders.push(folder);
+            
+            saveFolders().then(success => {
+                if (!success) {
+                    folders.pop();
+                    render();
+                    return;
+                }
 
-            if (!saveFolders()) {
-                folders.pop();
-                return;
-            }
-
-            render();
+                render();
+            });
         }
 
         
@@ -475,12 +519,15 @@
                     const oldName = folder.name;
                     folder.name = newName;
 
-                    if (!saveFolders()) {
-                        folder.name = oldName;
-                        return;
-                    }
+                    saveFolders().then(success => {
+                        if (!success) {
+                            folder.name = oldName;
+                            render();
+                            return;
+                        }
 
-                    render();
+                        render();
+                    });
                 }
             });
         }
@@ -501,17 +548,19 @@
                     const oldFolders = folders;
                     folders = folders.filter(item => item.id !== id);
 
-                    if (!saveFolders()) {
-                        folders = oldFolders;
+                    saveFolders().then(success => {
+                        if (!success) {
+                            folders = oldFolders;
+                            render();
+                            return;
+                        }
+
+                        if (openFolderId === id) {
+                            openFolderId = null;
+                        }
+
                         render();
-                        return;
-                    }
-
-                    if (openFolderId === id) {
-                        openFolderId = null;
-                    }
-
-                    render();
+                    });
                 }
             });
         }
@@ -713,7 +762,7 @@ if (event.key === "Escape") {
 });
 
 setFolderIcon(document.getElementById("empty-folder-icon"), "folder");
-render();
+loadFolders();
 })();
 
     (() => {

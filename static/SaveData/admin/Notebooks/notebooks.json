@@ -8,7 +8,8 @@
       "whiteboard": {
         "strokes": []
       },
-      "is_quick_notes": true
+      "is_quick_notes": true,
+      "kind": "notes"
     },
     {
       "id": "9d24394ff6b34b6fad1649cb4b9d40c4",
@@ -18,7 +19,8 @@
       "whiteboard": {
         "strokes": []
       },
-      "is_quick_notes": false
+      "is_quick_notes": false,
+      "kind": "notes"
     },
     {
       "id": "df03747c-0d4d-4358-8231-236a8b441f85",
@@ -28,7 +30,8 @@
       "whiteboard": {
         "strokes": []
       },
-      "is_quick_notes": false
+      "is_quick_notes": false,
+      "kind": "notes"
     }
   ],
   "active_id": "9d24394ff6b34b6fad1649cb4b9d40c4"

@@ -14,46 +14,32 @@
             <div class="notes-workspace" id="notes-workspace">
                 <header class="workspace-topbar">
                     <a class="workspace-home" href="{{ url_for('home') }}" aria-label="Back to dashboard">← <span>Dashboard</span></a>
-                    <div class="workspace-brand"><span>STUDY WORKSPACE</span><strong id="workspace-mode-label">Notes</strong></div>
                     <nav class="workspace-kind-tabs" role="tablist" aria-label="File type">
                         <button type="button" data-workspace-kind="notes" role="tab" aria-selected="true">Notes</button>
-                        <button type="button" data-workspace-kind="whiteboard" role="tab" aria-selected="false">Whiteboards</button>
+                        <button type="button" data-workspace-kind="whiteboard" role="tab" aria-selected="false">Whiteboard</button>
                     </nav>
                     <button type="button" class="workspace-new-file" id="workspace-new-file">＋ <span>New note</span></button>
                 </header>
 
                 <div class="workspace-layout">
-                    <aside class="workspace-file-sidebar" id="workspace-file-sidebar" aria-label="Your files">
-                        <div class="workspace-file-sidebar-header">
-                            <div><span>LIBRARY</span><h2 id="workspace-file-heading">My notes</h2></div>
-                            <button type="button" id="workspace-sidebar-collapse" aria-label="Collapse file list">‹</button>
-                        </div>
-                        <button type="button" class="workspace-sidebar-new" id="workspace-sidebar-new">＋ New note</button>
-                        <div class="workspace-file-list" id="workspace-file-list" role="listbox" aria-label="Saved files"></div>
-                        <p class="workspace-sidebar-hint">Your files save automatically.</p>
-                    </aside>
-                    <button type="button" class="workspace-sidebar-expand" id="workspace-sidebar-expand" aria-label="Show file list" hidden>›<span>Files</span></button>
-
                     <section class="workspace-stage" aria-label="Workspace">
-                        <div class="workspace-empty" id="workspace-empty">
-                            <div class="workspace-empty-icon" aria-hidden="true">✎</div>
-                            <p class="workspace-eyebrow">YOUR LIBRARY</p>
-                            <h1 id="workspace-empty-title">A clear space to think.</h1>
-                            <p id="workspace-empty-copy">Choose a note from the library or create one to get started.</p>
-                            <div class="workspace-empty-actions">
-                                <button type="button" data-create-kind="notes">＋ Create a note</button>
-                                <button type="button" data-create-kind="whiteboard">＋ Create a whiteboard</button>
-                            </div>
+                        <div class="workspace-library" id="workspace-library">
+                            <header class="workspace-library-header">
+                                <h1 id="workspace-library-title">Your notes</h1>
+                                <span class="workspace-library-count" id="workspace-library-count"></span>
+                            </header>
+                            <div class="workspace-file-grid" id="workspace-file-list" role="listbox" aria-label="Saved files"></div>
+                            <div class="workspace-library-empty-state" id="workspace-library-empty" hidden><span aria-hidden="true">✎</span><p id="workspace-empty-copy">No files here yet.</p><button type="button" id="workspace-empty-create" aria-label="Create a new file">＋</button></div>
                         </div>
 
                         <article class="workspace-document" id="workspace-document" hidden>
                             <header class="workspace-document-header">
+                                <button type="button" class="workspace-all-files" id="workspace-all-files">← All files</button>
                                 <div class="workspace-document-title-wrap">
-                                    <span class="workspace-document-kind" id="workspace-document-kind">NOTE</span>
                                     <input id="workspace-document-title" type="text" maxlength="80" aria-label="File name" placeholder="Untitled note">
                                 </div>
                                 <div class="workspace-document-actions">
-                                    <span class="workspace-save-status" id="workspace-save-status" aria-live="polite">Saved</span>
+                                    <button type="button" class="workspace-delete-file" id="workspace-delete-file" aria-label="Delete this file" title="Move to bin">▱</button>
                                 </div>
                             </header>
 
@@ -74,7 +60,7 @@
                                     <button type="button" data-note-command="removeFormat" aria-label="Clear formatting">Clear</button>
                                 </div>
                                 <div class="workspace-note-content" id="workspace-note-content" contenteditable="true" role="textbox" aria-label="Note contents" aria-multiline="true" data-placeholder="Start writing your notes..."></div>
-                                <footer class="workspace-note-footer"><span id="workspace-word-count">0 words</span><span>Autosaved to your library</span></footer>
+                                <footer class="workspace-note-footer"><span id="workspace-word-count">0 words</span></footer>
                             </section>
 
                             <section class="workspace-editor-panel workspace-board-panel" id="workspace-board-panel" aria-label="Whiteboard" hidden>
@@ -111,5 +97,17 @@
             </div>
         </main>
     </div>
+    <dialog class="workspace-confirm-dialog" id="workspace-delete-dialog" aria-labelledby="workspace-delete-title">
+        <form method="dialog" id="workspace-delete-form">
+            <span class="workspace-confirm-icon" aria-hidden="true">▱</span>
+            <h2 id="workspace-delete-title">Move this file to the bin?</h2>
+            <p id="workspace-delete-message"></p>
+            <label class="workspace-confirm-remember"><input type="checkbox" id="workspace-delete-remember"> Don’t ask me again</label>
+            <div class="workspace-confirm-actions">
+                <button type="submit" value="cancel" class="workspace-confirm-cancel">Cancel</button>
+                <button type="submit" value="delete" class="workspace-confirm-delete">Delete</button>
+            </div>
+        </form>
+    </dialog>
 </body>
 </html>

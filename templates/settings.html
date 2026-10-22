@@ -109,17 +109,12 @@
             </section>
 
             <section class="settings-card appearance-wrapper">
-                <details class="appearance-details" open>
-                    <summary>
-                        <div class="summary-header">
-                            <h2>Appearance & Themes</h2>
-                        </div>
-                        <span class="chevron-icon">▼</span>
-                    </summary>
-                    <div class="appearance-content-inner scrollable-appearance">
-                        {% include "_appearance_settings.html" %}
-                    </div>
-                </details>
+                <header class="appearance-section-heading">
+                    <h2>Appearance & Themes</h2>
+                </header>
+                <div class="appearance-content-inner">
+                    {% include "_appearance_settings.html" %}
+                </div>
             </section>
         </div>
     </main>

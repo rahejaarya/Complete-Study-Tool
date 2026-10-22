@@ -1,6 +1,5 @@
 (() => {
     const list = document.getElementById("workspace-file-list");
-    const emptyState = document.getElementById("workspace-empty");
     const documentView = document.getElementById("workspace-document");
     const notePanel = document.getElementById("workspace-notes-panel");
     const boardPanel = document.getElementById("workspace-board-panel");
@@ -8,18 +7,17 @@
     const boardCanvas = document.getElementById("workspace-board");
     const boardContext = boardCanvas?.getContext("2d");
     const titleInput = document.getElementById("workspace-document-title");
-    const saveStatus = document.getElementById("workspace-save-status");
     const globalStatus = document.getElementById("workspace-global-status");
     const workspace = document.getElementById("notes-workspace");
-    const fileSidebar = document.getElementById("workspace-file-sidebar");
-    const sidebarExpand = document.getElementById("workspace-sidebar-expand");
+    const library = document.getElementById("workspace-library");
+    const libraryEmpty = document.getElementById("workspace-library-empty");
     const boardSize = document.getElementById("board-size");
     const boardSizeLabel = document.getElementById("board-size-label");
     const wordCount = document.getElementById("workspace-word-count");
     if (!list || !workspace || !noteEditor || !boardCanvas) return;
 
     let data;
-    let activeKind = "notes";
+    let activeKind = new URLSearchParams(window.location.search).get("kind") === "whiteboard" ? "whiteboard" : "notes";
     let activeFileId = null;
     let saveTimer;
     let saveQueue = Promise.resolve();
@@ -109,37 +107,124 @@
         wordCount.textContent = `${count} ${count === 1 ? "word" : "words"}`;
     }
 
+    function makeFilePreview(file) {
+        const page = document.createElement("div");
+        page.className = `workspace-card-page${file.kind === "whiteboard" ? " is-whiteboard" : ""}`;
+        if (file.kind === "whiteboard") {
+            const canvas = document.createElement("canvas");
+            canvas.className = "workspace-card-board-preview";
+            canvas.width = 240;
+            canvas.height = 310;
+            const context = canvas.getContext("2d");
+            context.fillStyle = "#fff";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            (file.whiteboard?.strokes || []).forEach((stroke) => {
+                if (stroke.type === "text") {
+                    context.fillStyle = stroke.color || "#20242d";
+                    context.font = `${Math.max(8, (Number(stroke.size) || 20) * .38)}px Arial`;
+                    context.fillText(String(stroke.text || "").slice(0, 45), stroke.x * canvas.width, stroke.y * canvas.height);
+                    return;
+                }
+                const points = Array.isArray(stroke.points) ? stroke.points : [];
+                if (!points.length) return;
+                context.beginPath();
+                context.moveTo(points[0].x * canvas.width, points[0].y * canvas.height);
+                points.slice(1).forEach((point) => context.lineTo(point.x * canvas.width, point.y * canvas.height));
+                context.strokeStyle = stroke.tool === "eraser" ? "#fff" : (stroke.color || "#20242d");
+                context.lineWidth = Math.max(1, (Number(stroke.size) || 5) * .38 * (stroke.tool === "marker" ? 2.4 : 1));
+                context.lineCap = "round";
+                context.lineJoin = "round";
+                context.globalAlpha = stroke.tool === "highlighter" ? .24 : 1;
+                context.stroke();
+                context.globalAlpha = 1;
+            });
+            page.append(canvas);
+        } else {
+            const content = document.createElement("div");
+            content.className = "workspace-card-page-text";
+            const parsed = new DOMParser().parseFromString(String(file.content || ""), "text/html");
+            content.textContent = parsed.body.textContent.trim().slice(0, 650);
+            page.append(content);
+        }
+        return page;
+    }
+
     function renderFiles() {
         const files = data.notebooks.filter((file) => (file.kind || "notes") === activeKind);
         list.replaceChildren();
         files.forEach((file) => {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.className = "workspace-file-item";
-            button.setAttribute("role", "option");
-            button.setAttribute("aria-selected", String(file.id === activeFileId));
-            button.innerHTML = `<span class="workspace-file-icon" aria-hidden="true">${activeKind === "notes" ? "▤" : "▧"}</span><span class="workspace-file-name"></span><span class="workspace-file-arrow" aria-hidden="true">›</span>`;
-            button.querySelector(".workspace-file-name").textContent = file.name;
-            button.addEventListener("click", () => openFile(file.id));
-            list.append(button);
+            const card = document.createElement("article");
+            card.className = "workspace-file-card";
+            card.setAttribute("role", "option");
+            card.setAttribute("aria-selected", String(file.id === activeFileId));
+            const open = document.createElement("button");
+            open.type = "button";
+            open.className = "workspace-file-open";
+            open.setAttribute("aria-label", `Open ${file.name}`);
+            open.append(makeFilePreview(file));
+            const name = document.createElement("span");
+            name.className = "workspace-card-name";
+            name.textContent = file.name;
+            const type = document.createElement("span");
+            type.className = "workspace-card-type";
+            type.textContent = file.kind === "notes" ? "NOTE" : "WHITEBOARD";
+            open.append(name, type);
+            open.addEventListener("click", () => openFile(file.id));
+
+            const actions = document.createElement("div");
+            actions.className = "workspace-card-actions";
+            const rename = document.createElement("button");
+            rename.type = "button";
+            rename.className = "workspace-card-action";
+            rename.textContent = "Rename";
+            rename.setAttribute("aria-label", `Rename ${file.name}`);
+            rename.addEventListener("click", async () => {
+                const nextName = window.prompt("Rename file", file.name);
+                if (nextName === null) return;
+                const trimmed = nextName.trim().slice(0, 80);
+                if (!trimmed) return;
+                file.name = trimmed;
+                renderFiles();
+                if (currentFile()?.id === file.id) titleInput.value = trimmed;
+                globalStatus.textContent = "File renamed.";
+                await saveData();
+            });
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "workspace-card-action is-danger";
+            remove.textContent = "🗑";
+            remove.title = "Move to bin";
+            remove.setAttribute("aria-label", `Delete ${file.name}`);
+            remove.addEventListener("click", async () => {
+                if (!await requestDelete(file)) return;
+                data.notebooks = data.notebooks.filter((candidate) => candidate.id !== file.id);
+                if (!data.notebooks.some((candidate) => candidate.id === data.active_id)) data.active_id = data.notebooks[0]?.id || "";
+                if (activeFileId === file.id) activeFileId = null;
+                renderFiles();
+                globalStatus.textContent = "File deleted.";
+                await saveData();
+            });
+            actions.append(rename, remove);
+            card.append(open, actions);
+            list.append(card);
         });
-        const empty = document.createElement("p");
-        empty.className = "workspace-library-empty";
-        empty.textContent = files.length ? "" : `No ${activeKind === "notes" ? "notes" : "whiteboards"} yet`;
-        empty.hidden = files.length > 0;
-        list.append(empty);
-        document.getElementById("workspace-file-heading").textContent = activeKind === "notes" ? "My notes" : "My whiteboards";
+        libraryEmpty.hidden = files.length > 0;
+        document.getElementById("workspace-empty-copy").textContent = `No ${activeKind === "notes" ? "notes" : "whiteboards"} yet. Create one to get started.`;
+        document.getElementById("workspace-library-title").textContent = activeKind === "notes" ? "Your notes" : "Your whiteboards";
+        document.getElementById("workspace-library-count").textContent = `${files.length} ${files.length === 1 ? "file" : "files"}`;
+        document.getElementById("workspace-new-file").hidden = files.length === 0;
+        document.getElementById("workspace-empty-create").setAttribute("aria-label", `Create a new ${activeKind === "notes" ? "note" : "whiteboard"}`);
     }
 
     function openFile(id) {
         activeFileId = id;
+        data.active_id = id;
         const file = currentFile();
         if (!file) return;
-        emptyState.hidden = true;
+        library.hidden = true;
         documentView.hidden = false;
         notePanel.hidden = file.kind !== "notes";
         boardPanel.hidden = file.kind !== "whiteboard";
-        document.getElementById("workspace-document-kind").textContent = file.kind === "notes" ? "NOTE" : "WHITEBOARD";
         titleInput.value = file.name;
         titleInput.placeholder = file.kind === "notes" ? "Untitled note" : "Untitled whiteboard";
         if (file.kind === "notes") {
@@ -153,19 +238,13 @@
             requestAnimationFrame(resizeCanvas);
             updateHistoryButtons();
         }
-        saveStatus.textContent = "Saved";
         renderFiles();
     }
 
     function showLibrary() {
         activeFileId = null;
         documentView.hidden = true;
-        emptyState.hidden = false;
-        const notesMode = activeKind === "notes";
-        document.getElementById("workspace-empty-title").textContent = notesMode ? "A clear space to think." : "Sketch it out.";
-        document.getElementById("workspace-empty-copy").textContent = notesMode
-            ? "Choose a note from the library or create one to get started."
-            : "Open a saved whiteboard or create a fresh canvas.";
+        library.hidden = false;
         renderFiles();
     }
 
@@ -174,20 +253,28 @@
         document.querySelectorAll("[data-workspace-kind]").forEach((button) => {
             button.setAttribute("aria-selected", String(button.dataset.workspaceKind === kind));
         });
-        const label = kind === "notes" ? "Notes" : "Whiteboards";
-        document.getElementById("workspace-mode-label").textContent = label;
         document.getElementById("workspace-new-file").innerHTML = `＋ <span>New ${kind === "notes" ? "note" : "whiteboard"}</span>`;
-        document.getElementById("workspace-sidebar-new").textContent = `＋ New ${kind === "notes" ? "note" : "whiteboard"}`;
         showLibrary();
     }
 
-    function updateSaveStatus(message = "Unsaved changes") {
-        if (saveStatus && !documentView.hidden) saveStatus.textContent = message;
+    async function requestDelete(file) {
+        const dialog = document.getElementById("workspace-delete-dialog");
+        if (localStorage.getItem("notes-delete-skip-confirm") === "true") return true;
+        document.getElementById("workspace-delete-message").textContent = `“${file.name}” will be deleted.`;
+        document.getElementById("workspace-delete-remember").checked = false;
+        if (typeof dialog.showModal === "function") dialog.showModal();
+        else dialog.setAttribute("open", "");
+        const result = await new Promise((resolve) => {
+            dialog.addEventListener("close", () => resolve(dialog.returnValue), { once: true });
+        });
+        if (result === "delete" && document.getElementById("workspace-delete-remember").checked) {
+            localStorage.setItem("notes-delete-skip-confirm", "true");
+        }
+        return result === "delete";
     }
 
     async function saveData() {
         if (!data) return;
-        updateSaveStatus("Saving…");
         saveQueue = saveQueue.then(async () => {
             const response = await fetch("/api/notebooks", {
                 method: "PUT",
@@ -196,17 +283,14 @@
             });
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || "Save failed.");
-            if (!documentView.hidden) updateSaveStatus("Saved");
         }).catch((error) => {
             console.error("Workspace file could not be saved.", error);
-            updateSaveStatus("Could not save");
             globalStatus.textContent = "A file could not be saved. Please try again.";
         });
     }
 
     function scheduleSave() {
         window.clearTimeout(saveTimer);
-        updateSaveStatus();
         saveTimer = window.setTimeout(saveData, 400);
     }
 
@@ -216,11 +300,10 @@
             name: kind === "notes" ? "Untitled note" : "Untitled whiteboard",
             kind,
             content: "",
-            quick_note: "",
-            whiteboard: { strokes: [] },
-            is_quick_notes: false
+            whiteboard: { strokes: [] }
         };
         data.notebooks.push(file);
+        data.active_id = file.id;
         activeKind = kind;
         selectKind(kind);
         openFile(file.id);
@@ -318,17 +401,20 @@
         button.addEventListener("click", () => selectKind(button.dataset.workspaceKind));
     });
     document.getElementById("workspace-new-file").addEventListener("click", () => makeFile(activeKind));
-    document.getElementById("workspace-sidebar-new").addEventListener("click", () => makeFile(activeKind));
-    document.querySelectorAll("[data-create-kind]").forEach((button) => {
-        button.addEventListener("click", () => makeFile(button.dataset.createKind));
-    });
-    document.getElementById("workspace-sidebar-collapse").addEventListener("click", () => {
-        workspace.classList.add("files-collapsed");
-        sidebarExpand.hidden = false;
-    });
-    sidebarExpand.addEventListener("click", () => {
-        workspace.classList.remove("files-collapsed");
-        sidebarExpand.hidden = true;
+    document.getElementById("workspace-empty-create").addEventListener("click", () => makeFile(activeKind));
+    document.getElementById("workspace-all-files").addEventListener("click", showLibrary);
+    document.getElementById("workspace-delete-file").addEventListener("click", async () => {
+        const file = currentFile();
+        if (!file) return;
+        if (!await requestDelete(file)) return;
+        data.notebooks = data.notebooks.filter((candidate) => candidate.id !== file.id);
+        if (!data.notebooks.some((candidate) => candidate.id === data.active_id)) {
+            data.active_id = data.notebooks[0]?.id || "";
+        }
+        activeFileId = null;
+        showLibrary();
+        globalStatus.textContent = "File deleted.";
+        await saveData();
     });
 
     titleInput.addEventListener("input", () => {
@@ -483,24 +569,19 @@
                         name: `${file.name} board`.slice(0, 80),
                         kind: "whiteboard",
                         content: "",
-                        quick_note: "",
-                        whiteboard: file.whiteboard,
-                        is_quick_notes: false
+                        whiteboard: file.whiteboard
                     });
                     file.whiteboard = { strokes: [] };
                     migrated = true;
                 }
             });
-            const quickNotes = data.notebooks.find((file) => file.is_quick_notes || file.name.trim().toLowerCase() === "quick notes");
-            if (quickNotes) quickNotes.is_quick_notes = true;
+            if (!data.notebooks.some((file) => file.id === data.active_id)) data.active_id = data.notebooks[0]?.id || "";
             workspace.querySelectorAll("button, input, select").forEach((control) => {
                 control.disabled = false;
             });
-            showLibrary();
+            selectKind(activeKind);
             if (migrated) scheduleSave();
-            if (!data.notebooks.some((file) => file.kind === activeKind)) {
-                globalStatus.textContent = "Create a note or a whiteboard to begin.";
-            }
+            if (!data.notebooks.some((file) => file.kind === activeKind)) renderFiles();
         } catch (error) {
             console.error("Workspace files could not be loaded.", error);
             globalStatus.textContent = "Could not load your files. Refresh to try again.";
