@@ -332,19 +332,28 @@ function addMessage(message, sender) {
         const copyButton = document.createElement("button");
         copyButton.type = "button";
         copyButton.className = "chat-copy-button";
-        copyButton.textContent = "Copy";
+        copyButton.textContent = "⧉";
+        copyButton.title = "Copy response";
         copyButton.setAttribute("aria-label", "Copy this response");
+        copyButton.hidden = message === "Thinking...";
         copyButton.addEventListener("click", async () => {
             const textToCopy = bubble.innerText;
             try {
                 await navigator.clipboard.writeText(textToCopy);
-                copyButton.textContent = "Copied";
-                window.setTimeout(() => { copyButton.textContent = "Copy"; }, 1400);
+                copyButton.textContent = "✓";
+                copyButton.setAttribute("aria-label", "Response copied");
+                window.setTimeout(() => {
+                    copyButton.textContent = "⧉";
+                    copyButton.setAttribute("aria-label", "Copy this response");
+                }, 1400);
             } catch (error) {
-                copyButton.textContent = "Copy unavailable";
-                window.setTimeout(() => { copyButton.textContent = "Copy"; }, 1800);
+                copyButton.setAttribute("aria-label", "Could not copy response");
+                window.setTimeout(() => {
+                    copyButton.setAttribute("aria-label", "Copy this response");
+                }, 1800);
             }
         });
+        bubble.copyButton = copyButton;
         messageDiv.appendChild(copyButton);
     }
 
@@ -931,6 +940,10 @@ async function sendMessage() {
         }
 
     } finally {
+
+        if (fullResponse && thinkingBubble.copyButton) {
+            thinkingBubble.copyButton.hidden = false;
+        }
 
         aiSend.disabled = false;
         aiSend.classList.remove("is-stop");

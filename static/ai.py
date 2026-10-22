@@ -12,7 +12,7 @@ MODEL = "qwen3.5:9b"
 
 # Keep Cypher responsive on a 16 GB laptop while retaining enough context for a
 # useful multi-turn study conversation.
-CHAT_OPTIONS = {"temperature": 0.2, "num_predict": 900, "num_ctx": 8192}
+CHAT_OPTIONS = {"temperature": 0.2, "num_predict": 3200, "num_ctx": 12288}
 
 _GREETING_REPLIES = {
     "hi": "Hi! What would you like help studying today?",
