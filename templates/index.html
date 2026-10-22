@@ -109,14 +109,8 @@
             <!-- Dashboard section containing the primary study cards and quick actions. -->
             <section class="dashboard">
 
-                <!-- Hero card at the top of the dashboard to encourage the user to start studying. -->
-                <div class="main-card study-card">
-
-
-                    <h2>What are you working on?</h2>
-
-                   
-
+                <div class="dashboard-overview">
+                    <div class="feature-grid dashboard-feature-grid">
                     <a href="{{ url_for('resources') }}" class="feature-card study-resource-link">
                         <span class="feature-icon resources-icon" aria-hidden="true">{{ app_icon("resources") }}</span>
                         <span class="feature-content">
@@ -126,16 +120,7 @@
                         <span class="card-arrow" aria-hidden="true">→</span>
                     </a>
 
-                </div>
-
-
-                <!-- Quick-start shortcut cards for the most-used study tools. -->
-                <div class="section-heading">
-                    <h2>Quick Start</h2>
-                </div>
-
-
-                <div class="feature-grid">
+                
 
                     <!-- AI Study Help -->
                     <a href="{{ url_for('ai_help') }}" style="text-decoration: none; color: inherit; display: block;">
@@ -236,8 +221,21 @@
                         </div>
                     </a>
 
-                </div>
+                    </div>
 
+                    <!-- Motivational Quote Slideshow -->
+                    <section class="main-card motivation-card" aria-label="Motivational quote slideshow">
+                        <blockquote class="quote-slide" id="quote-slide" role="button" tabindex="0" aria-label="Show next motivational quote" aria-live="polite" aria-atomic="true">
+                            <p id="quote-text">What's the 'C' in CTE?</p>
+                            <cite id="quote-author">— Benjamin Johnson</cite>
+                        </blockquote>
+                        <div class="quote-controls">
+                            <button class="quote-toggle" id="quote-toggle" type="button" aria-pressed="false">
+                                Pause
+                            </button>
+                        </div>
+                    </section>
+                </div>
 
                 <!-- Secondary content cards for the notebook workspace and other lower-level tools. -->
                 <div class="lower-grid">
@@ -294,19 +292,6 @@
                                     placeholder="Start writing in this notebook..."
                                     disabled></textarea>
                             </div>
-                        </div>
-                    </section>
-
-                    <!-- Motivational Quote Slideshow -->
-                    <section class="main-card motivation-card" aria-label="Motivational quote slideshow">
-                        <blockquote class="quote-slide" id="quote-slide" role="button" tabindex="0" aria-label="Show next motivational quote" aria-live="polite" aria-atomic="true">
-                            <p id="quote-text">What's the 'C' in CTE?</p>
-                            <cite id="quote-author">— Benjamin Johnson</cite>
-                        </blockquote>
-                        <div class="quote-controls">
-                            <button class="quote-toggle" id="quote-toggle" type="button" aria-pressed="false">
-                                Pause
-                            </button>
                         </div>
                     </section>
 

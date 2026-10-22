@@ -7243,3 +7243,96 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .logo-mark {
         min-height: 46px;
     }
 }
+
+/* Main dashboard: join the resource tile to the four shortcuts and keep the
+   rotating quote visible beside them on standard desktop screens. */
+.dashboard-topbar {
+    margin-bottom: 22px;
+}
+
+.dashboard-overview {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(250px, 0.85fr);
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.dashboard-feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+    gap: 12px;
+    margin: 0;
+}
+
+.dashboard-feature-grid > a {
+    min-width: 0;
+}
+
+.dashboard .dashboard-feature-grid .study-resource-link {
+    grid-column: 1 / -1;
+    min-height: 130px;
+    margin: 0;
+    padding: 24px;
+}
+
+.dashboard-feature-grid > a:not(.study-resource-link) > .feature-card {
+    min-height: 116px;
+    height: 100%;
+    padding: 17px;
+}
+
+.dashboard-overview .motivation-card {
+    min-width: 0;
+    min-height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 22px;
+}
+
+.dashboard-overview .quote-slide {
+    min-height: 130px;
+}
+
+.dashboard .lower-grid {
+    grid-template-columns: minmax(0, 1fr);
+    margin-bottom: 16px;
+}
+
+@media (max-width: 760px) {
+    .dashboard-overview {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+    }
+
+    .dashboard-overview .motivation-card {
+        order: -1;
+        min-height: 0;
+        padding: 16px 18px;
+    }
+
+    .dashboard-overview .quote-slide {
+        min-height: 92px;
+    }
+
+    .dashboard-feature-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+    }
+
+    .dashboard .dashboard-feature-grid .study-resource-link {
+        min-height: 104px;
+        padding: 18px;
+    }
+
+    .dashboard-feature-grid > a:not(.study-resource-link) > .feature-card {
+        min-height: 96px;
+        padding: 14px;
+    }
+
+    .dashboard-topbar {
+        margin-bottom: 18px;
+    }
+}
