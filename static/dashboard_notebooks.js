@@ -298,7 +298,7 @@
             const inkPicker = toolbar?.querySelector('[data-command="foreColor"]');
             if (inkPicker) inkPicker.value = colorInputValue(getComputedStyle(contentInput).color);
             const boardColor = boardPanel?.querySelector("[data-board-color]");
-            if (boardColor) boardColor.value = colorInputValue(getComputedStyle(boardPanel).color);
+            if (boardColor) boardColor.value = "#20242d";
             status.textContent = "";
             if (boardCanvas) {
                 new ResizeObserver(resizeBoard).observe(boardCanvas);
@@ -431,6 +431,36 @@
 
     notesTab?.addEventListener("click", () => selectNotebookTab("notes"));
     boardTab?.addEventListener("click", () => selectNotebookTab("board"));
+
+    card.querySelectorAll("[data-fullscreen]").forEach((button) => {
+        button.addEventListener("click", async () => {
+            const target = document.getElementById(button.dataset.fullscreen);
+            if (!target) return;
+            if (document.fullscreenElement === target || target.classList.contains("is-workspace-fullscreen")) {
+                if (document.fullscreenElement === target) await document.exitFullscreen();
+                else target.classList.remove("is-workspace-fullscreen");
+                return;
+            }
+            try {
+                if (target.requestFullscreen) await target.requestFullscreen();
+                else target.classList.add("is-workspace-fullscreen");
+            } catch (error) {
+                target.classList.add("is-workspace-fullscreen");
+            }
+            if (target === boardPanel) requestAnimationFrame(resizeBoard);
+        });
+    });
+
+    document.addEventListener("fullscreenchange", () => {
+        if (document.fullscreenElement === boardPanel) requestAnimationFrame(resizeBoard);
+    });
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            card.querySelectorAll(".is-workspace-fullscreen").forEach((target) => {
+                target.classList.remove("is-workspace-fullscreen");
+            });
+        }
+    });
 
     boardPanel?.querySelectorAll("[data-board-tool]").forEach((button) => {
         button.addEventListener("click", () => {

@@ -587,6 +587,7 @@ def clean_notebook_data(data):
             "is_quick_notes", isinstance(name, str) and name.strip().lower() == "quick notes"
         )
         whiteboard = notebook.get("whiteboard", {"strokes": []})
+        kind = notebook.get("kind", "notes")
         if (
             not isinstance(notebook_id, str)
             or not re.fullmatch(r"[A-Za-z0-9_-]{1,36}", notebook_id)
@@ -600,6 +601,8 @@ def clean_notebook_data(data):
             or len(quick_note) > 20_000
             or not isinstance(is_quick_notes, bool)
             or not isinstance(whiteboard, dict)
+            or not isinstance(kind, str)
+            or kind not in {"notes", "whiteboard"}
             or not isinstance(whiteboard.get("strokes", []), list)
             or len(whiteboard.get("strokes", [])) > 5000
             or len(json.dumps(whiteboard, ensure_ascii=False)) > 1_000_000
@@ -614,6 +617,7 @@ def clean_notebook_data(data):
             "quick_note": quick_note,
             "whiteboard": whiteboard,
             "is_quick_notes": is_quick_notes,
+            "kind": kind,
         })
 
     if quick_notes_count > 1:
