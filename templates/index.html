@@ -93,9 +93,12 @@
                         </div>
                     </div>
                     <label class="global-search-trigger" for="global-search-open" title="Search all features (⌘K or Ctrl+K)">
+                    {# I removed the logo from the search bar bc it looked ass #}
+                    {#
                         <span class="global-search-brand-mark" aria-hidden="true">
                             <img src="{{ url_for('static', filename='meridian-logo.png') }}" alt="">
                         </span>
+                        #}
                         <input id="global-search-open" type="search" placeholder="Search features..." readonly aria-haspopup="dialog" aria-controls="global-search-dialog" aria-expanded="false">
                         <kbd>⌘/Ctrl K</kbd>
                     </label>
