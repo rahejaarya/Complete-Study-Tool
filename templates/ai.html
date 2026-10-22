@@ -172,6 +172,8 @@ let currentChatId = null;
 let isSendingMessage = false;
 let chatDialogAction = null;
 let chatFollowsLatest = true;
+let activeChatRequest = null;
+let latestScrollFrame = 0;
 
 
 /*
@@ -289,7 +291,9 @@ function insertChatEntry(entry, beforeElement = null) {
 function scrollChatToLatest() {
     if (!chatFollowsLatest) return;
 
-    requestAnimationFrame(() => {
+    if (latestScrollFrame) return;
+    latestScrollFrame = requestAnimationFrame(() => {
+        latestScrollFrame = 0;
         const lastMessage = chatMessages.lastElementChild;
         if (!lastMessage || !chatFollowsLatest) return;
 
@@ -772,7 +776,11 @@ async function sendMessage() {
     }
 
     isSendingMessage = true;
-    aiSend.disabled = true;
+    activeChatRequest = new AbortController();
+    aiSend.disabled = false;
+    aiSend.classList.add("is-stop");
+    aiSend.textContent = "Stop";
+    aiSend.setAttribute("aria-label", "Stop generating response");
     newChatButton.disabled = true;
     loadChatList();
 
@@ -791,14 +799,11 @@ async function sendMessage() {
     resizeAiInput();
 
 
-    // Disable send button
-    aiSend.textContent = "Thinking...";
-
-
     // Show temporary thinking message
     const thinkingBubble =
         addMessage("Thinking...", "ai");
     let lastResourceAnchor = thinkingBubble.parentElement;
+    let fullResponse = "";
 
     try {
 
@@ -813,7 +818,8 @@ async function sendMessage() {
             body: JSON.stringify({
                 message: message,
                 chat_id: currentChatId
-            })
+            }),
+            signal: activeChatRequest.signal
 
 
         });
@@ -825,8 +831,6 @@ async function sendMessage() {
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-
-        let fullResponse = "";
 
         let buffer = "";
 
@@ -897,19 +901,22 @@ async function sendMessage() {
         }
 
     } catch (error) {
-
-        console.error(error);
-
-        thinkingBubble.textContent =
-            "AI Error: " + error.message;
+        if (error.name === "AbortError") {
+            if (!fullResponse) thinkingBubble.textContent = "Response stopped.";
+        } else {
+            console.error(error);
+            thinkingBubble.textContent = "AI Error: " + error.message;
+        }
 
     } finally {
 
         aiSend.disabled = false;
-
+        aiSend.classList.remove("is-stop");
         aiSend.textContent = "Send";
+        aiSend.setAttribute("aria-label", "Send message to Cypher");
 
         isSendingMessage = false;
+        activeChatRequest = null;
         newChatButton.disabled = false;
         await loadChatList();
 
@@ -918,6 +925,11 @@ async function sendMessage() {
     }
 
 }
+
+
+aiSend.addEventListener("click", () => {
+    if (isSendingMessage) activeChatRequest?.abort();
+});
 
 
 aiSend.addEventListener(
@@ -1164,6 +1176,26 @@ scrollBottomStyles.textContent = `
 `;
 
 document.head.appendChild(scrollBottomStyles);
+
+/* Replace the browser's harsh bottom bounce with a small spring gesture. */
+document.documentElement.style.overscrollBehaviorY = "none";
+window.addEventListener("wheel", (event) => {
+    if (event.deltaY <= 0 || !aiDashboard.classList.contains("has-active-chat")) return;
+
+    const atPageBottom =
+        window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+    if (!atPageBottom) return;
+
+    event.preventDefault();
+    chatMessages.animate(
+        [
+            { transform: "translateY(0)" },
+            { transform: "translateY(9px)", offset: 0.42 },
+            { transform: "translateY(0)" }
+        ],
+        { duration: 260, easing: "cubic-bezier(.2,.75,.25,1)" }
+    );
+}, { passive: false });
 
 /* Show the button when the latest message is below the viewport */
 function updateScrollBottomButton() {

@@ -1136,6 +1136,16 @@ body {
     opacity: 0.7;
 }
 
+.search-box #ai-send.is-stop {
+    border-color: #c84b55;
+    background: #c84b55;
+}
+
+.search-box #ai-send.is-stop:hover {
+    border-color: #a93640;
+    background: #a93640;
+}
+
 /* Conversation transcript, response bubbles, and resource cards used by AI chat. */
 .chat-messages {
     flex-direction: column;
