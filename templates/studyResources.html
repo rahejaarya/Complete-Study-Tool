@@ -86,115 +86,139 @@
             <!-- Resources Dashboard Wireframe -->
             <section class="dashboard">
 
-                <div class="resource-tools-grid">
-                    <a class="resource-browser-launch" href="{{ url_for('resource_browser') }}">
-                        <span class="resource-browser-launch-mark" aria-hidden="true">⌕</span>
-                        <span class="resource-browser-launch-copy">
-                            <span class="resource-browser-launch-kicker">BROWSE &amp; LEARN</span>
-                            <strong>Explore a topic with Cypher</strong>
-                            <span>Get an overview and find related videos and study websites.</span>
-                        </span>
-                        <span class="resource-browser-launch-action">Open <span aria-hidden="true">→</span></span>
-                    </a>
-
-                    <!-- Translator Section: keep the translator itself unchanged. -->
-                    <div class="translator-widget">
-                        <button class="translator-toggle" id="translator-toggle" type="button" aria-expanded="false" aria-controls="translator-panel">
-                            <span class="resource-browser-launch-mark" aria-hidden="true">文</span>
-                            <span class="resource-browser-launch-copy">
-                                <span class="resource-browser-launch-kicker">LANGUAGE TOOL</span>
-                                <strong>Translate</strong>
-                                <span>Translate text between supported languages.</span>
-                            </span>
-                            <span class="resource-browser-launch-action">Open <span aria-hidden="true">→</span></span>
-                        </button>
-                    <div class="translator-panel" id="translator-panel" hidden>
-                        <div class="resource-tiles">
-                            <!-- Input Block -->
-                            <div class="resource-tile">
-                                <label class="resource-language-label" for="source-language-search">Translate from</label>
-                                <div class="resource-language-picker" id="source-language-picker">
-                                    <input class="resource-language-search" id="source-language-search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="source-language-options" placeholder="Search languages" autocomplete="off">
-                                    <button class="language-picker-toggle" type="button" aria-label="Show source languages" aria-controls="source-language-options">⌄</button>
-                                    <div class="language-picker-options" id="source-language-options" role="listbox" hidden></div>
-                                <select class="resource-language-select" id="source-language" name="source-language" hidden aria-hidden="true" tabindex="-1">
-                                    <option value="auto" selected>Auto-Detect</option>
-                                    <option value="af">Afrikaans</option><option value="sq">Albanian</option><option value="am">Amharic</option><option value="ar">Arabic</option>
-                                    <option value="hy">Armenian</option><option value="az">Azerbaijani</option><option value="eu">Basque</option><option value="bn">Bengali</option>
-                                    <option value="bs">Bosnian</option><option value="bg">Bulgarian</option><option value="ca">Catalan</option><option value="zh">Chinese</option>
-                                    <option value="hr">Croatian</option><option value="cs">Czech</option><option value="da">Danish</option><option value="nl">Dutch</option>
-                                    <option value="en">English</option><option value="et">Estonian</option><option value="fa">Persian</option><option value="fi">Finnish</option>
-                                    <option value="fr">French</option><option value="gl">Galician</option><option value="ka">Georgian</option><option value="de">German</option>
-                                    <option value="el">Greek</option><option value="gu">Gujarati</option><option value="ht">Haitian Creole</option><option value="ha">Hausa</option>
-                                    <option value="he">Hebrew</option><option value="hi">Hindi</option><option value="hu">Hungarian</option><option value="is">Icelandic</option>
-                                    <option value="id">Indonesian</option><option value="ga">Irish</option><option value="it">Italian</option><option value="ja">Japanese</option>
-                                    <option value="jv">Javanese</option><option value="kn">Kannada</option><option value="kk">Kazakh</option><option value="km">Khmer</option>
-                                    <option value="ko">Korean</option><option value="lo">Lao</option><option value="lv">Latvian</option><option value="lt">Lithuanian</option>
-                                    <option value="mk">Macedonian</option><option value="ms">Malay</option><option value="ml">Malayalam</option><option value="mt">Maltese</option>
-                                    <option value="mr">Marathi</option><option value="mn">Mongolian</option><option value="my">Myanmar</option><option value="ne">Nepali</option>
-                                    <option value="no">Norwegian</option><option value="ps">Pashto</option><option value="pl">Polish</option><option value="pt">Portuguese</option>
-                                    <option value="pa">Punjabi</option><option value="ro">Romanian</option><option value="ru">Russian</option><option value="sr">Serbian</option>
-                                    <option value="sk">Slovak</option><option value="sl">Slovenian</option><option value="so">Somali</option><option value="es">Spanish</option>
-                                    <option value="sw">Swahili</option><option value="sv">Swedish</option><option value="tl">Tagalog</option><option value="ta">Tamil</option>
-                                    <option value="te">Telugu</option><option value="th">Thai</option><option value="tr">Turkish</option><option value="uk">Ukrainian</option>
-                                    <option value="ur">Urdu</option><option value="uz">Uzbek</option><option value="vi">Vietnamese</option><option value="cy">Welsh</option>
-                                </select>
-                                </div>
-                                <div class="translator-field-heading">
-                                    <label class="resource-language-label" for="resource-tile-input">Text to translate</label>
-                                    <button class="translator-copy-button" id="copy-source-text" type="button" aria-label="Copy input text" title="Copy input text" disabled>
-                                        <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7" y="6" width="9" height="11" rx="1.5"></rect><path d="M13 6V4.8A1.8 1.8 0 0 0 11.2 3H5.8A1.8 1.8 0 0 0 4 4.8v7.4A1.8 1.8 0 0 0 5.8 14H7"></path></svg>
-                                        <span>Copy</span>
-                                    </button>
-                                </div>
-                                <textarea id="resource-tile-input" maxlength="5000" placeholder="Type here to translate..."></textarea>
-                                <small class="translator-char-count" id="translator-char-count">0 / 5,000</small>
-                            </div>
-
-                            <button class="translator-swap" id="translator-swap" type="button" aria-label="Swap languages" title="Swap languages">⇄</button>
-
-                            <!-- Output Block -->
-                            <div class="resource-tile">
-                                <label class="resource-language-label" for="target-language-search">Translate to</label>
-                                <div class="resource-language-picker" id="target-language-picker">
-                                    <input class="resource-language-search" id="target-language-search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="target-language-options" placeholder="Search languages" autocomplete="off">
-                                    <button class="language-picker-toggle" type="button" aria-label="Show target languages" aria-controls="target-language-options">⌄</button>
-                                    <div class="language-picker-options" id="target-language-options" role="listbox" hidden></div>
-                                <select class="resource-language-select" id="target-language" name="target-language" hidden aria-hidden="true" tabindex="-1">
-                                    <option value="af">Afrikaans</option><option value="sq">Albanian</option><option value="am">Amharic</option><option value="ar">Arabic</option>
-                                    <option value="hy">Armenian</option><option value="az">Azerbaijani</option><option value="eu">Basque</option><option value="bn">Bengali</option>
-                                    <option value="bs">Bosnian</option><option value="bg">Bulgarian</option><option value="ca">Catalan</option><option value="zh">Chinese</option>
-                                    <option value="hr">Croatian</option><option value="cs">Czech</option><option value="da">Danish</option><option value="nl">Dutch</option>
-                                    <option value="en">English</option><option value="et">Estonian</option><option value="fa">Persian</option><option value="fi">Finnish</option>
-                                    <option value="fr">French</option><option value="gl">Galician</option><option value="ka">Georgian</option><option value="de">German</option>
-                                    <option value="el">Greek</option><option value="gu">Gujarati</option><option value="ht">Haitian Creole</option><option value="ha">Hausa</option>
-                                    <option value="he">Hebrew</option><option value="hi">Hindi</option><option value="hu">Hungarian</option><option value="is">Icelandic</option>
-                                    <option value="id">Indonesian</option><option value="ga">Irish</option><option value="it">Italian</option><option value="ja">Japanese</option>
-                                    <option value="jv">Javanese</option><option value="kn">Kannada</option><option value="kk">Kazakh</option><option value="km">Khmer</option>
-                                    <option value="ko">Korean</option><option value="lo">Lao</option><option value="lv">Latvian</option><option value="lt">Lithuanian</option>
-                                    <option value="mk">Macedonian</option><option value="ms">Malay</option><option value="ml">Malayalam</option><option value="mt">Maltese</option>
-                                    <option value="mr">Marathi</option><option value="mn">Mongolian</option><option value="my">Myanmar</option><option value="ne">Nepali</option>
-                                    <option value="no">Norwegian</option><option value="ps">Pashto</option><option value="pl">Polish</option><option value="pt">Portuguese</option>
-                                    <option value="pa">Punjabi</option><option value="ro">Romanian</option><option value="ru">Russian</option><option value="sr">Serbian</option>
-                                    <option value="sk">Slovak</option><option value="sl">Slovenian</option><option value="so">Somali</option><option value="es" selected>Spanish</option>
-                                    <option value="sw">Swahili</option><option value="sv">Swedish</option><option value="tl">Tagalog</option><option value="ta">Tamil</option>
-                                    <option value="te">Telugu</option><option value="th">Thai</option><option value="tr">Turkish</option><option value="uk">Ukrainian</option>
-                                    <option value="ur">Urdu</option><option value="uz">Uzbek</option><option value="vi">Vietnamese</option><option value="cy">Welsh</option>
-                                </select>
-                                </div>
-                                <div class="translator-field-heading">
-                                    <label class="resource-language-label" for="resource-tile-readonly">Translation</label>
-                                    <button class="translator-copy-button" id="copy-translated-text" type="button" aria-label="Copy translated text" title="Copy translated text" disabled>
-                                        <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7" y="6" width="9" height="11" rx="1.5"></rect><path d="M13 6V4.8A1.8 1.8 0 0 0 11.2 3H5.8A1.8 1.8 0 0 0 4 4.8v7.4A1.8 1.8 0 0 0 5.8 14H7"></path></svg>
-                                        <span>Copy</span>
-                                    </button>
-                                </div>
-                                <textarea id="resource-tile-readonly" placeholder="Translation will appear here..." readonly></textarea>
-                                <p class="translator-status" id="translator-status" role="status" aria-live="polite"></p>
+                <!-- Saved Content Directory -->
+                    <section class="saved-content-directory">
+                        <div class="directory-heading">
+                            <div>
+                                <h2 id="saved-content-title">Browse your Saved Content</h2>
                             </div>
                         </div>
-                    </div>
-                </div>
+
+                        <div class="folder-toolbar" id="folder-toolbar" hidden>
+                            <button type="button" class="folder-back-button" id="folder-back">
+                                ← All folders
+                            </button>
+                        </div>
+
+                        <div class="folder-grid" id="folder-grid"></div>
+
+                        <div class="folder-empty-state" id="folder-empty-state" hidden>
+                            <div class="folder-empty-icon folder-icon" id="empty-folder-icon"></div>
+                            <h3>This folder is empty</h3>
+                            <p>Your saved learning materials will appear here.</p>
+                        </div>
+
+                        <p class="directory-feedback" id="directory-feedback"
+                        role="status" aria-live="polite"></p>
+                    </section>
+
+                    <!-- Divider between saved folders and tools -->
+                    <div class="resources-divider"></div>
+
+                        <!-- Study Tools -->
+                        <section class="study-tools" aria-labelledby="study-tools-title">
+                            <div class="study-tools-heading">
+                                <h2 id="study-tools-title">Tools</h2>
+                            </div>
+
+                            <div class="tools-grid">
+                                <article class="tool-card" id="translator-tool">
+                                    <div class="tool-card-header">
+                                        <div class="tool-icon" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24" width="28" height="28"
+                                                fill="none" stroke="currentColor" stroke-width="1.7"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M4 5h10M9 3v2c0 5-2 8-5 10"/>
+                                                <path d="M6 9c1.5 2.5 3.5 4 6 5"/>
+                                                <path d="m13 20 4-10 4 10M14.5 17h5"/>
+                                                <path d="M16 5h5"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3>Translator</h3>
+                                            <p>Translate text between languages.</p>
+                                        </div>
+                                    </div>
+
+                                    <form id="translator-form" class="translator-form">
+                                        <div class="translator-panels">
+                                            <div class="translator-panel">
+                                                <label for="translator-source-language">From</label>
+                                                <select id="translator-source-language">
+                                                    <option value="auto">Detect language</option>
+                                                    <option value="en">English</option>
+                                                    <option value="es">Spanish</option>
+                                                    <option value="fr">French</option>
+                                                    <option value="de">German</option>
+                                                    <option value="it">Italian</option>
+                                                    <option value="pt">Portuguese</option>
+                                                    <option value="zh">Chinese</option>
+                                                    <option value="ja">Japanese</option>
+                                                    <option value="ko">Korean</option>
+                                                    <option value="ar">Arabic</option>
+                                                    <option value="hi">Hindi</option>
+                                                    <option value="ru">Russian</option>
+                                                </select>
+
+                                                <textarea id="translator-input" rows="7"
+                                                        maxlength="5000"
+                                                        placeholder="Enter text..."
+                                                        aria-label="Text to translate"></textarea>
+
+                                                <div class="translator-panel-footer">
+                                                    <span id="translator-character-count">0 / 5000</span>
+                                                    <button type="button" id="translator-clear"
+                                                            class="tool-text-button">Clear</button>
+                                                </div>
+                                            </div>
+
+                                            <div class="translator-panel">
+                                                <label for="translator-target-language">To</label>
+                                                <select id="translator-target-language">
+                                                    <option value="en">English</option>
+                                                    <option value="es" selected>Spanish</option>
+                                                    <option value="fr">French</option>
+                                                    <option value="de">German</option>
+                                                    <option value="it">Italian</option>
+                                                    <option value="pt">Portuguese</option>
+                                                    <option value="zh">Chinese</option>
+                                                    <option value="ja">Japanese</option>
+                                                    <option value="ko">Korean</option>
+                                                    <option value="ar">Arabic</option>
+                                                    <option value="hi">Hindi</option>
+                                                    <option value="ru">Russian</option>
+                                                </select>
+
+                                                <textarea id="translator-output" rows="7"
+                                                        maxlength="5000"
+                                                        placeholder="Translation appears here..."
+                                                        aria-label="Translated text"
+                                                        readonly></textarea>
+
+                                                <div class="translator-panel-footer">
+                                                    <span id="translator-status" role="status"
+                                                        aria-live="polite"></span>
+                                                    <button type="button" id="translator-copy"
+                                                            class="tool-text-button">Copy</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="translator-bottom-row">
+                                            <button type="button" id="translator-swap"
+                                                    class="translator-swap">
+                                                ⇄ Swap languages
+                                            </button>
+                                            <span id="translator-error" class="translator-error"
+                                                role="alert" hidden></span>
+                                        </div>
+                                    </form>
+                                </article>
+                            </div>
+                        </section>
+
+                    </section>
+
 
             </section>
 
@@ -203,294 +227,789 @@
     </div>
 
     <!-- Mobile View Navigation -->
-    {% include "_mobile_navigation.html" %}
+    <nav class="mobile-navigation">
+        <a href="/" class="mobile-link">
+            <span>⌂</span>
+            <small>Dashboard</small>
+        </a>
+        <a href="/resources" class="mobile-link active">
+            <span>{{ app_icon("resources") }}</span>
+            <small>Study Resources</small>
+        </a>
+        <a href="/noise-songs" class="mobile-link">
+            <span>♫</span>
+            <small>Noise &amp; Songs</small>
+        </a>
+        <a href="/time-management" class="mobile-link">
+            <span>◷</span>
+            <small>Time Management</small>
+        </a>
+        <a href="/support" class="mobile-link">
+            <span>♡</span>
+            <small>Support</small>
+        </a>
+        <a href="/ai" class="mobile-link">
+            <span>{{ app_icon("assistant") }}</span>
+            <small>Cypher</small>
+        </a>
+    </nav>
 
         <!-- App Logic Scripts -->
+    
     <script>
-        /* Translator tray drawer toggle logic */
-        const translatorToggle = document.getElementById('translator-toggle');
-        const translatorPanel = document.getElementById('translator-panel');
+    (() => {
+        const grid = document.getElementById("folder-grid");
+        const toolbar = document.getElementById("folder-toolbar");
+        const backButton = document.getElementById("folder-back");
+        const emptyState = document.getElementById("folder-empty-state");
+        const feedback = document.getElementById("directory-feedback");
 
-        translatorToggle.addEventListener('click', function() {
-            const isExpanded = translatorToggle.getAttribute('aria-expanded') === 'true';
-            translatorToggle.setAttribute('aria-expanded', String(!isExpanded));
-            translatorPanel.hidden = isExpanded;
-        });
-
-        /* Live debounced automatic translation with engine fallback */
-        const textInput = document.getElementById('resource-tile-input');
-        const sourceLangSelect = document.getElementById('source-language');
-        const targetLangSelect = document.getElementById('target-language');
-        const sourceLangSearch = document.getElementById('source-language-search');
-        const targetLangSearch = document.getElementById('target-language-search');
-        const sourceLanguagePicker = document.getElementById('source-language-picker');
-        const targetLanguagePicker = document.getElementById('target-language-picker');
-        const swapLanguagesButton = document.getElementById('translator-swap');
-        const outputField = document.getElementById('resource-tile-readonly');
-        const translatorStatus = document.getElementById('translator-status');
-        const translatorCharCount = document.getElementById('translator-char-count');
-        const copySourceButton = document.getElementById('copy-source-text');
-        const copyTranslationButton = document.getElementById('copy-translated-text');
-        
-        let debounceTimer;
-        let translationRequestId = 0;
-
-        function connectLanguageSearch(picker, searchField, selectField) {
-            const listbox = picker.querySelector('[role="listbox"]');
-            const toggle = picker.querySelector('.language-picker-toggle');
-            const optionButtons = Array.from(selectField.options).map((option, index) => {
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'language-picker-option';
-                button.id = `${listbox.id}-option-${index}`;
-                button.setAttribute('role', 'option');
-                button.dataset.value = option.value;
-                button.textContent = option.textContent;
-                listbox.appendChild(button);
-                return button;
-            });
-            let activeIndex = -1;
-
-            function closePicker(restoreSelection = false) {
-                listbox.hidden = true;
-                searchField.setAttribute('aria-expanded', 'false');
-                searchField.removeAttribute('aria-activedescendant');
-                activeIndex = -1;
-                if (restoreSelection) {
-                    searchField.value = selectField.selectedOptions[0]?.textContent || '';
-                }
-            }
-
-            function filterOptions() {
-                const query = searchField.value.trim().toLocaleLowerCase();
-                let firstVisible = -1;
-                optionButtons.forEach((button, index) => {
-                    button.hidden = !button.textContent.toLocaleLowerCase().includes(query);
-                    button.setAttribute('aria-selected', String(button.dataset.value === selectField.value));
-                    if (firstVisible < 0 && !button.hidden) firstVisible = index;
-                });
-                activeIndex = firstVisible;
-                setActiveOption();
-            }
-
-            function setActiveOption() {
-                optionButtons.forEach(button => button.classList.remove('is-active'));
-                const active = optionButtons[activeIndex];
-                if (active && !active.hidden) {
-                    active.classList.add('is-active');
-                    searchField.setAttribute('aria-activedescendant', active.id);
-                } else {
-                    searchField.removeAttribute('aria-activedescendant');
-                }
-            }
-
-            function openPicker(clearQuery = true) {
-                if (clearQuery) searchField.value = '';
-                listbox.hidden = false;
-                searchField.setAttribute('aria-expanded', 'true');
-                filterOptions();
-            }
-
-            function chooseOption(button) {
-                if (!button || button.hidden) return;
-                selectField.value = button.dataset.value;
-                searchField.value = button.textContent;
-                closePicker();
-                selectField.dispatchEvent(new Event('change', { bubbles: true }));
-                searchField.blur();
-            }
-
-            searchField.value = selectField.selectedOptions[0]?.textContent || '';
-            searchField.addEventListener('focus', () => openPicker());
-            searchField.addEventListener('input', () => {
-                if (listbox.hidden) openPicker(false);
-                else filterOptions();
-            });
-            searchField.addEventListener('keydown', event => {
-                const visibleOptions = optionButtons.filter(button => !button.hidden);
-                if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-                    event.preventDefault();
-                    if (listbox.hidden) openPicker();
-                    const direction = event.key === 'ArrowDown' ? 1 : -1;
-                    const current = visibleOptions.findIndex(button => button === optionButtons[activeIndex]);
-                    const next = Math.max(0, Math.min(visibleOptions.length - 1, current + direction));
-                    activeIndex = optionButtons.indexOf(visibleOptions[next]);
-                    setActiveOption();
-                    visibleOptions[next]?.scrollIntoView({ block: 'nearest' });
-                } else if (event.key === 'Enter' && !listbox.hidden) {
-                    event.preventDefault();
-                    chooseOption(optionButtons[activeIndex]);
-                } else if (event.key === 'Escape') {
-                    closePicker(true);
-                    searchField.blur();
-                }
-            });
-            toggle.addEventListener('click', () => {
-                if (listbox.hidden) {
-                    searchField.focus();
-                    openPicker();
-                } else {
-                    closePicker(true);
-                }
-            });
-            listbox.addEventListener('click', event => {
-                chooseOption(event.target.closest('.language-picker-option'));
-            });
-            selectField.addEventListener('change', () => {
-                searchField.value = selectField.selectedOptions[0]?.textContent || '';
-                closePicker();
-            });
-            document.addEventListener('pointerdown', event => {
-                if (!picker.contains(event.target) && !listbox.hidden) closePicker(true);
-            });
-
-            return { closePicker, refreshLabel: () => {
-                searchField.value = selectField.selectedOptions[0]?.textContent || '';
-                closePicker();
-            } };
+        if (!grid || !toolbar || !backButton || !emptyState) {
+            console.error("Folder system: required HTML elements are missing.");
+            return;
         }
 
-        const sourcePicker = connectLanguageSearch(sourceLanguagePicker, sourceLangSearch, sourceLangSelect);
-        const targetPicker = connectLanguageSearch(targetLanguagePicker, targetLangSearch, targetLangSelect);
+        const STORAGE_KEY = "meridian.savedContentFolders.v1";
+        let folders = [];
+        let openFolderId = null;
+        let menu = null;
+        let modal = null;
 
-        function updateSwapButton() {
-            swapLanguagesButton.disabled = sourceLangSelect.value === 'auto';
-            swapLanguagesButton.title = swapLanguagesButton.disabled
-                ? 'Choose a source language to swap'
-                : 'Swap languages';
+        try {
+            const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+            if (Array.isArray(stored)) {
+                folders = stored.filter(folder =>
+                    folder &&
+                    typeof folder.id === "string" &&
+                    typeof folder.name === "string" &&
+                    Array.isArray(folder.items)
+                );
+            }
+        } catch (error) {
+            console.error("Could not load saved folders:", error);
         }
 
-        swapLanguagesButton.addEventListener('click', () => {
-            if (swapLanguagesButton.disabled) return;
-            clearTimeout(debounceTimer);
-            translationRequestId += 1;
-            const previousSourceText = textInput.value;
-            const previousTargetText = outputField.value === 'Translating...'
-                ? ''
-                : outputField.value;
-            const previousSource = sourceLangSelect.value;
-            sourceLangSelect.value = targetLangSelect.value;
-            targetLangSelect.value = previousSource;
-            textInput.value = previousTargetText;
-            outputField.value = previousSourceText;
-            translatorCharCount.textContent = `${textInput.value.length.toLocaleString()} / 5,000`;
-            translatorStatus.textContent = '';
-            translatorStatus.removeAttribute('data-state');
-            sourcePicker.refreshLabel();
-            targetPicker.refreshLabel();
-            updateSwapButton();
-            updateCopyButtons();
-        });
-
-        updateSwapButton();
-        translatorCharCount.textContent = `${textInput.value.length.toLocaleString()} / 5,000`;
-
-        function updateCopyButtons() {
-            copySourceButton.disabled = !textInput.value;
-            copyTranslationButton.disabled = !outputField.value || outputField.value === 'Translating...';
-        }
-
-        async function copyField(field, button, successMessage) {
-            if (!field.value) return;
+        function saveFolders() {
             try {
-                if (navigator.clipboard?.writeText) {
-                    try {
-                        await navigator.clipboard.writeText(field.value);
-                    } catch (clipboardError) {
-                        field.focus();
-                        field.select();
-                        const copied = document.execCommand('copy');
-                        field.setSelectionRange(0, 0);
-                        if (!copied) throw clipboardError;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(folders));
+                if (feedback) feedback.textContent = "";
+                return true;
+            } catch (error) {
+                if (feedback) {
+                    feedback.textContent = "Unable to save folders in this browser.";
+                }
+                return false;
+            }
+        }
+                
+        function closeMenu() {
+            if (menu) menu.remove();
+            menu = null;
+        }
+
+        function setFolderIcon(element, type) {
+            const icons = {
+                folder: `
+                    <svg viewBox="0 0 24 24" width="34" height="34"
+                        fill="none" stroke="currentColor" stroke-width="1.7"
+                        stroke-linecap="round" stroke-linejoin="round"
+                        aria-hidden="true">
+                        <path d="M3.5 7A2 2 0 0 1 5.5 5H10l2 2h6.5a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>
+                    </svg>`,
+                file: `
+                    <svg viewBox="0 0 24 24" width="30" height="30"
+                        fill="none" stroke="currentColor" stroke-width="1.7"
+                        stroke-linecap="round" stroke-linejoin="round"
+                        aria-hidden="true">
+                        <path d="M7 3.5h7l5 5V20a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V5.5a2 2 0 0 1 2-2z"/>
+                        <path d="M14 3.5V9h5M9 13h6M9 16.5h6"/>
+                    </svg>`
+            };
+
+            element.innerHTML = icons[type] || icons.folder;
+        }
+
+
+        function closeDialog() {
+            if (modal) modal.remove();
+            modal = null;
+        }
+
+        function showFolderDialog({
+            title,
+            message,
+            icon = "📁",
+            inputValue = null,
+            confirmText = "Save",
+            danger = false,
+            onConfirm
+        }) {
+            closeDialog();
+            closeMenu();
+
+            const overlay = document.createElement("div");
+            overlay.className = "folder-dialog-overlay";
+            overlay.addEventListener("click", event => {
+                if (event.target === overlay) closeDialog();
+            });
+
+            const dialog = document.createElement("section");
+            dialog.className = "folder-dialog";
+            dialog.setAttribute("role", "dialog");
+            dialog.setAttribute("aria-modal", "true");
+            dialog.setAttribute("aria-labelledby", "folder-dialog-title");
+
+            const heading = document.createElement("h2");
+            heading.className = "folder-dialog-title";
+            heading.id = "folder-dialog-title";
+            heading.textContent = title;
+
+            const description = document.createElement("p");
+            description.className = "folder-dialog-message";
+            description.textContent = message;
+
+            dialog.append( heading, description);
+
+            let input = null;
+
+            if (inputValue !== null) {
+                input = document.createElement("input");
+                input.className = "folder-dialog-input";
+                input.type = "text";
+                input.value = inputValue;
+                input.maxLength = 100;
+                input.autocomplete = "off";
+                input.setAttribute("aria-label", "Folder name");
+                input.required = true;
+                dialog.append(input);
+            }
+
+            const actions = document.createElement("div");
+            actions.className = "folder-dialog-actions";
+
+            const cancel = document.createElement("button");
+            cancel.type = "button";
+            cancel.className = "folder-dialog-button";
+            cancel.textContent = "Cancel";
+            cancel.addEventListener("click", closeDialog);
+
+            const confirm = document.createElement("button");
+            confirm.type = "button";
+            confirm.className =
+                `folder-dialog-button ${danger ? "danger" : "primary"}`;
+            confirm.textContent = confirmText;
+
+            confirm.addEventListener("click", () => {
+                const value = input ? input.value.trim() : null;
+
+                if (input && !value) {
+                    input.focus();
+                    input.setCustomValidity("Please enter a folder name.");
+                    input.reportValidity();
+                    return;
+                }
+
+                if (input) input.setCustomValidity("");
+
+                closeDialog();
+                onConfirm(value);
+            });
+
+            actions.append(cancel, confirm);
+            dialog.append(actions);
+            overlay.append(dialog);
+            document.body.append(overlay);
+
+            modal = overlay;
+
+            if (input) {
+                input.addEventListener("input", () => {
+                    input.setCustomValidity("");
+                });
+
+                input.addEventListener("keydown", event => {
+                    if (event.key === "Enter") {
+                        event.preventDefault();
+                        confirm.click();
                     }
-                } else {
-                    field.focus();
-                    field.select();
-                    const copied = document.execCommand('copy');
-                    field.setSelectionRange(0, 0);
-                    if (!copied) throw new Error('Copy is unavailable in this browser.');
-                }
-                translatorStatus.textContent = successMessage;
-                translatorStatus.removeAttribute('data-state');
-                const label = button.querySelector('span');
-                label.textContent = 'Copied';
-                window.setTimeout(() => { label.textContent = 'Copy'; }, 1400);
-            } catch (error) {
-                translatorStatus.textContent = 'Could not copy. Select the text and copy it manually.';
-                translatorStatus.dataset.state = 'error';
-            }
-        }
-
-        copySourceButton.addEventListener('click', () => copyField(textInput, copySourceButton, 'Input copied.'));
-        copyTranslationButton.addEventListener('click', () => copyField(outputField, copyTranslationButton, 'Translation copied.'));
-        updateCopyButtons();
-
-        async function performTranslation() {
-            const requestId = ++translationRequestId;
-            const textValue = textInput.value;
-            const sourceLang = sourceLangSelect.value;
-            const targetLang = targetLangSelect.value;
-
-            if (!textValue.trim()) {
-                outputField.value = "";
-                translatorStatus.textContent = "";
-                translatorStatus.removeAttribute('data-state');
-                return;
-            }
-
-            if (textValue.length > 5000) {
-                outputField.value = "";
-                translatorStatus.textContent = "Please keep text to 5,000 characters or fewer.";
-                translatorStatus.dataset.state = 'error';
-                return;
-            }
-
-            outputField.value = "Translating...";
-            updateCopyButtons();
-            translatorStatus.textContent = "";
-            translatorStatus.removeAttribute('data-state');
-
-            try {
-                const response = await fetch("/api/translate", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ text: textValue, source: sourceLang, target: targetLang })
                 });
-                const data = await response.json();
-                if (requestId !== translationRequestId) return;
-                if (!response.ok) {
-                    throw new Error(data.error || "The translation service is unavailable.");
-                }
-                outputField.value = data.translatedText;
-                updateCopyButtons();
-                translatorStatus.textContent = "";
-            } catch (error) {
-                if (requestId === translationRequestId) {
-                    outputField.value = "";
-                    updateCopyButtons();
-                    translatorStatus.textContent = error.message || "Translation failed. Please try again.";
-                    translatorStatus.dataset.state = 'error';
-                }
+
+                input.focus();
+                input.select();
+            } else {
+                cancel.focus();
             }
         }
 
-        // Live listening with 500ms delay window
-        textInput.addEventListener('input', () => {
-            clearTimeout(debounceTimer);
-            translationRequestId += 1;
-            translatorCharCount.textContent = `${textInput.value.length.toLocaleString()} / 5,000`;
-            updateCopyButtons();
-            translatorStatus.textContent = "";
-            translatorStatus.removeAttribute('data-state');
-            debounceTimer = setTimeout(() => {
-                performTranslation();
-            }, 500);
-        });
 
-        // Trigger updates if options are manually adjusted mid-text
-        sourceLangSelect.addEventListener('change', () => {
-            updateSwapButton();
-            performTranslation();
-        });
-        targetLangSelect.addEventListener('change', performTranslation);
-    </script>
+        function createFolder() {
+            const folder = {
+                id: (crypto.randomUUID
+                    ? crypto.randomUUID()
+                    : `${Date.now()}-${Math.random()}`),
+                name: "Folder",
+                items: []
+            };
+
+            folders.push(folder);
+
+            if (!saveFolders()) {
+                folders.pop();
+                return;
+            }
+
+            render();
+        }
+
+        
+        function renameFolder(id) {
+            const folder = folders.find(item => item.id === id);
+            if (!folder) return;
+
+            showFolderDialog({
+                title: "Rename folder",
+                message: "Choose a new name for this folder.",
+                inputValue: folder.name,
+                confirmText: "Save changes",
+                onConfirm: newName => {
+                    const oldName = folder.name;
+                    folder.name = newName;
+
+                    if (!saveFolders()) {
+                        folder.name = oldName;
+                        return;
+                    }
+
+                    render();
+                }
+            });
+        }
+
+
+        
+        function deleteFolder(id) {
+            const folder = folders.find(item => item.id === id);
+            if (!folder) return;
+
+            showFolderDialog({
+                title: "Delete folder?",
+                message: `Are you sure you want to delete "${folder.name}" and its contents? This action cannot be undone.`,
+                icon: "",
+                confirmText: "Delete folder",
+                danger: true,
+                onConfirm: () => {
+                    const oldFolders = folders;
+                    folders = folders.filter(item => item.id !== id);
+
+                    if (!saveFolders()) {
+                        folders = oldFolders;
+                        render();
+                        return;
+                    }
+
+                    if (openFolderId === id) {
+                        openFolderId = null;
+                    }
+
+                    render();
+                }
+            });
+        }
+
+
+        function showMenu(id, button) {
+            closeMenu();
+
+            menu = document.createElement("div");
+            menu.className = "folder-context-menu";
+            menu.setAttribute("role", "menu");
+
+            const rename = document.createElement("button");
+            rename.type = "button";
+            rename.textContent = "Rename folder";
+            rename.setAttribute("role", "menuitem");
+            rename.onclick = () => {
+                closeMenu();
+                renameFolder(id);
+            };
+
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.textContent = "Delete folder";
+            remove.className = "folder-delete-action";
+            remove.setAttribute("role", "menuitem");
+            remove.onclick = () => {
+                closeMenu();
+                deleteFolder(id);
+            };
+
+            menu.append(rename, remove);
+            document.body.append(menu);
+
+            const rect = button.getBoundingClientRect();
+            const width = 180;
+            const height = 100;
+
+            menu.style.left = `${Math.max(8, Math.min(
+                rect.right - width,
+                window.innerWidth - width - 8
+            ))}px`;
+
+            menu.style.top = `${Math.max(8, Math.min(
+                rect.bottom,
+                window.innerHeight - height - 8
+            ))}px`;
+        }
+
+        function makeFolderCard(folder) {
+            const card = document.createElement("div");
+            card.className = "folder-card";
+            card.tabIndex = 0;
+            card.setAttribute("role", "button");
+            card.setAttribute("aria-label", `Open ${folder.name}`);
+
+            const top = document.createElement("div");
+            top.className = "folder-card-top";
+
+            const icon = document.createElement("span");
+            icon.className = "folder-icon";
+            setFolderIcon(icon, "folder");
+
+            const title = document.createElement("span");
+            title.className = "folder-card-title";
+            title.textContent = folder.name;
+
+            const dots = document.createElement("button");
+            dots.type = "button";
+            dots.className = "folder-options-button";
+            dots.textContent = "⋯";
+            dots.setAttribute("aria-label", `Options for ${folder.name}`);
+
+            dots.addEventListener("click", event => {
+                event.stopPropagation();
+                showMenu(folder.id, dots);
+            });
+
+            function openFolder() {
+                openFolderId = folder.id;
+                closeMenu();
+                render();
+            }
+
+            card.addEventListener("click", event => {
+                if (!event.target.closest(".folder-options-button")) {
+                    openFolder();
+                }
+            });
+
+            card.addEventListener("keydown", event => {
+                if (
+                    event.target === card &&
+                    (event.key === "Enter" || event.key === " ")
+                ) {
+                    event.preventDefault();
+                    openFolder();
+                }
+            });
+
+            card.addEventListener("contextmenu", event => {
+                event.preventDefault();
+                showMenu(folder.id, dots);
+            });
+
+            top.append(icon);
+            card.append(top, title, dots);
+
+            return card;
+        }
+
+        function render() {
+            closeMenu();
+            grid.replaceChildren();
+
+            const activeFolder = folders.find(
+                folder => folder.id === openFolderId
+            );
+
+            if (!activeFolder) openFolderId = null;
+
+            const heading = document.getElementById("saved-content-title");
+
+            if (heading) {
+                heading.textContent = activeFolder
+                    ? activeFolder.name
+                    : "Browse your Saved Content";
+            }
+
+            toolbar.hidden = !activeFolder;
+            emptyState.hidden = true;
+
+            if (activeFolder) {
+                activeFolder.items.forEach(item => {
+                    const card = document.createElement("div");
+                    card.className = "folder-card";
+
+                    const icon = document.createElement("span");
+                    icon.className = "folder-icon";
+                    setFolderIcon(icon, "file");
+
+                    const title = document.createElement("span");
+                    title.className = "folder-card-title";
+                    title.textContent = item.title || "Saved content";
+
+                    card.append(icon, title);
+                    grid.append(card);
+                });
+
+                if (activeFolder.items.length === 0) {
+                    emptyState.hidden = false;
+                }
+
+    return;
+}
+
+folders.forEach(folder => {
+    grid.append(makeFolderCard(folder));
+});
+
+const add = document.createElement("button");
+add.type = "button";
+add.className = "folder-card folder-add-card";
+add.setAttribute("aria-label", "Create new folder");
+
+const plus = document.createElement("span");
+plus.className = "folder-add-icon";
+plus.textContent = "+";
+
+const label = document.createElement("span");
+label.className = "folder-add-label";
+label.textContent = "New folder";
+
+add.append(plus, label);
+add.addEventListener("click", createFolder);
+grid.append(add);
+}
+
+backButton.addEventListener("click", () => {
+openFolderId = null;
+render();
+});
+
+document.addEventListener("click", event => {
+if (
+    menu &&
+    !menu.contains(event.target) &&
+    !event.target.closest(".folder-options-button")
+) {
+    closeMenu();
+}
+});
+
+document.addEventListener("keydown", event => {
+if (event.key === "Escape") {
+    closeDialog();
+    closeMenu();
+}
+});
+
+setFolderIcon(document.getElementById("empty-folder-icon"), "folder");
+render();
+})();
+
+    (() => {
+    const form = document.getElementById("translator-form");
+    if (!form) return;
+
+    const source = document.getElementById("translator-source-language");
+    const target = document.getElementById("translator-target-language");
+    const input = document.getElementById("translator-input");
+    const output = document.getElementById("translator-output");
+    const count = document.getElementById("translator-character-count");
+    const status = document.getElementById("translator-status");
+    const error = document.getElementById("translator-error");
+    const clear = document.getElementById("translator-clear");
+    const swap = document.getElementById("translator-swap");
+    const copy = document.getElementById("translator-copy");
+
+    const API = "https://translate.argosopentech.com/translate";
+
+    const languages = {
+    en: "English",
+    es: "Spanish",
+    fr: "French",
+    de: "German",
+    it: "Italian",
+    pt: "Portuguese",
+    zh: "Chinese",
+    ja: "Japanese",
+    ko: "Korean",
+    ar: "Arabic",
+    hi: "Hindi",
+    ru: "Russian"
+    };
+
+    const languagePatterns = [
+        { code: "es", pattern: /[¿¡ñáéíóúü]/i },
+        { code: "fr", pattern: /[àâçéèêëîïôùûüÿœæ]/i },
+        { code: "de", pattern: /[äöüß]/i },
+        { code: "pt", pattern: /[ãõáàâçéêíóôú]/i },
+        { code: "it", pattern: /[àèéìíîòóù]/i },
+        { code: "ru", pattern: /[\u0400-\u04FF]/ },
+        { code: "ar", pattern: /[\u0600-\u06FF]/ },
+        { code: "hi", pattern: /[\u0900-\u097F]/ },
+        { code: "zh", pattern: /[\u4E00-\u9FFF]/ },
+        { code: "ja", pattern: /[\u3040-\u30FF]/ },
+        { code: "ko", pattern: /[\uAC00-\uD7AF]/ }
+    ];
+
+    function detectLanguage(text) {
+        for (const language of languagePatterns) {
+            if (language.pattern.test(text)) {
+                return language.code;
+            }
+        }
+
+        // Basic Latin text defaults to English.
+        if (/[a-z]/i.test(text)) {
+            return "en";
+        }
+
+        return null;
+    }
+
+    let timer = null;
+    let controller = null;
+    let requestNumber = 0;
+    let detectedLanguage = null;
+
+    function showError(message = "") {
+    error.textContent = message;
+    error.hidden = !message;
+    }
+
+    function cancelRequest() {
+    clearTimeout(timer);
+
+    if (controller) {
+    controller.abort();
+    controller = null;
+    }
+
+    requestNumber++;
+    }
+
+    async function translate() {
+    const text = input.value.trim();
+    const currentRequest = ++requestNumber;
+
+    if (controller) controller.abort();
+
+    controller = new AbortController();
+
+    showError("");
+
+    if (!text) {
+    output.value = "";
+    status.textContent = "";
+    detectedLanguage = null;
+
+    if (source.value === "auto") {
+        // Keep automatic detection selected until text is entered.
+    }
+
+    return;
+    }
+
+    if (source.value !== "auto" && source.value === target.value) {
+    output.value = text;
+    status.textContent = "Both languages are the same.";
+    return;
+    }
+
+    status.textContent = "Translating…";
+
+    try {
+    const response = await fetch("/api/translate", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        body: JSON.stringify({
+            text: text,
+            source: source.value,
+            target: target.value
+        }),
+        signal: controller.signal
+    });
+
+    if (!response.ok) {
+        throw new Error(
+            response.status === 429
+                ? "Too many requests. Please wait and try again."
+                : "The translation service is unavailable. Please try again later."
+        );
+    }
+
+    const data = await response.json();
+
+    if (currentRequest !== requestNumber) return;
+
+    if (typeof data.translatedText !== "string") {
+        throw new Error(data.error || "No translation was returned.");
+    }
+
+    output.value = data.translatedText;
+
+    if (source.value === "auto" && data.detectedLanguage?.language) {
+        let detected = data.detectedLanguage.language.toLowerCase();
+
+        // Normalize language codes returned by the API.
+        if (detected.includes("-")) {
+            detected = detected.split("-")[0];
+        }
+
+        if (detected.startsWith("zh")) detected = "zh";
+        if (detected.startsWith("pt")) detected = "pt";
+
+        if (languages[detected]) {
+            detectedLanguage = detected;
+
+            // Actually select the detected language in the dropdown.
+            source.value = detected;
+        }
+    } else if (source.value !== "auto") {
+        detectedLanguage = source.value;
+    }
+
+    const from = detectedLanguage
+        ? languages[detectedLanguage]
+        : languages[source.value];
+
+    status.textContent = source.value === "auto" && from
+        ? `${from} → ${languages[target.value]}`
+        : `Translated to ${languages[target.value]}.`;
+
+    } catch (err) {
+    if (err.name === "AbortError") return;
+    if (currentRequest !== requestNumber) return;
+
+    status.textContent = "";
+    showError(err.message || "Translation failed.");
+    }
+    }
+
+    function scheduleTranslation() {
+    cancelRequest();
+
+    count.textContent = `${input.value.length} / 5000`;
+    showError("");
+
+    if (!input.value.trim()) {
+    output.value = "";
+    status.textContent = "";
+    detectedLanguage = null;
+    source.options[0].textContent = "Detect language";
+    return;
+    }
+
+    status.textContent = "Waiting…";
+    timer = setTimeout(translate, 500);
+    }
+
+    input.addEventListener("input", () => {
+        count.textContent = `${input.value.length} / 5000`;
+        showError("");
+
+        if (!input.value.trim()) {
+            cancelRequest();
+            output.value = "";
+            status.textContent = "";
+            detectedLanguage = null;
+
+            // Restore Auto Detect as the selected option.
+            source.value = "auto";
+            return;
+        }
+
+        scheduleTranslation();
+    });
+
+    source.addEventListener("change", () => {
+    detectedLanguage = null;
+    source.options[0].textContent = "Detect language";
+    scheduleTranslation();
+    });
+
+    target.addEventListener("change", scheduleTranslation);
+
+    clear.addEventListener("click", () => {
+    cancelRequest();
+
+    input.value = "";
+    output.value = "";
+    count.textContent = "0 / 5000";
+    status.textContent = "";
+    detectedLanguage = null;
+    source.options[0].textContent = "Detect language";
+
+    showError("");
+    input.focus();
+    });
+
+    swap.addEventListener("click", () => {
+    const oldInput = input.value;
+    const oldOutput = output.value;
+
+    if (!oldOutput.trim()) {
+    showError("Enter text and wait for the translation before swapping.");
+    return;
+    }
+
+    const actualSource = source.value === "auto"
+    ? detectedLanguage
+    : source.value;
+
+    if (!actualSource || !languages[actualSource]) {
+    showError("Wait for language detection to finish before swapping.");
+    return;
+    }
+
+    cancelRequest();
+
+    input.value = oldOutput;
+    output.value = oldInput;
+
+    const oldTarget = target.value;
+    source.value = oldTarget;
+    target.value = actualSource;
+    detectedLanguage = null;
+    source.options[0].textContent = "Detect language";
+
+    count.textContent = `${input.value.length} / 5000`;
+    showError("");
+
+    scheduleTranslation();
+    });
+
+    copy.addEventListener("click", async () => {
+    if (!output.value) return;
+
+    try {
+    await navigator.clipboard.writeText(output.value);
+    status.textContent = "Copied to clipboard.";
+    } catch {
+    output.focus();
+    output.select();
+    status.textContent = "Copy the selected text manually.";
+    }
+    });
+
+    form.addEventListener("submit", event => {
+    event.preventDefault();
+    scheduleTranslation();
+    });
+    })();
+
+</script>
+
