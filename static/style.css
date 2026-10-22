@@ -6347,6 +6347,73 @@ body {
     color: var(--purple);
 }
 
+@media (max-width: 700px) {
+    body {
+        padding-bottom: calc(78px + env(safe-area-inset-bottom));
+    }
+
+    .mobile-navigation {
+        height: calc(68px + env(safe-area-inset-bottom));
+        padding: 4px 5px env(safe-area-inset-bottom);
+        box-sizing: border-box;
+        justify-content: stretch;
+    }
+
+    .mobile-link {
+        flex: 1 1 0;
+        min-width: 0;
+        height: 100%;
+        position: relative;
+        padding: 5px 2px 3px;
+        justify-content: center;
+        gap: 4px;
+        border-radius: 0;
+        background: transparent;
+        text-align: center;
+        transition: color 0.18s ease;
+    }
+
+    .mobile-link::before {
+        position: absolute;
+        top: 1px;
+        left: 50%;
+        width: 18px;
+        height: 2px;
+        border-radius: 2px;
+        background: transparent;
+        content: "";
+        transform: translateX(-50%);
+    }
+
+    .mobile-link.active {
+        background: transparent;
+        color: var(--purple);
+    }
+
+    .mobile-link.active::before {
+        background: currentColor;
+    }
+
+    .mobile-link > span {
+        display: grid;
+        flex: 0 0 21px;
+        place-items: center;
+        line-height: 1;
+    }
+
+    .mobile-link .app-line-icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .mobile-link small {
+        max-width: 100%;
+        font-size: 10px;
+        line-height: 1.05;
+        white-space: normal;
+    }
+}
+
 [data-theme^="light-"] .error-alert {
     border-color: #f1b7b2;
     background: #fce8e6;

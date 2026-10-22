@@ -316,33 +316,7 @@
 
         </main>
     </div>
-
-    <nav class="mobile-navigation">
-        <a href="{{ url_for('home') }}" class="mobile-link">
-            <span>⌂</span>
-            <small>Home</small>
-        </a>
-        <a href="{{ url_for('resources') }}" class="mobile-link">
-            <span>{{ app_icon("resources") }}</span>
-            <small>Resources</small>
-        </a>
-        <a href="{{ url_for('focus') }}" class="mobile-link">
-            <span>◷</span>
-            <small>Focus</small>
-        </a>
-        <a href="{{ url_for('noise_songs') }}" class="mobile-link">
-            <span>♫</span>
-            <small>Sounds</small>
-        </a>
-        <a href="{{ url_for('time_management') }}" class="mobile-link">
-            <span>◷</span>
-            <small>Time</small>
-        </a>
-        <a href="{{ url_for('support') }}" class="mobile-link active">
-            <span>♡</span>
-            <small>Support</small>
-        </a>
-    </nav>
+    {% include "_mobile_navigation.html" %}
 
 </body>
 </html>

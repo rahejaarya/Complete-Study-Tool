@@ -126,32 +126,7 @@
     </div>
 
     <!-- Mobile navigation keeps support accessible on smaller screens while preserving app context. -->
-    <nav class="mobile-navigation">
-        <a href="{{ url_for('home') }}" class="mobile-link">
-            <span>⌂</span>
-            <small>Dashboard</small>
-        </a>
-        <a href="{{ url_for('resources') }}" class="mobile-link">
-            <span>{{ app_icon("resources") }}</span>
-            <small>Study Resources</small>
-        </a>
-        <a href="{{ url_for('noise_songs') }}" class="mobile-link">
-            <span>♫</span>
-            <small>Noise &amp; Songs</small>
-        </a>
-        <a href="{{ url_for('time_management') }}" class="mobile-link">
-            <span>◷</span>
-            <small>Time Management</small>
-        </a>
-        <a href="{{ url_for('support') }}" class="mobile-link active">
-            <span>♡</span>
-            <small>Support</small>
-        </a>
-        <a href="{{ url_for('ai_help') }}" class="mobile-link">
-            <span>{{ app_icon("assistant") }}</span>
-            <small>Cypher</small>
-        </a>
-    </nav>
+    {% include "_mobile_navigation.html" %}
 
 </body>
 </html>

@@ -129,37 +129,7 @@
         </main>
 
     </div>
-
-
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-navigation">
-
-        <a href="{{ url_for('home') }}" class="mobile-link">
-            <span>▦</span>
-            <small>Home</small>
-        </a>
-
-        <a href="{{ url_for('resources') }}" class="mobile-link">
-            <span>📚</span>
-            <small>Resources</small>
-        </a>
-
-        <a href="{{ url_for('noise_songs') }}" class="mobile-link">
-            <span>♫</span>
-            <small>Sounds</small>
-        </a>
-
-        <a href="{{ url_for('time_management') }}" class="mobile-link">
-            <span>✓</span>
-            <small>Schedule</small>
-        </a>
-
-        <a href="{{ url_for('support') }}" class="mobile-link">
-            <span>♡</span>
-            <small>Support</small>
-        </a>
-
-    </nav>
+    {% include "_mobile_navigation.html" %}
 
     <dialog id="chat-dialog" class="chat-dialog" aria-labelledby="chat-dialog-title">
         <form id="chat-dialog-form">

@@ -372,32 +372,7 @@
     <script src="{{ url_for('static', filename='dashboard_notebooks.js') }}" defer></script>
 
     <!-- Mobile navigation keeps the same major app destinations available on smaller screens. -->
-    <nav class="mobile-navigation">
-        <a href="/" class="mobile-link active">
-            <span>⌂</span>
-            <small>Dashboard</small>
-        </a>
-        <a href="/resources" class="mobile-link">
-            <span>{{ app_icon("resources") }}</span>
-            <small>Study Resources</small>
-        </a>
-        <a href="/noise-songs" class="mobile-link">
-            <span>♫</span>
-            <small>Noise &amp; Songs</small>
-        </a>
-        <a href="/time-management" class="mobile-link">
-            <span>◷</span>
-            <small>Time Management</small>
-        </a>
-        <a href="/support" class="mobile-link">
-            <span>♡</span>
-            <small>Support</small>
-        </a>
-        <a href="/ai" class="mobile-link">
-            <span>{{ app_icon("assistant") }}</span>
-            <small>Cypher</small>
-        </a>
-    </nav>
+    {% include "_mobile_navigation.html" %}
 
     <!-- Load the nearest unfinished future event and keep its countdown current. -->
     <script>
