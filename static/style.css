@@ -1154,9 +1154,6 @@ body {
     bottom: 18px;
     left: 300px;
     right: 55px;
-    width: auto !important;
-    max-width: 850px;
-    margin: 0 auto !important;
     background: var(--control-bg);
     box-shadow: 0 8px 28px var(--card-shadow);
 }
@@ -3191,7 +3188,7 @@ body {
     }
 
     .dashboard.has-active-chat #chat-messages {
-        padding-bottom: 96px;
+        padding-bottom: 140px;
     }
 
     .dashboard.has-active-chat #ai-prompt-container {

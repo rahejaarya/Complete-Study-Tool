@@ -201,6 +201,7 @@ const chatDialogConfirm = document.getElementById("chat-dialog-confirm");
 let currentChatId = null;
 let isSendingMessage = false;
 let chatDialogAction = null;
+let chatFollowsLatest = true;
 
 
 /*
@@ -316,8 +317,19 @@ function insertChatEntry(entry, beforeElement = null) {
 }
 
 function scrollChatToLatest() {
+    if (!chatFollowsLatest) return;
+
     requestAnimationFrame(() => {
-        chatMessages.lastElementChild?.scrollIntoView({ block: "end", behavior: "auto" });
+        const lastMessage = chatMessages.lastElementChild;
+        if (!lastMessage || !chatFollowsLatest) return;
+
+        const composerHeight = aiPromptContainer?.getBoundingClientRect().height || 0;
+        const visibleBottom = window.innerHeight - composerHeight - 40;
+        const messageBottom = lastMessage.getBoundingClientRect().bottom;
+        window.scrollTo({
+            top: window.scrollY + messageBottom - visibleBottom,
+            behavior: "auto"
+        });
     });
 }
 
@@ -480,6 +492,7 @@ function addResourceCard(resource, afterElement = null) {
 
 
 function clearConversationView() {
+    chatFollowsLatest = true;
     chatMessages.replaceChildren();
     updateScrollBottomButton();
     chatMessages.style.display = "none";
@@ -642,6 +655,7 @@ async function openSavedChat(chatId) {
     }
 
     const { chat } = await response.json();
+    chatFollowsLatest = true;
     currentChatId = chat.id;
     clearConversationView();
 
@@ -1078,8 +1092,8 @@ function positionCypherChat() {
             margin: "0"
         });
 
-        // Keep the final messages visible above the input.
-        chatMessages.style.paddingBottom = "120px";
+        // Reserve enough room for the final message above the fixed composer.
+        chatMessages.style.paddingBottom = `${aiPromptContainer.offsetHeight + 56}px`;
 
     } else {
         // Center the greeting and input before the first message.
@@ -1195,8 +1209,17 @@ function updateScrollBottomButton() {
 
     const lastMessageRect = lastMessage.getBoundingClientRect();
 
-    const isScrolledUp =
-        lastMessageRect.bottom > window.innerHeight + 40;
+    const composerHeight = aiPromptContainer?.getBoundingClientRect().height || 0;
+    const visibleBottom = window.innerHeight - composerHeight - 40;
+    const distanceFromLatest = lastMessageRect.bottom - visibleBottom;
+    const isScrolledUp = distanceFromLatest > 40;
+
+    // Resume automatic following as soon as the reader returns near the end.
+    if (distanceFromLatest <= 40) {
+        chatFollowsLatest = true;
+    } else if (distanceFromLatest > 80) {
+        chatFollowsLatest = false;
+    }
 
     scrollBottomButton.hidden = false;
     scrollBottomButton.classList.toggle("visible", isScrolledUp);
@@ -1204,14 +1227,17 @@ function updateScrollBottomButton() {
 
 /* Clicking the arrow takes the user to the very end */
 scrollBottomButton.addEventListener("click", () => {
+    chatFollowsLatest = true;
     const lastMessage = chatMessages.lastElementChild;
+    if (!lastMessage) return;
 
-    if (lastMessage) {
-        lastMessage.scrollIntoView({
-            behavior: "smooth",
-            block: "end"
-        });
-    }
+    const composerHeight = aiPromptContainer?.getBoundingClientRect().height || 0;
+    const visibleBottom = window.innerHeight - composerHeight - 40;
+    const distanceFromLatest = lastMessage.getBoundingClientRect().bottom - visibleBottom;
+    window.scrollTo({
+        top: window.scrollY + distanceFromLatest,
+        behavior: "smooth"
+    });
 });
 
 /* Detect scrolling in either the page or the chat */
