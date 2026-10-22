@@ -210,7 +210,7 @@
             const remove = document.createElement("button");
             remove.type = "button";
             remove.className = "workspace-card-action is-danger";
-            remove.textContent = "🗑";
+            remove.textContent = "";
             remove.title = "Move to bin";
             remove.setAttribute("aria-label", `Delete ${file.name}`);
             remove.addEventListener("click", async () => {
