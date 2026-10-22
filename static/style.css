@@ -5968,7 +5968,8 @@ body.audio-route-open {
     grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
     grid-template-areas:
         "profile security"
-        "danger appearance";
+        "appearance appearance"
+        "danger danger";
     gap: 1.5rem;
     min-width: 0;
 }
@@ -5995,8 +5996,8 @@ body.audio-route-open {
         grid-template-areas:
             "profile"
             "security"
-            "danger"
-            "appearance";
+            "appearance"
+            "danger";
     }
 }
 
@@ -8792,7 +8793,7 @@ body.notes-workspace-body { overflow: hidden; }
 .workspace-all-files { flex: 0 0 auto; padding: 9px 12px; border: 1px solid var(--border); border-radius: 9px; background: var(--soft-surface); color: var(--text); font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
 .workspace-all-files:hover { border-color: var(--accent-strong); }
 .workspace-delete-file { padding: 9px 13px; border: 1px solid #e3a4a4; border-radius: 9px; background: transparent; color: #b63131; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
-.workspace-delete-file:hover { background-color: #fff0f0; border-color: #c53d3d; }
+.workspace-delete-file:hover { background: #fff0f0; border-color: #c53d3d; }
 .workspace-document-header { justify-content: flex-start; }
 .workspace-document-title-wrap { margin-left: 8px; }
 
@@ -9010,7 +9011,7 @@ body.notes-workspace-body { overflow: hidden; }
 .workspace-card-page { border-radius: 7px; }
 .workspace-card-action { border-radius: 9px; }
 .workspace-card-action.is-danger { color: var(--muted); }
-.workspace-card-action.is-danger:hover { border-color: #d96c6c; background-color: #fff1f1; color: #b63131; }
+.workspace-card-action.is-danger:hover { border-color: #d96c6c; background: #fff1f1; color: #b63131; }
 .workspace-card-action.is-danger { display: grid; width: 29px; height: 27px; place-items: center; padding: 0; font-size: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23d14343' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m5 4v6m4-6v6'/%3E%3C/svg%3E"); background-position: center; background-repeat: no-repeat; background-size: 16px; }
 .workspace-card-actions { padding-bottom: 10px; }
 .workspace-document { border-radius: 20px; }
@@ -9032,7 +9033,7 @@ body.notes-workspace-body { overflow: hidden; }
     background-repeat: no-repeat;
     background-size: 19px;
 }
-.workspace-delete-file:hover { border-color: #d96c6c; background-color: #fff1f1; color: #b63131; }
+.workspace-delete-file:hover { border-color: #d96c6c; background: #fff1f1; color: #b63131; }
 .workspace-note-footer { justify-content: flex-end; }
 .workspace-library-empty-state { border-radius: 20px; }
 .workspace-library-empty-state > button {
