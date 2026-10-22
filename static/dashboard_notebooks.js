@@ -10,6 +10,14 @@
     const quickNoteInput = document.getElementById("notebook-quick-note");
     const status = document.getElementById("notebook-save-status");
     const toolbar = card.querySelector(".notebook-toolbar");
+    const renameButton = document.getElementById("notebook-rename");
+    const duplicateButton = document.getElementById("notebook-duplicate");
+    const notesTab = document.getElementById("notebook-notes-tab");
+    const boardTab = document.getElementById("notebook-board-tab");
+    const notesPanel = document.getElementById("notebook-notes-panel");
+    const boardPanel = document.getElementById("notebook-board-panel");
+    const boardCanvas = document.getElementById("notebook-whiteboard");
+    const boardCtx = boardCanvas?.getContext("2d");
     if (!card || !toggle || !expanded || !list || !addButton || !nameInput || !contentInput || !status) {
         return;
     }
@@ -19,6 +27,9 @@
     let saveQueue = Promise.resolve();
     let savedSelection = null;
     let activeHighlight = null;
+    let boardTool = "pen";
+    let activeStroke = null;
+    let boardDpr = window.devicePixelRatio || 1;
 
     // Retain only editor-generated formatting when restoring saved notebook HTML.
     function safeNotebookHtml(value) {
@@ -97,6 +108,10 @@
         );
     }
 
+    function isQuickNotes(notebook) {
+        return Boolean(notebook.is_quick_notes) || notebook.name.trim().toLowerCase() === "quick notes";
+    }
+
     // Synchronize the expanded editor panel with its accessible toggle state.
     function setExpanded(isExpanded) {
         expanded.hidden = !isExpanded;
@@ -111,9 +126,10 @@
     // Preserve the dedicated Quick Notes notebook expected by the dashboard field.
     function ensureQuickNotesNotebook() {
         const quickNotesNotebook = notebookData.notebooks.find(
-            (notebook) => notebook.name.trim().toLowerCase() === "quick notes"
+            (notebook) => isQuickNotes(notebook)
         );
         if (quickNotesNotebook) {
+            quickNotesNotebook.is_quick_notes = true;
             if (!notebookData.active_id) {
                 notebookData.active_id = quickNotesNotebook.id;
             }
@@ -124,10 +140,67 @@
             id: crypto.randomUUID(),
             name: "Quick Notes",
             content: "",
-            quick_note: ""
+            quick_note: "",
+            whiteboard: { strokes: [] },
+            is_quick_notes: true
         };
         notebookData.notebooks.unshift(notebook);
         notebookData.active_id = notebook.id;
+    }
+
+    function boardStrokes() {
+        const notebook = activeNotebook();
+        if (!notebook.whiteboard || !Array.isArray(notebook.whiteboard.strokes)) {
+            notebook.whiteboard = { strokes: [] };
+        }
+        return notebook.whiteboard.strokes;
+    }
+
+    function resizeBoard() {
+        if (!boardCanvas || !boardCtx || !boardPanel || boardPanel.hidden) return;
+        const rect = boardCanvas.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        boardDpr = window.devicePixelRatio || 1;
+        boardCanvas.width = Math.round(rect.width * boardDpr);
+        boardCanvas.height = Math.round(rect.height * boardDpr);
+        drawBoard();
+    }
+
+    function drawBoard() {
+        if (!boardCanvas || !boardCtx) return;
+        const width = boardCanvas.clientWidth;
+        const height = boardCanvas.clientHeight;
+        boardCtx.setTransform(boardDpr, 0, 0, boardDpr, 0, 0);
+        boardCtx.clearRect(0, 0, width, height);
+        boardStrokes().forEach((stroke) => {
+            if (stroke.type === "text") {
+                boardCtx.globalCompositeOperation = "source-over";
+                boardCtx.fillStyle = stroke.color;
+                boardCtx.font = `${stroke.size}px Arial, sans-serif`;
+                boardCtx.fillText(stroke.text, stroke.x * width, stroke.y * height);
+                return;
+            }
+            if (!Array.isArray(stroke.points) || !stroke.points.length) return;
+            boardCtx.globalCompositeOperation = stroke.erase ? "destination-out" : "source-over";
+            boardCtx.strokeStyle = stroke.color || "#25324a";
+            boardCtx.lineWidth = stroke.size || 4;
+            boardCtx.lineCap = "round";
+            boardCtx.lineJoin = "round";
+            boardCtx.beginPath();
+            boardCtx.moveTo(stroke.points[0].x * width, stroke.points[0].y * height);
+            stroke.points.slice(1).forEach((point) => boardCtx.lineTo(point.x * width, point.y * height));
+            if (stroke.points.length === 1) {
+                const point = stroke.points[0];
+                boardCtx.lineTo(point.x * width + 0.1, point.y * height + 0.1);
+            }
+            boardCtx.stroke();
+        });
+        boardCtx.globalCompositeOperation = "source-over";
+    }
+
+    function saveBoard() {
+        activeNotebook().whiteboard = { strokes: boardStrokes() };
+        scheduleSave();
     }
 
     // Rebuild the notebook selector and mark the active entry.
@@ -165,10 +238,13 @@
             contentInput.textContent = savedContent;
         }
         const quickNotesNotebook = notebookData.notebooks.find(
-            (candidate) => candidate.name.trim().toLowerCase() === "quick notes"
+            (candidate) => isQuickNotes(candidate)
         );
         if (quickNoteInput) {
             quickNoteInput.value = (quickNotesNotebook?.content ?? "").replace(/<[^>]*>/g, "");
+        }
+        if (boardPanel && !boardPanel.hidden) {
+            requestAnimationFrame(resizeBoard);
         }
         renderList();
     }
@@ -221,7 +297,12 @@
             contentInput.contentEditable = "true";
             const inkPicker = toolbar?.querySelector('[data-command="foreColor"]');
             if (inkPicker) inkPicker.value = colorInputValue(getComputedStyle(contentInput).color);
+            const boardColor = boardPanel?.querySelector("[data-board-color]");
+            if (boardColor) boardColor.value = colorInputValue(getComputedStyle(boardPanel).color);
             status.textContent = "";
+            if (boardCanvas) {
+                new ResizeObserver(resizeBoard).observe(boardCanvas);
+            }
         } catch (error) {
             status.textContent = "Could not load notebooks. Refresh to try again.";
             console.error("Notebooks could not be loaded.", error);
@@ -245,7 +326,7 @@
             setExpanded(true);
         }
         const quickNotesNotebook = notebookData.notebooks.find(
-            (candidate) => candidate.name.trim().toLowerCase() === "quick notes"
+            (candidate) => isQuickNotes(candidate)
         );
         if (!quickNotesNotebook) {
             return;
@@ -262,7 +343,7 @@
     contentInput.addEventListener("input", () => {
         setExpanded(true);
         activeNotebook().content = safeNotebookHtml(contentInput.innerHTML);
-        if (quickNoteInput && activeNotebook().name.trim().toLowerCase() === "quick notes") {
+        if (quickNoteInput && isQuickNotes(activeNotebook())) {
             quickNoteInput.value = editorPlainText();
         }
         scheduleSave();
@@ -308,6 +389,112 @@
         });
     }
 
+    renameButton?.addEventListener("click", () => {
+        nameInput.focus();
+        nameInput.select();
+        status.textContent = "Type a new name, then press Enter.";
+    });
+
+    nameInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            nameInput.blur();
+        }
+    });
+
+    duplicateButton?.addEventListener("click", () => {
+        const source = activeNotebook();
+        const copy = {
+            id: crypto.randomUUID(),
+            name: `${source.name} copy`.slice(0, 80),
+            content: source.content,
+            quick_note: source.quick_note || "",
+            whiteboard: JSON.parse(JSON.stringify(source.whiteboard || { strokes: [] })),
+            is_quick_notes: false
+        };
+        notebookData.notebooks.push(copy);
+        notebookData.active_id = copy.id;
+        render();
+        nameInput.focus();
+        nameInput.select();
+        scheduleSave();
+    });
+
+    function selectNotebookTab(tab) {
+        const onBoard = tab === "board";
+        notesTab.setAttribute("aria-selected", String(!onBoard));
+        boardTab.setAttribute("aria-selected", String(onBoard));
+        notesPanel.hidden = onBoard;
+        boardPanel.hidden = !onBoard;
+        if (onBoard) requestAnimationFrame(resizeBoard);
+    }
+
+    notesTab?.addEventListener("click", () => selectNotebookTab("notes"));
+    boardTab?.addEventListener("click", () => selectNotebookTab("board"));
+
+    boardPanel?.querySelectorAll("[data-board-tool]").forEach((button) => {
+        button.addEventListener("click", () => {
+            boardTool = button.dataset.boardTool;
+            boardPanel.querySelectorAll("[data-board-tool]").forEach((toolButton) => {
+                toolButton.setAttribute("aria-pressed", String(toolButton === button));
+            });
+        });
+    });
+
+    boardPanel?.addEventListener("click", (event) => {
+        const action = event.target.closest("[data-board-action]")?.dataset.boardAction;
+        if (action === "undo") {
+            boardStrokes().pop();
+            drawBoard();
+            saveBoard();
+        } else if (action === "clear") {
+            boardStrokes().length = 0;
+            drawBoard();
+            saveBoard();
+        }
+    });
+
+    function boardPoint(event) {
+        const rect = boardCanvas.getBoundingClientRect();
+        return { x: Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)), y: Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height)) };
+    }
+
+    boardCanvas?.addEventListener("pointerdown", (event) => {
+        if (boardTool === "text") {
+            const text = window.prompt("Text to add to the whiteboard:");
+            if (text) {
+                const point = boardPoint(event);
+                const color = boardPanel.querySelector("[data-board-color]").value;
+                boardStrokes().push({ type: "text", text: text.slice(0, 500), x: point.x, y: point.y, color, size: Number(boardPanel.querySelector("[data-board-size]").value) * 4 });
+                drawBoard();
+                saveBoard();
+            }
+            return;
+        }
+        boardCanvas.setPointerCapture(event.pointerId);
+        const point = boardPoint(event);
+        activeStroke = {
+            points: [point],
+            color: boardPanel.querySelector("[data-board-color]").value,
+            size: Number(boardPanel.querySelector("[data-board-size]").value),
+            erase: boardTool === "eraser"
+        };
+        boardStrokes().push(activeStroke);
+        drawBoard();
+    });
+    boardCanvas?.addEventListener("pointermove", (event) => {
+        if (!activeStroke) return;
+        activeStroke.points.push(boardPoint(event));
+        drawBoard();
+    });
+    const finishStroke = () => {
+        if (!activeStroke) return;
+        activeStroke = null;
+        saveBoard();
+    };
+    boardCanvas?.addEventListener("pointerup", finishStroke);
+    boardCanvas?.addEventListener("pointercancel", finishStroke);
+
     // Save valid notebook names while warning about a temporarily blank name.
     nameInput.addEventListener("input", () => {
         const notebook = activeNotebook();
@@ -337,7 +524,9 @@
             id: crypto.randomUUID(),
             name: "New notebook",
             content: "",
-            quick_note: ""
+            quick_note: "",
+            whiteboard: { strokes: [] },
+            is_quick_notes: false
         };
         notebookData.notebooks.push(notebook);
         notebookData.active_id = notebook.id;

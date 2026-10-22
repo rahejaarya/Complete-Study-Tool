@@ -575,6 +575,7 @@ def clean_notebook_data(data):
 
     clean_notebooks = []
     seen_ids = set()
+    quick_notes_count = 0
     for notebook in notebooks:
         if not isinstance(notebook, dict):
             raise ValueError("Each notebook must be an object.")
@@ -582,6 +583,10 @@ def clean_notebook_data(data):
         name = notebook.get("name")
         content = notebook.get("content")
         quick_note = notebook.get("quick_note", "")
+        is_quick_notes = notebook.get(
+            "is_quick_notes", isinstance(name, str) and name.strip().lower() == "quick notes"
+        )
+        whiteboard = notebook.get("whiteboard", {"strokes": []})
         if (
             not isinstance(notebook_id, str)
             or not re.fullmatch(r"[A-Za-z0-9_-]{1,36}", notebook_id)
@@ -593,16 +598,26 @@ def clean_notebook_data(data):
             or len(content) > 200_000
             or not isinstance(quick_note, str)
             or len(quick_note) > 20_000
+            or not isinstance(is_quick_notes, bool)
+            or not isinstance(whiteboard, dict)
+            or not isinstance(whiteboard.get("strokes", []), list)
+            or len(whiteboard.get("strokes", [])) > 5000
+            or len(json.dumps(whiteboard, ensure_ascii=False)) > 1_000_000
         ):
             raise ValueError("A notebook contains invalid fields.")
         seen_ids.add(notebook_id)
+        quick_notes_count += int(is_quick_notes)
         clean_notebooks.append({
             "id": notebook_id,
             "name": name.strip(),
             "content": content,
             "quick_note": quick_note,
+            "whiteboard": whiteboard,
+            "is_quick_notes": is_quick_notes,
         })
 
+    if quick_notes_count > 1:
+        raise ValueError("Only one notebook can be Quick Notes.")
     if active_id not in seen_ids:
         raise ValueError("The active notebook could not be found.")
     return {"notebooks": clean_notebooks, "active_id": active_id}

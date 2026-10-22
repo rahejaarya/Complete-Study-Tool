@@ -83,6 +83,7 @@
                                 <div class="notebook-sidebar-heading">
                                     <h3>Notebooks</h3>
                                     <button class="notebook-add" id="notebook-add" type="button" disabled aria-label="Add notebook">+</button>
+                                    <button class="notebook-duplicate" id="notebook-duplicate" type="button" disabled>Duplicate</button>
                                 </div>
                                 <div class="notebook-list" id="notebook-list" role="group" aria-label="Select a notebook"></div>
                             </aside>
@@ -95,6 +96,12 @@
                                     maxlength="80"
                                     autocomplete="off"
                                     disabled>
+                                <button class="notebook-rename" id="notebook-rename" type="button" disabled>Rename notebook</button>
+                                <div class="notebook-tabs" role="tablist" aria-label="Notebook workspace">
+                                    <button id="notebook-notes-tab" class="notebook-tab" type="button" role="tab" aria-selected="true" aria-controls="notebook-notes-panel">Notes</button>
+                                    <button id="notebook-board-tab" class="notebook-tab" type="button" role="tab" aria-selected="false" aria-controls="notebook-board-panel">Whiteboard</button>
+                                </div>
+                                <section id="notebook-notes-panel" class="notebook-tab-panel" role="tabpanel" aria-labelledby="notebook-notes-tab">
                                 <label class="notebook-content-label" for="notebook-content">Notes</label>
                                 <div class="notebook-toolbar" role="toolbar" aria-label="Note formatting">
                                     <select data-format="fontName" aria-label="Font"><option value="Arial">Arial</option><option value="Georgia">Georgia</option><option value="Times New Roman">Times New Roman</option><option value="Verdana">Verdana</option></select>
@@ -110,6 +117,19 @@
                                     <button type="button" data-command="insertUnorderedList" aria-label="Bulleted list">• List</button><button type="button" data-command="removeFormat" aria-label="Clear formatting">Clear</button>
                                 </div>
                                 <div class="notebook-textarea notebook-content" id="notebook-content" contenteditable="false" role="textbox" aria-multiline="true" data-placeholder="Start writing in this notebook..."></div>
+                                </section>
+                                <section id="notebook-board-panel" class="notebook-tab-panel" role="tabpanel" aria-labelledby="notebook-board-tab" hidden>
+                                    <div class="whiteboard-toolbar" role="toolbar" aria-label="Whiteboard tools">
+                                        <button type="button" data-board-tool="pen" aria-pressed="true">Pen</button>
+                                        <button type="button" data-board-tool="eraser" aria-pressed="false">Eraser</button>
+                                        <button type="button" data-board-tool="text">Add text</button>
+                                        <label>Color <input type="color" data-board-color value="#25324a" aria-label="Whiteboard pen color"></label>
+                                        <label>Size <input type="range" data-board-size min="2" max="24" value="4" aria-label="Pen size"></label>
+                                        <button type="button" data-board-action="undo">Undo</button>
+                                        <button type="button" data-board-action="clear">Clear</button>
+                                    </div>
+                                    <div class="whiteboard-frame"><canvas class="notebook-whiteboard" id="notebook-whiteboard" aria-label="Whiteboard drawing area"></canvas></div>
+                                </section>
                             </div>
                         </div>
                         <p class="notebook-save-status" id="notebook-save-status" aria-live="polite">Loading notebooks…</p>
