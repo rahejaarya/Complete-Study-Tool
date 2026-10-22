@@ -34,6 +34,7 @@ try:
         find_resources,
         search_educational_videos,
         search_web,
+        should_update_user_memory,
         should_recommend_resources,
         study_search_terms,
         summarize_conversation,
@@ -47,6 +48,7 @@ except ModuleNotFoundError:  # pragma: no cover
         find_resources,
         search_educational_videos,
         search_web,
+        should_update_user_memory,
         should_recommend_resources,
         study_search_terms,
         summarize_conversation,
@@ -904,24 +906,25 @@ def ai_chat():
                 })
                 chat["updated_at"] = datetime.now(timezone.utc).isoformat()
                 write_json_atomically(chat_path, chat)
-                try:
-                    current_memory = update_user_memory(
-                        current_memory,
-                        message,
-                        conversation_history=turn_context + [{
-                            "role": "assistant",
-                            "content": full_response,
-                        }],
-                        conversation_summary=conversation_summary,
-                        current_message_in_history=True,
-                    )
-                    write_json_atomically(user_dir / "memory", current_memory)
-                except Exception as memory_error:
-                    app.logger.exception("Could not update AI user memory: %s", memory_error)
-                    yield json.dumps({
-                        "type": "memory_error",
-                        "message": "The conversation was saved, but user memory could not be updated.",
-                    }) + "\n"
+                if should_update_user_memory(message):
+                    try:
+                        current_memory = update_user_memory(
+                            current_memory,
+                            message,
+                            conversation_history=turn_context + [{
+                                "role": "assistant",
+                                "content": full_response,
+                            }],
+                            conversation_summary=conversation_summary,
+                            current_message_in_history=True,
+                        )
+                        write_json_atomically(user_dir / "memory", current_memory)
+                    except Exception as memory_error:
+                        app.logger.exception("Could not update AI user memory: %s", memory_error)
+                        yield json.dumps({
+                            "type": "memory_error",
+                            "message": "The conversation was saved, but user memory could not be updated.",
+                        }) + "\n"
 
             yield json.dumps({
                 "type": "done"
