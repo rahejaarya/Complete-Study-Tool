@@ -12,7 +12,7 @@ MODEL = "qwen3.5:9b"
 
 # Keep Cypher responsive on a 16 GB laptop while retaining enough context for a
 # useful multi-turn study conversation.
-CHAT_OPTIONS = {"temperature": 0.2, "num_predict": 350, "num_ctx": 8192}
+CHAT_OPTIONS = {"temperature": 0.2, "num_predict": 900, "num_ctx": 8192}
 
 _GREETING_REPLIES = {
     "hi": "Hi! What would you like help studying today?",
@@ -647,6 +647,13 @@ Match the length to the request:
   to answer correctly.
 - Expand only when the user asks for detail or the subject genuinely requires it.
 - Follow explicit requests for a particular length or format. Never add filler.
+- For a requested word count, silently plan the complete response before writing.
+  Reserve space for every requested point and a complete conclusion, then keep
+  the entire answer within the requested count. Do not start a final sentence or
+  point unless there is room to finish it. Aim for the requested count (within
+  about 5%) and check the complete draft's length before returning it. Never stop
+  mid-sentence. If the user asks for an exact count, target that exact number
+  rather than treating it as a maximum.
 
 Write school math in plain notation, such as x^2, x - 2, and (a + b) / c.
 Do not use LaTex commands or delimiters such as \\frac, \\[, \\(, or $...$.

@@ -171,6 +171,9 @@ const chatDialogConfirm = document.getElementById("chat-dialog-confirm");
 let currentChatId = null;
 let isSendingMessage = false;
 let chatDialogAction = null;
+let chatFollowsLatest = true;
+let activeChatRequest = null;
+let latestScrollFrame = 0;
 
 
 /*
@@ -286,8 +289,22 @@ function insertChatEntry(entry, beforeElement = null) {
 }
 
 function scrollChatToLatest() {
-    requestAnimationFrame(() => {
-        chatMessages.lastElementChild?.scrollIntoView({ block: "end", behavior: "auto" });
+    if (!chatFollowsLatest) return;
+
+    if (latestScrollFrame) return;
+    latestScrollFrame = requestAnimationFrame(() => {
+        latestScrollFrame = 0;
+        const lastMessage = chatMessages.lastElementChild;
+        if (!lastMessage || !chatFollowsLatest) return;
+
+        const composerHeight = aiPromptContainer?.getBoundingClientRect().height || 0;
+        const visibleBottom = window.innerHeight - composerHeight - 40;
+        const messageBottom = lastMessage.getBoundingClientRect().bottom;
+        window.scrollTo({
+            // Never pull the reader back up to follow a short streamed update.
+            top: Math.max(window.scrollY, window.scrollY + messageBottom - visibleBottom),
+            behavior: "auto"
+        });
     });
 }
 
@@ -310,6 +327,27 @@ function addMessage(message, sender) {
     }
 
     messageDiv.appendChild(bubble);
+
+    if (sender === "ai") {
+        const copyButton = document.createElement("button");
+        copyButton.type = "button";
+        copyButton.className = "chat-copy-button";
+        copyButton.textContent = "Copy";
+        copyButton.setAttribute("aria-label", "Copy this response");
+        copyButton.addEventListener("click", async () => {
+            const textToCopy = bubble.innerText;
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                copyButton.textContent = "Copied";
+                window.setTimeout(() => { copyButton.textContent = "Copy"; }, 1400);
+            } catch (error) {
+                copyButton.textContent = "Copy unavailable";
+                window.setTimeout(() => { copyButton.textContent = "Copy"; }, 1800);
+            }
+        });
+        messageDiv.appendChild(copyButton);
+    }
+
     insertChatEntry(messageDiv);
 
     chatMessages.style.display = "flex";
@@ -450,6 +488,7 @@ function addResourceCard(resource, afterElement = null) {
 
 
 function clearConversationView() {
+    chatFollowsLatest = true;
     chatMessages.replaceChildren();
     updateScrollBottomButton();
     chatMessages.style.display = "none";
@@ -612,6 +651,7 @@ async function openSavedChat(chatId) {
     }
 
     const { chat } = await response.json();
+    chatFollowsLatest = true;
     currentChatId = chat.id;
     clearConversationView();
 
@@ -758,7 +798,11 @@ async function sendMessage() {
     }
 
     isSendingMessage = true;
-    aiSend.disabled = true;
+    activeChatRequest = new AbortController();
+    aiSend.disabled = false;
+    aiSend.classList.add("is-stop");
+    aiSend.textContent = "Stop";
+    aiSend.setAttribute("aria-label", "Stop generating response");
     newChatButton.disabled = true;
     loadChatList();
 
@@ -777,14 +821,11 @@ async function sendMessage() {
     resizeAiInput();
 
 
-    // Disable send button
-    aiSend.textContent = "Thinking...";
-
-
     // Show temporary thinking message
     const thinkingBubble =
         addMessage("Thinking...", "ai");
     let lastResourceAnchor = thinkingBubble.parentElement;
+    let fullResponse = "";
 
     try {
 
@@ -799,7 +840,8 @@ async function sendMessage() {
             body: JSON.stringify({
                 message: message,
                 chat_id: currentChatId
-            })
+            }),
+            signal: activeChatRequest.signal
 
 
         });
@@ -811,8 +853,6 @@ async function sendMessage() {
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-
-        let fullResponse = "";
 
         let buffer = "";
 
@@ -883,19 +923,22 @@ async function sendMessage() {
         }
 
     } catch (error) {
-
-        console.error(error);
-
-        thinkingBubble.textContent =
-            "AI Error: " + error.message;
+        if (error.name === "AbortError") {
+            if (!fullResponse) thinkingBubble.textContent = "Response stopped.";
+        } else {
+            console.error(error);
+            thinkingBubble.textContent = "AI Error: " + error.message;
+        }
 
     } finally {
 
         aiSend.disabled = false;
-
+        aiSend.classList.remove("is-stop");
         aiSend.textContent = "Send";
+        aiSend.setAttribute("aria-label", "Send message to Cypher");
 
         isSendingMessage = false;
+        activeChatRequest = null;
         newChatButton.disabled = false;
         await loadChatList();
 
@@ -904,6 +947,11 @@ async function sendMessage() {
     }
 
 }
+
+
+aiSend.addEventListener("click", () => {
+    if (isSendingMessage) activeChatRequest?.abort();
+});
 
 
 aiSend.addEventListener(
@@ -1048,8 +1096,8 @@ function positionCypherChat() {
             margin: "0"
         });
 
-        // Keep the final messages visible above the input.
-        chatMessages.style.paddingBottom = "120px";
+        // Reserve enough room for the final message above the fixed composer.
+        chatMessages.style.paddingBottom = `${aiPromptContainer.offsetHeight + 56}px`;
 
     } else {
         // Center the greeting and input before the first message.
@@ -1101,25 +1149,25 @@ const scrollBottomStyles = document.createElement("style");
 scrollBottomStyles.textContent = `
     #chat-scroll-bottom {
         position: fixed;
-        right: 28px;
-        bottom: 100px;
-        width: 44px;
-        height: 44px;
+        right: 22px;
+        top: 50%;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
-        border: 1px solid var(--border, #444);
-        background: var(--surface, #222);
-        color: var(--text, #fff);
-        font-size: 24px;
+        border: 1px solid var(--border, #d8dbe7);
+        background: var(--white, #fff);
+        color: var(--purple, #635bdb);
+        font-size: 23px;
         line-height: 1;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         z-index: 1100;
-        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.18);
+        box-shadow: 0 6px 22px rgba(34, 38, 60, 0.2);
         opacity: 0;
         visibility: hidden;
-        transform: translateY(8px);
+        transform: translateY(calc(-50% + 8px));
         transition:
             opacity 0.2s ease,
             transform 0.2s ease,
@@ -1129,7 +1177,7 @@ scrollBottomStyles.textContent = `
     #chat-scroll-bottom.visible {
         opacity: 1;
         visibility: visible;
-        transform: translateY(0);
+        transform: translateY(-50%);
     }
 
     #chat-scroll-bottom:hover {
@@ -1143,13 +1191,67 @@ scrollBottomStyles.textContent = `
 
     @media (max-width: 600px) {
         #chat-scroll-bottom {
-            right: 16px;
-            bottom: 100px;
+            right: 12px;
+            top: 50%;
         }
     }
 `;
 
 document.head.appendChild(scrollBottomStyles);
+
+/* Prevent page bounce at the boundary and pause auto-follow on upward input. */
+document.documentElement.style.overscrollBehaviorY = "none";
+window.addEventListener("wheel", (event) => {
+    if (!aiDashboard.classList.contains("has-active-chat")) return;
+    if (event.deltaY < 0) {
+        chatFollowsLatest = false;
+    } else if (event.deltaY > 0) {
+        requestAnimationFrame(() => {
+            const atPageBottom = window.scrollY + window.innerHeight
+                >= document.documentElement.scrollHeight - 4;
+            if (atPageBottom) {
+                chatFollowsLatest = true;
+                scrollChatToLatest();
+            }
+        });
+    }
+}, { passive: true });
+
+let lastTouchY = null;
+window.addEventListener("touchstart", (event) => {
+    lastTouchY = event.touches[0]?.clientY ?? null;
+}, { passive: true });
+window.addEventListener("touchmove", (event) => {
+    const touchY = event.touches[0]?.clientY;
+    if (lastTouchY !== null && touchY !== undefined && touchY > lastTouchY) {
+        chatFollowsLatest = false;
+    }
+    lastTouchY = touchY ?? null;
+}, { passive: true });
+window.addEventListener("touchend", () => {
+    lastTouchY = null;
+    requestAnimationFrame(() => {
+        if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4) {
+            chatFollowsLatest = true;
+        }
+    });
+}, { passive: true });
+
+window.addEventListener("keydown", (event) => {
+    if (!aiDashboard.classList.contains("has-active-chat")) return;
+    if (["ArrowUp", "PageUp", "Home"].includes(event.key)) {
+        chatFollowsLatest = false;
+    } else if (["ArrowDown", "PageDown", "End"].includes(event.key)) {
+        requestAnimationFrame(() => {
+            const atPageBottom = window.scrollY + window.innerHeight
+                >= document.documentElement.scrollHeight - 4;
+            if (atPageBottom) {
+                chatFollowsLatest = true;
+                scrollChatToLatest();
+            }
+        });
+    }
+}, { passive: true });
 
 /* Show the button when the latest message is below the viewport */
 function updateScrollBottomButton() {
@@ -1165,8 +1267,10 @@ function updateScrollBottomButton() {
 
     const lastMessageRect = lastMessage.getBoundingClientRect();
 
-    const isScrolledUp =
-        lastMessageRect.bottom > window.innerHeight + 40;
+    const composerHeight = aiPromptContainer?.getBoundingClientRect().height || 0;
+    const visibleBottom = window.innerHeight - composerHeight - 40;
+    const distanceFromLatest = lastMessageRect.bottom - visibleBottom;
+    const isScrolledUp = distanceFromLatest > 40;
 
     scrollBottomButton.hidden = false;
     scrollBottomButton.classList.toggle("visible", isScrolledUp);
@@ -1174,14 +1278,17 @@ function updateScrollBottomButton() {
 
 /* Clicking the arrow takes the user to the very end */
 scrollBottomButton.addEventListener("click", () => {
+    chatFollowsLatest = true;
     const lastMessage = chatMessages.lastElementChild;
+    if (!lastMessage) return;
 
-    if (lastMessage) {
-        lastMessage.scrollIntoView({
-            behavior: "smooth",
-            block: "end"
-        });
-    }
+    const composerHeight = aiPromptContainer?.getBoundingClientRect().height || 0;
+    const visibleBottom = window.innerHeight - composerHeight - 40;
+    const distanceFromLatest = lastMessage.getBoundingClientRect().bottom - visibleBottom;
+    window.scrollTo({
+        top: window.scrollY + distanceFromLatest,
+        behavior: "auto"
+    });
 });
 
 /* Detect scrolling in either the page or the chat */
