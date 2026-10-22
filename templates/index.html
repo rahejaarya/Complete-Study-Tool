@@ -73,7 +73,7 @@
 
 
         <!-- Main content area where the dashboard and page-specific content are rendered. -->
-        <main class="main-content">
+        <main class="main-content dashboard-main-content">
 
             <!-- Top bar with the welcome message and global search. -->
             <header class="topbar dashboard-topbar">
@@ -110,7 +110,6 @@
             <section class="dashboard">
 
                 <div class="dashboard-overview">
-                    <div class="feature-grid dashboard-feature-grid">
                     <a href="{{ url_for('resources') }}" class="feature-card study-resource-link">
                         <span class="feature-icon resources-icon" aria-hidden="true">{{ app_icon("resources") }}</span>
                         <span class="feature-content">
@@ -120,7 +119,7 @@
                         <span class="card-arrow" aria-hidden="true">→</span>
                     </a>
 
-                
+                    <div class="feature-grid dashboard-feature-grid">
 
                     <!-- AI Study Help -->
                     <a href="{{ url_for('ai_help') }}" style="text-decoration: none; color: inherit; display: block;">
