@@ -1,16 +1,14 @@
 {
   "notebooks": [
     {
-      "id": "68105d8d-e6f3-44ca-b3f9-70dedebd078e",
+      "id": "6109bad0-ec44-48b1-856f-bbf902c3a6b1",
       "name": "Untitled note",
       "content": "",
-      "quick_note": "",
       "whiteboard": {
         "strokes": []
       },
-      "is_quick_notes": false,
       "kind": "notes"
     }
   ],
-  "active_id": "68105d8d-e6f3-44ca-b3f9-70dedebd078e"
+  "active_id": "6109bad0-ec44-48b1-856f-bbf902c3a6b1"
 }
