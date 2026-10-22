@@ -1,0 +1,26 @@
+{
+  "id": "7c10266a31984b42aa78e5b9005c38df",
+  "title": "hey",
+  "created_at": "2026-10-22T01:18:57.096348+00:00",
+  "updated_at": "2026-10-22T01:19:33.224468+00:00",
+  "summary": "",
+  "summary_through": 0,
+  "messages": [
+    {
+      "role": "user",
+      "content": "hey"
+    },
+    {
+      "role": "assistant",
+      "content": "Hey! What would you like help studying today?"
+    },
+    {
+      "role": "user",
+      "content": "what is synthetic division, give me an example"
+    },
+    {
+      "role": "assistant",
+      "content": "Synthetic division is a shortcut method for dividing a polynomial by a linear factor of the form (x - c). It's faster than long division and only works when dividing by a binomial with a leading coefficient of 1.\n\n**Example:** Divide $x^3 - 6x^2 + 11x - 6$ by $(x - 2)$.\n\n1. Write down the coefficients: 1, -6, 11, -6.\n2. Use 2 (from x - 2) as the divisor on the left.\n3. Bring down the first coefficient (1).\n4. Multiply 1 by 2 and add to the next coefficient (-6 + 2 = -4).\n5. Multiply -4 by 2 and add to the next coefficient (11 + (-8) = 3).\n6. Multiply 3 by 2 and add to the last coefficient (-6 + 6 = 0).\n\nThe result is a quotient of $x^2 - 4x + 3$ with a remainder of 0. So, $(x^3 - 6x^2 + 11x - 6) \\div (x - 2) = x^2 - 4x + 3$."
+    }
+  ]
+}
