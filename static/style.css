@@ -8705,7 +8705,6 @@ body.notes-workspace-body { overflow: hidden; }
 .board-history-group { margin-left: auto; }
 .workspace-board-wrap { position: relative; flex: 1; min-height: 0; padding: 14px; background: #fff; }
 #workspace-board { display: block; width: 100%; height: 100%; min-height: 300px; border: 1px solid #e3e6ec; border-radius: 8px; background: #fff !important; cursor: crosshair; touch-action: none; }
-.workspace-global-status { position: absolute; right: 18px; bottom: 8px; z-index: 5; margin: 0; color: var(--muted); font-size: 11px; pointer-events: none; }
 
 @media (max-width: 900px) {
     .workspace-topbar { grid-template-columns: auto 1fr auto; gap: 12px; }
@@ -9061,10 +9060,13 @@ body.notes-workspace-body { overflow: hidden; }
 }
 .workspace-confirm-dialog::backdrop { background: rgba(12, 17, 28, .48); backdrop-filter: blur(3px); }
 .workspace-confirm-dialog form { display: grid; gap: 13px; padding: 26px; }
+.workspace-confirm-dialog form { justify-items: center; text-align: center; }
 .workspace-confirm-icon { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 14px; background: var(--soft-surface); color: var(--muted); font-size: 25px; }
+.workspace-confirm-icon { margin: 0 auto 2px; }
 .workspace-confirm-dialog h2 { margin: 0; font-size: 20px; letter-spacing: -.025em; }
 .workspace-confirm-dialog p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
 .workspace-confirm-remember { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 13px; cursor: pointer; }
+.workspace-confirm-remember { justify-self: center; }
 .workspace-confirm-remember input { accent-color: var(--accent-strong); }
 .workspace-confirm-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 7px; }
 .workspace-confirm-actions button { padding: 9px 15px; border: 1px solid var(--border); border-radius: 10px; background: var(--soft-surface); color: var(--text); font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; }
@@ -9072,7 +9074,7 @@ body.notes-workspace-body { overflow: hidden; }
 .dashboard-notebook-launchers { display: grid; gap: 8px; margin-top: 14px; }
 .dashboard-notebook-launcher {
     display: grid;
-    grid-template-columns: 42px minmax(0, 1fr) auto;
+    grid-template-columns: 42px minmax(0, 1fr);
     align-items: center;
     gap: 12px;
     min-height: 58px;
@@ -9090,7 +9092,7 @@ body.notes-workspace-body { overflow: hidden; }
 .dashboard-notebook-launcher > span:nth-child(2) { display: grid; gap: 3px; min-width: 0; }
 .dashboard-notebook-launcher strong { font-size: 14px; }
 .dashboard-notebook-launcher small { overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
-.dashboard-notebook-launcher-arrow { color: var(--muted); font-size: 18px; }
+.workspace-text-toolbar select[data-note-format="fontSize"] { min-width: 66px; font-variant-numeric: tabular-nums; }
 @media (max-width: 640px) {
     .workspace-topbar { grid-template-columns: auto 1fr auto; min-height: 62px; }
     .workspace-topbar > .workspace-home { grid-column: 1; }
