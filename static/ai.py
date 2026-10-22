@@ -1,4 +1,6 @@
+import ast
 import json
+import math
 import re
 from urllib.parse import parse_qs, urlsplit
 from datetime import date
@@ -7,6 +9,10 @@ import ollama
 from ddgs import DDGS
 
 MODEL = "qwen3.5:9b"
+
+# Keep Cypher responsive on a 16 GB laptop while retaining enough context for a
+# useful multi-turn study conversation.
+CHAT_OPTIONS = {"temperature": 0.2, "num_predict": 350, "num_ctx": 8192}
 
 _GREETING_REPLIES = {
     "hi": "Hi! What would you like help studying today?",
@@ -39,18 +45,18 @@ _THANKS = {"thanks", "thank you", "thanks a lot", "many thanks"}
 
 _PERSONAL_REPLIES = {
     "who are you": (
-        "I'm Meridian's AI study assistant. I can explain concepts, summarize "
+        "I'm Cypher, Meridian's AI study assistant. I can explain concepts, summarize "
         "material, work through problems, and find study resources."
     ),
     "what are you": (
-        "I'm Meridian's AI study assistant, here to help explain concepts, "
+        "I'm Cypher, Meridian's AI study assistant, here to help explain concepts, "
         "summarize material, and support your studying."
     ),
-    "what is your name": "I'm Meridian's AI study assistant.",
-    "whats your name": "I'm Meridian's AI study assistant.",
-    "what's your name": "I'm Meridian's AI study assistant.",
+    "what is your name": "I'm Cypher, Meridian's AI study assistant.",
+    "whats your name": "I'm Cypher, Meridian's AI study assistant.",
+    "what's your name": "I'm Cypher, Meridian's AI study assistant.",
     "tell me about yourself": (
-        "I'm Meridian's AI study assistant. I can explain concepts, summarize "
+        "I'm Cypher, Meridian's AI study assistant. I can explain concepts, summarize "
         "material, work through problems, and find study resources."
     ),
     "what do you do": (
@@ -74,10 +80,10 @@ _PERSONAL_REPLIES = {
         "with your questions and studying."
     ),
     "how old are you": (
-        "I don't have an age or personal life; I'm Meridian's AI study assistant."
+        "I don't have an age or personal life; I'm Cypher, Meridian's AI study assistant."
     ),
     "where are you from": (
-        "I don't have a hometown or personal life; I'm the AI assistant in Meridian."
+        "I don't have a hometown or personal life; I'm Cypher, the AI assistant in Meridian."
     ),
     "how are you": (
         "I'm here and ready to help. What are you working on today?"
