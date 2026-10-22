@@ -18,6 +18,7 @@
     let saveTimer;
     let saveQueue = Promise.resolve();
     let savedSelection = null;
+    let activeHighlight = null;
 
     // Retain only editor-generated formatting when restoring saved notebook HTML.
     function safeNotebookHtml(value) {
@@ -277,7 +278,18 @@
             const highlight = event.target.closest("[data-highlight-light]");
             if (highlight) {
                 const isDark = document.documentElement.dataset.theme?.startsWith("dark");
-                applyFormat("hiliteColor", isDark ? highlight.dataset.highlightDark : highlight.dataset.highlightLight);
+                const color = isDark ? highlight.dataset.highlightDark : highlight.dataset.highlightLight;
+                const togglingOff = activeHighlight === color;
+                toolbar.querySelectorAll("[data-highlight-light]").forEach((swatch) => {
+                    swatch.setAttribute("aria-pressed", String(!togglingOff && swatch === highlight));
+                });
+                activeHighlight = togglingOff ? null : color;
+                if (!togglingOff) {
+                    applyFormat("hiliteColor", color);
+                } else if (savedSelection?.collapsed) {
+                    // Clear the browser's pending highlight at the caret without changing selected text.
+                    applyFormat("hiliteColor", "transparent");
+                }
                 return;
             }
             const button = event.target.closest("[data-command]");

@@ -1848,7 +1848,8 @@ body {
 [data-theme^="dark"] .notebook-highlight-swatch:nth-child(4) { --swatch: #653255; }
 
 .notebook-toolbar .notebook-highlight-swatch:hover,
-.notebook-toolbar .notebook-highlight-swatch:focus-visible {
+.notebook-toolbar .notebook-highlight-swatch:focus-visible,
+.notebook-toolbar .notebook-highlight-swatch[aria-pressed="true"] {
     transform: scale(1.12);
     box-shadow: 0 0 0 2px var(--accent-strong);
 }
