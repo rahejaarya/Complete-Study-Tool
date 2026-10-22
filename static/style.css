@@ -1577,7 +1577,8 @@ body {
 .notebook-card {
     min-width: 0;
     min-height: 245px;
-    padding: 27px;
+    padding: 26px;
+    border-radius: 20px;
 }
 
 .notebook-toggle {
@@ -1646,6 +1647,10 @@ body {
 
 .notebook-expanded:not([hidden]) {
     display: grid;
+    align-items: start;
+    gap: 22px;
+    margin-top: 18px;
+    padding-top: 20px;
 }
 
 .notebook-sidebar {
@@ -1680,6 +1685,9 @@ body {
 .notebook-list {
     display: grid;
     gap: 6px;
+    max-height: 360px;
+    overflow-y: auto;
+    padding-right: 3px;
 }
 
 .notebook-list-item {
@@ -1719,7 +1727,91 @@ body {
 }
 
 .notebook-content {
-    min-height: 220px;
+    min-height: 420px;
+    max-height: 68vh;
+    overflow-y: auto;
+    padding: 22px 26px;
+    border-radius: 0 0 14px 14px;
+    background-color: #fffdf8;
+    background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(122, 144, 180, .12) 32px);
+    font-family: Georgia, serif;
+    font-size: 16px;
+    line-height: 2;
+    outline: none;
+    overflow-wrap: anywhere;
+}
+
+.notebook-content:focus {
+    border-color: #8ea7dc;
+    box-shadow: 0 0 0 3px rgba(105, 135, 200, .14);
+}
+
+.notebook-content:empty::before {
+    content: attr(data-placeholder);
+    color: var(--muted);
+    opacity: .75;
+    pointer-events: none;
+}
+
+.notebook-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 9px;
+    border: 1px solid var(--border);
+    border-bottom: 0;
+    border-radius: 14px 14px 0 0;
+    background: var(--soft-surface);
+}
+
+.notebook-toolbar button,
+.notebook-toolbar select,
+.notebook-color-control {
+    min-height: 34px;
+    padding: 5px 9px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--white, #fff);
+    color: var(--text);
+    font: inherit;
+    font-size: 12px;
+}
+
+.notebook-toolbar button { cursor: pointer; }
+.notebook-toolbar button:hover { background: var(--hover, #f1f4fa); }
+.notebook-toolbar select { cursor: pointer; }
+
+.notebook-color-control {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    min-width: 36px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.notebook-color-control input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.notebook-editor { min-width: 0; }
+.notebook-page-card { padding: clamp(20px, 3vw, 36px); }
+.notes-page .notebook-expanded { grid-template-columns: minmax(170px, .28fr) minmax(0, 1fr); }
+.notes-page .notebook-content { min-height: 58vh; max-height: none; }
+.notes-page .notebook-list-item { padding: 12px; }
+
+@media (max-width: 700px) {
+    .notebook-expanded:not([hidden]),
+    .notes-page .notebook-expanded { grid-template-columns: 1fr; }
+    .notebook-list { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); max-height: 160px; }
+    .notebook-content { min-height: 300px; padding: 16px; }
+    .notes-page { padding: 20px 12px 48px; }
 }
 
 .notebook-card :disabled {

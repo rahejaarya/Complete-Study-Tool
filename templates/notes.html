@@ -64,7 +64,7 @@
                         <h1>Your Notes Workspace</h1>
                     </header>
 
-                    <section class="main-card notebook-card notes-page-card" id="notes-card" aria-labelledby="notebook-heading">
+                    <section class="main-card notebook-card notes-page-card notebook-page-card" id="notes-card" aria-labelledby="notebook-heading">
                         <div class="card-header">
                             <div>
                                 <h2 id="notebook-heading">Notebook &amp; Notes</h2>
@@ -96,12 +96,15 @@
                                     autocomplete="off"
                                     disabled>
                                 <label class="notebook-content-label" for="notebook-content">Notes</label>
-                                <textarea
-                                    class="notebook-textarea notebook-content"
-                                    id="notebook-content"
-                                    maxlength="200000"
-                                    placeholder="Start writing in this notebook..."
-                                    disabled></textarea>
+                                <div class="notebook-toolbar" role="toolbar" aria-label="Note formatting">
+                                    <select data-format="fontName" aria-label="Font"><option value="Arial">Arial</option><option value="Georgia">Georgia</option><option value="Times New Roman">Times New Roman</option><option value="Verdana">Verdana</option></select>
+                                    <select data-format="fontSize" aria-label="Text size"><option value="2">Small</option><option value="3" selected>Normal</option><option value="4">Large</option><option value="5">Extra large</option></select>
+                                    <button type="button" data-command="bold" aria-label="Bold"><b>B</b></button><button type="button" data-command="italic" aria-label="Italic"><i>I</i></button><button type="button" data-command="underline" aria-label="Underline"><u>U</u></button>
+                                    <label class="notebook-color-control" title="Text color">A<input type="color" data-command="foreColor" aria-label="Text color" value="#263248"></label>
+                                    <label class="notebook-color-control notebook-highlight-control" title="Highlight">▰<input type="color" data-command="hiliteColor" aria-label="Highlight color" value="#fff09a"></label>
+                                    <button type="button" data-command="insertUnorderedList" aria-label="Bulleted list">• List</button><button type="button" data-command="removeFormat" aria-label="Clear formatting">Clear</button>
+                                </div>
+                                <div class="notebook-textarea notebook-content" id="notebook-content" contenteditable="false" role="textbox" aria-multiline="true" data-placeholder="Start writing in this notebook..."></div>
                             </div>
                         </div>
                         <p class="notebook-save-status" id="notebook-save-status" aria-live="polite">Loading notebooks…</p>

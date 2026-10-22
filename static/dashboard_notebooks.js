@@ -9,6 +9,7 @@
     const contentInput = document.getElementById("notebook-content");
     const quickNoteInput = document.getElementById("notebook-quick-note");
     const status = document.getElementById("notebook-save-status");
+    const toolbar = card.querySelector(".notebook-toolbar");
     if (!card || !toggle || !expanded || !list || !addButton || !nameInput || !contentInput || !status) {
         return;
     }
@@ -16,6 +17,36 @@
     let notebookData;
     let saveTimer;
     let saveQueue = Promise.resolve();
+
+    // Retain only editor-generated formatting when restoring saved notebook HTML.
+    function safeNotebookHtml(value) {
+        const doc = new DOMParser().parseFromString(String(value || ""), "text/html");
+        const allowed = new Set(["B", "STRONG", "I", "EM", "U", "UL", "OL", "LI", "P", "BR", "SPAN", "FONT"]);
+        doc.body.querySelectorAll("*").forEach((node) => {
+            if (!allowed.has(node.tagName)) {
+                node.replaceWith(...node.childNodes);
+                return;
+            }
+            [...node.attributes].forEach((attr) => {
+                if (node.tagName === "SPAN" && attr.name === "style") {
+                    const color = node.style.color;
+                    const background = node.style.backgroundColor;
+                    node.removeAttribute("style");
+                    if (/^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\))$/i.test(color)) node.style.color = color;
+                    if (/^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\))$/i.test(background)) node.style.backgroundColor = background;
+                } else if (node.tagName === "FONT" && attr.name === "face") {
+                    if (!/^(Arial|Georgia|Times New Roman|Verdana)$/i.test(attr.value)) node.removeAttribute(attr.name);
+                } else if (node.tagName === "FONT" && attr.name === "size") {
+                    if (!/^[1-7]$/.test(attr.value)) node.removeAttribute(attr.name);
+                } else node.removeAttribute(attr.name);
+            });
+        });
+        return doc.body.innerHTML;
+    }
+
+    function editorPlainText() {
+        return contentInput.innerText.replace(/\u00a0/g, " ").trimEnd();
+    }
 
     // Return the notebook currently selected in the saved notebook collection.
     function activeNotebook() {
@@ -85,12 +116,17 @@
             throw new Error("The selected notebook could not be found.");
         }
         nameInput.value = notebook.name;
-        contentInput.value = notebook.content;
+        const savedContent = String(notebook.content || "");
+        if (/<\/?(?:b|strong|i|em|u|ul|ol|li|p|br|span|font)\b/i.test(savedContent)) {
+            contentInput.innerHTML = safeNotebookHtml(savedContent);
+        } else {
+            contentInput.textContent = savedContent;
+        }
         const quickNotesNotebook = notebookData.notebooks.find(
             (candidate) => candidate.name.trim().toLowerCase() === "quick notes"
         );
         if (quickNoteInput) {
-            quickNoteInput.value = quickNotesNotebook?.content ?? "";
+            quickNoteInput.value = (quickNotesNotebook?.content ?? "").replace(/<[^>]*>/g, "");
         }
         renderList();
     }
@@ -137,9 +173,10 @@
             notebookData = payload;
             ensureQuickNotesNotebook();
             render();
-            card.querySelectorAll("textarea, input, button").forEach((control) => {
+            card.querySelectorAll("textarea, input, button, select").forEach((control) => {
                 control.disabled = false;
             });
+            contentInput.contentEditable = "true";
             status.textContent = "";
         } catch (error) {
             status.textContent = "Could not load notebooks. Refresh to try again.";
@@ -169,9 +206,9 @@
         if (!quickNotesNotebook) {
             return;
         }
-        quickNotesNotebook.content = quickNoteInput.value;
+            quickNotesNotebook.content = quickNoteInput.value;
         if (activeNotebook().id === quickNotesNotebook.id) {
-            contentInput.value = quickNoteInput.value;
+                contentInput.textContent = quickNoteInput.value;
         }
         scheduleSave();
         });
@@ -180,12 +217,34 @@
     // Persist editor changes and mirror them into Quick Notes when applicable.
     contentInput.addEventListener("input", () => {
         setExpanded(true);
-        activeNotebook().content = contentInput.value;
+        activeNotebook().content = safeNotebookHtml(contentInput.innerHTML);
         if (quickNoteInput && activeNotebook().name.trim().toLowerCase() === "quick notes") {
-            quickNoteInput.value = contentInput.value;
+            quickNoteInput.value = editorPlainText();
         }
         scheduleSave();
     });
+
+    if (toolbar) {
+        toolbar.addEventListener("mousedown", (event) => {
+            if (event.target.closest("button")) event.preventDefault();
+        });
+        toolbar.addEventListener("click", (event) => {
+            const button = event.target.closest("[data-command]");
+            if (!button || button.disabled) return;
+            const command = button.dataset.command;
+            const value = button.matches("input[type=color]") ? button.value : null;
+            contentInput.focus();
+            document.execCommand(command, false, value);
+            contentInput.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        toolbar.addEventListener("change", (event) => {
+            const select = event.target.closest("[data-format]");
+            if (!select) return;
+            contentInput.focus();
+            document.execCommand(select.dataset.format, false, select.value);
+            contentInput.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+    }
 
     // Save valid notebook names while warning about a temporarily blank name.
     nameInput.addEventListener("input", () => {
