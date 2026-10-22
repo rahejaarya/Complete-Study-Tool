@@ -228,20 +228,14 @@
                 <div class="lower-grid">
 
                     <!-- Notebook & Notes -->
-                    <section class="main-card notebook-card" id="notes-card" aria-labelledby="notebook-heading">
-                        <div class="card-header">
-                            <div>
-                                <h2 id="notebook-heading">Notes &amp; Whiteboard</h2>
-                            </div>
-                        </div>
-
+                    <section class="notebook-launcher-section" aria-label="Notes and whiteboards">
                         <div class="dashboard-notebook-launchers" aria-label="Open notes tools">
                             <a class="dashboard-notebook-launcher" href="{{ url_for('notes') }}?kind=notes">
-                                <span class="dashboard-notebook-launcher-icon" aria-hidden="true">▤</span>
+                                <span class="dashboard-notebook-launcher-icon" aria-hidden="true">📝</span>
                                 <span><strong>Notes</strong><small>Write and organize your notes</small></span>
                             </a>
                             <a class="dashboard-notebook-launcher is-board" href="{{ url_for('notes') }}?kind=whiteboard">
-                                <span class="dashboard-notebook-launcher-icon" aria-hidden="true">✎</span>
+                                <span class="dashboard-notebook-launcher-icon" aria-hidden="true">🧑‍🏫</span>
                                 <span><strong>Whiteboard</strong><small>Sketch ideas and diagrams</small></span>
                             </a>
                         </div>
