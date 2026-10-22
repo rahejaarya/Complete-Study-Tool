@@ -7245,14 +7245,14 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .logo-mark {
 }
 
 /* Main dashboard: one larger resource tile, the original four shortcut sizes,
-   then the quote, all compact enough to fit on a standard desktop screen. */
+   and a relaxed lower row with notes beside the quote. */
 .dashboard-main-content {
-    padding-top: 20px;
-    padding-bottom: 24px;
+    padding-top: 24px;
+    padding-bottom: 32px;
 }
 
 .dashboard-topbar {
-    margin-bottom: 14px;
+    margin-bottom: 24px;
 }
 
 .dashboard-overview {
@@ -7262,8 +7262,8 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .logo-mark {
 .dashboard-feature-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-content: start;
-    gap: 12px 14px;
-    margin: 0 0 12px;
+    gap: 16px;
+    margin: 0 0 22px;
 }
 
 .dashboard-feature-grid > a {
@@ -7272,52 +7272,40 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .logo-mark {
 
 .dashboard .dashboard-overview > .study-resource-link {
     min-height: 152px;
-    margin: 0;
+    margin: 0 0 16px;
     padding: 24px;
 }
 
-.dashboard-overview .motivation-card {
-    min-width: 0;
-    min-height: 0;
-    box-sizing: border-box;
-    margin: 0;
-    padding: 14px 20px;
-}
-
-.dashboard-overview .quote-slide {
-    min-height: 100px;
-}
-
-.dashboard-overview .quote-slide p {
-    margin: 0;
-}
-
-.dashboard-overview .quote-controls {
-    margin-top: 6px;
-}
-
 .dashboard .lower-grid {
-    grid-template-columns: minmax(0, 1fr);
-    margin-bottom: 16px;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+    gap: 22px;
+    margin-bottom: 24px;
 }
 
 @media (max-width: 760px) {
     .dashboard-feature-grid {
         grid-template-columns: minmax(0, 1fr);
-        gap: 12px;
+        gap: 16px;
+        margin-bottom: 22px;
     }
 
     .dashboard .dashboard-overview > .study-resource-link {
         min-height: 132px;
+        margin-bottom: 16px;
         padding: 20px;
     }
 
     .dashboard-topbar {
-        margin-bottom: 14px;
+        margin-bottom: 18px;
     }
 
     .dashboard-main-content {
         padding-top: 16px;
-        padding-bottom: 24px;
+        padding-bottom: 28px;
+    }
+
+    .dashboard .lower-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
     }
 }
