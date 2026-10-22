@@ -1,31 +1,9 @@
 {
   "notebooks": [
     {
-      "id": "86bea1a0-1a02-44d7-bedc-456747e68b5d",
-      "name": "Quick Notes",
-      "content": "<br>",
-      "quick_note": "",
-      "whiteboard": {
-        "strokes": []
-      },
-      "is_quick_notes": true,
-      "kind": "notes"
-    },
-    {
-      "id": "9d24394ff6b34b6fad1649cb4b9d40c4",
-      "name": "My Notebook",
-      "content": "<br>",
-      "quick_note": "fdfd",
-      "whiteboard": {
-        "strokes": []
-      },
-      "is_quick_notes": false,
-      "kind": "notes"
-    },
-    {
-      "id": "df03747c-0d4d-4358-8231-236a8b441f85",
-      "name": "New notebook",
-      "content": "<br>",
+      "id": "68105d8d-e6f3-44ca-b3f9-70dedebd078e",
+      "name": "Untitled note",
+      "content": "",
       "quick_note": "",
       "whiteboard": {
         "strokes": []
@@ -34,5 +12,5 @@
       "kind": "notes"
     }
   ],
-  "active_id": "9d24394ff6b34b6fad1649cb4b9d40c4"
+  "active_id": "68105d8d-e6f3-44ca-b3f9-70dedebd078e"
 }

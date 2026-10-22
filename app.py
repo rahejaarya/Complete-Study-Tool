@@ -581,6 +581,7 @@ def clean_notebook_data(data):
         notebook_id = notebook.get("id")
         name = notebook.get("name")
         content = notebook.get("content")
+        legacy_quick_note = notebook.get("quick_note", "")
         whiteboard = notebook.get("whiteboard", {"strokes": []})
         kind = notebook.get("kind", "notes")
         if (
@@ -592,6 +593,8 @@ def clean_notebook_data(data):
             or len(name.strip()) > 80
             or not isinstance(content, str)
             or len(content) > 200_000
+            or not isinstance(legacy_quick_note, str)
+            or len(legacy_quick_note) > 20_000
             or not isinstance(whiteboard, dict)
             or not isinstance(kind, str)
             or kind not in {"notes", "whiteboard"}
@@ -601,6 +604,8 @@ def clean_notebook_data(data):
         ):
             raise ValueError("A notebook contains invalid fields.")
         seen_ids.add(notebook_id)
+        if legacy_quick_note and content.strip() in {"", "<br>", "<p><br></p>", "<div><br></div>"}:
+            content = legacy_quick_note
         clean_name = name.strip()
         if clean_name.lower() == "quick notes":
             clean_name = "Notes"

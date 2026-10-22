@@ -7,7 +7,6 @@
     const boardCanvas = document.getElementById("workspace-board");
     const boardContext = boardCanvas?.getContext("2d");
     const titleInput = document.getElementById("workspace-document-title");
-    const globalStatus = document.getElementById("workspace-global-status");
     const workspace = document.getElementById("notes-workspace");
     const library = document.getElementById("workspace-library");
     const libraryEmpty = document.getElementById("workspace-library-empty");
@@ -44,6 +43,7 @@
     function cleanHtml(value) {
         const parsed = new DOMParser().parseFromString(String(value || ""), "text/html");
         const allowed = new Set(["B", "STRONG", "I", "EM", "U", "UL", "OL", "LI", "P", "BR", "SPAN", "FONT"]);
+        const allowedFonts = ["Arial", "Georgia", "Times New Roman", "Verdana", "Trebuchet MS", "Tahoma", "Courier New", "Garamond", "Palatino Linotype", "Comic Sans MS"];
         parsed.body.querySelectorAll("*").forEach((node) => {
             if (!allowed.has(node.tagName)) {
                 node.replaceWith(...node.childNodes);
@@ -61,11 +61,11 @@
                     node.removeAttribute("style");
                     if (/^(#[\da-f]{3,8}|rgba?\([\d\s.,%]+\))$/i.test(style.color)) node.style.color = style.color;
                     if (/^(#[\da-f]{3,8}|rgba?\([\d\s.,%]+\))$/i.test(style.backgroundColor)) node.style.backgroundColor = style.backgroundColor;
-                    if (/^(Arial|Georgia|Times New Roman|Verdana)$/i.test(style.fontFamily)) node.style.fontFamily = style.fontFamily;
+                    if (allowedFonts.some((font) => font.toLowerCase() === style.fontFamily.toLowerCase())) node.style.fontFamily = style.fontFamily;
                     if (/^(?:[89]|[1-5]\d|6[0-4])px$|^(?:xx-small|x-small|small|medium|large|x-large|xx-large)$/i.test(style.fontSize)) node.style.fontSize = style.fontSize;
                     if (/^(underline|line-through|overline)$/.test(style.textDecoration)) node.style.textDecoration = style.textDecoration;
                 } else if (node.tagName === "FONT" && attrNameAllowed(node, attribute)) {
-                    if (attribute.name === "face" && !/^(Arial|Georgia|Times New Roman|Verdana)$/i.test(attribute.value)) node.removeAttribute(attribute.name);
+                    if (attribute.name === "face" && !allowedFonts.some((font) => font.toLowerCase() === attribute.value.toLowerCase())) node.removeAttribute(attribute.name);
                     if (attribute.name === "size" && !/^[1-7]$/.test(attribute.value)) node.removeAttribute(attribute.name);
                     if (attribute.name === "color" && !/^#[\da-f]{3,8}$/i.test(attribute.value)) node.removeAttribute(attribute.name);
                 } else node.removeAttribute(attribute.name);
@@ -96,7 +96,26 @@
     function applyTextCommand(command, value = null) {
         restoreRange();
         document.execCommand("styleWithCSS", false, true);
-        document.execCommand(command, false, value);
+        if (command === "fontSize") {
+            document.execCommand(command, false, 7);
+            const selection = window.getSelection();
+            const focusNode = selection?.focusNode;
+            const focusElement = focusNode?.nodeType === Node.ELEMENT_NODE ? focusNode : focusNode?.parentElement;
+            let target = focusElement?.closest('font[size="7"], span[style]');
+            if (target && noteEditor.contains(target)) {
+                if (target.tagName === "FONT") {
+                    const span = document.createElement("span");
+                    if (target.face) span.style.fontFamily = target.face;
+                    if (target.color) span.style.color = target.color;
+                    target.replaceWith(span);
+                    span.append(...target.childNodes);
+                    target = span;
+                }
+                target.style.fontSize = `${Number(value)}px`;
+            }
+        } else {
+            document.execCommand(command, false, value);
+        }
         rememberRange();
         noteEditor.dispatchEvent(new Event("input", { bubbles: true }));
     }
@@ -186,7 +205,6 @@
                 file.name = trimmed;
                 renderFiles();
                 if (currentFile()?.id === file.id) titleInput.value = trimmed;
-                globalStatus.textContent = "File renamed.";
                 await saveData();
             });
             const remove = document.createElement("button");
@@ -201,7 +219,6 @@
                 if (!data.notebooks.some((candidate) => candidate.id === data.active_id)) data.active_id = data.notebooks[0]?.id || "";
                 if (activeFileId === file.id) activeFileId = null;
                 renderFiles();
-                globalStatus.textContent = "File deleted.";
                 await saveData();
             });
             actions.append(rename, remove);
@@ -285,7 +302,6 @@
             if (!response.ok) throw new Error(result.error || "Save failed.");
         }).catch((error) => {
             console.error("Workspace file could not be saved.", error);
-            globalStatus.textContent = "A file could not be saved. Please try again.";
         });
     }
 
@@ -413,7 +429,6 @@
         }
         activeFileId = null;
         showLibrary();
-        globalStatus.textContent = "File deleted.";
         await saveData();
     });
 
@@ -584,7 +599,6 @@
             if (!data.notebooks.some((file) => file.kind === activeKind)) renderFiles();
         } catch (error) {
             console.error("Workspace files could not be loaded.", error);
-            globalStatus.textContent = "Could not load your files. Refresh to try again.";
         }
     }
 
