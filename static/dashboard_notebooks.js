@@ -17,6 +17,7 @@
     let notebookData;
     let saveTimer;
     let saveQueue = Promise.resolve();
+    let savedSelection = null;
 
     // Retain only editor-generated formatting when restoring saved notebook HTML.
     function safeNotebookHtml(value) {
@@ -31,9 +32,15 @@
                 if (node.tagName === "SPAN" && attr.name === "style") {
                     const color = node.style.color;
                     const background = node.style.backgroundColor;
+                    const fontFamily = node.style.fontFamily.replace(/["']/g, "");
+                    const fontSize = node.style.fontSize;
+                    const textDecoration = node.style.textDecoration;
                     node.removeAttribute("style");
                     if (/^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\))$/i.test(color)) node.style.color = color;
                     if (/^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\))$/i.test(background)) node.style.backgroundColor = background;
+                    if (/^(Arial|Georgia|Times New Roman|Verdana)$/i.test(fontFamily)) node.style.fontFamily = fontFamily;
+                    if (/^(?:[89]|[1-5]\d|6[0-4])px$|^(?:xx-small|x-small|small|medium|large|x-large|xx-large|smaller|larger)$/i.test(fontSize)) node.style.fontSize = fontSize;
+                    if (/^(underline|line-through|overline)(?:\s+(underline|line-through|overline))*$/.test(textDecoration)) node.style.textDecoration = textDecoration;
                 } else if (node.tagName === "FONT" && attr.name === "face") {
                     if (!/^(Arial|Georgia|Times New Roman|Verdana)$/i.test(attr.value)) node.removeAttribute(attr.name);
                 } else if (node.tagName === "FONT" && attr.name === "size") {
@@ -46,6 +53,37 @@
 
     function editorPlainText() {
         return contentInput.innerText.replace(/\u00a0/g, " ").trimEnd();
+    }
+
+    function colorInputValue(color) {
+        const channels = color.match(/[\d.]+/g);
+        if (!channels || channels.length < 3) return "#29273a";
+        return `#${channels.slice(0, 3).map((part) => Math.round(Number(part)).toString(16).padStart(2, "0")).join("")}`;
+    }
+
+    function rememberEditorSelection() {
+        const selection = window.getSelection();
+        if (!selection || !selection.rangeCount) return;
+        const range = selection.getRangeAt(0);
+        if (contentInput.contains(range.commonAncestorContainer)) {
+            savedSelection = range.cloneRange();
+        }
+    }
+
+    function restoreEditorSelection() {
+        contentInput.focus({ preventScroll: true });
+        if (!savedSelection || !contentInput.contains(savedSelection.commonAncestorContainer)) return;
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(savedSelection);
+    }
+
+    function applyFormat(command, value = null) {
+        restoreEditorSelection();
+        document.execCommand("styleWithCSS", false, true);
+        document.execCommand(command, false, value);
+        rememberEditorSelection();
+        contentInput.dispatchEvent(new Event("input", { bubbles: true }));
     }
 
     // Return the notebook currently selected in the saved notebook collection.
@@ -177,6 +215,8 @@
                 control.disabled = false;
             });
             contentInput.contentEditable = "true";
+            const inkPicker = toolbar?.querySelector('[data-command="foreColor"]');
+            if (inkPicker) inkPicker.value = colorInputValue(getComputedStyle(contentInput).color);
             status.textContent = "";
         } catch (error) {
             status.textContent = "Could not load notebooks. Refresh to try again.";
@@ -223,26 +263,27 @@
         }
         scheduleSave();
     });
+    document.addEventListener("selectionchange", rememberEditorSelection);
 
     if (toolbar) {
         toolbar.addEventListener("mousedown", (event) => {
+            rememberEditorSelection();
             if (event.target.closest("button")) event.preventDefault();
         });
         toolbar.addEventListener("click", (event) => {
             const button = event.target.closest("[data-command]");
-            if (!button || button.disabled) return;
-            const command = button.dataset.command;
-            const value = button.matches("input[type=color]") ? button.value : null;
-            contentInput.focus();
-            document.execCommand(command, false, value);
-            contentInput.dispatchEvent(new Event("input", { bubbles: true }));
+            if (!button || button.disabled || button.matches("input[type=color]")) return;
+            applyFormat(button.dataset.command);
         });
         toolbar.addEventListener("change", (event) => {
+            const color = event.target.closest('input[type="color"][data-command]');
+            if (color) {
+                applyFormat(color.dataset.command, color.value);
+                return;
+            }
             const select = event.target.closest("[data-format]");
             if (!select) return;
-            contentInput.focus();
-            document.execCommand(select.dataset.format, false, select.value);
-            contentInput.dispatchEvent(new Event("input", { bubbles: true }));
+            applyFormat(select.dataset.format, select.value);
         });
     }
 

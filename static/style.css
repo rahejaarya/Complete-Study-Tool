@@ -38,6 +38,17 @@
     --green-light: #e8f6ef;
     --pink-light: #f8eaf1;
     --yellow-light: #fff4d9;
+    --notebook-paper: #fffdf8;
+    --notebook-ink: #29273a;
+    --notebook-rule: rgba(92, 112, 151, .16);
+    --toolbar-hover: rgba(118, 101, 216, .1);
+}
+
+[data-theme^="dark"] {
+    --notebook-paper: var(--white);
+    --notebook-ink: var(--text);
+    --notebook-rule: rgba(190, 204, 230, .12);
+    --toolbar-hover: rgba(255, 255, 255, .08);
 }
 
 /* Theme selectors below override semantic tokens for each supported color palette. */
@@ -1732,8 +1743,9 @@ body {
     overflow-y: auto;
     padding: 22px 26px;
     border-radius: 0 0 14px 14px;
-    background-color: #fffdf8;
-    background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(122, 144, 180, .12) 32px);
+    background-color: var(--notebook-paper);
+    background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 31px, var(--notebook-rule) 32px);
+    color: var(--notebook-ink);
     font-family: Georgia, serif;
     font-size: 16px;
     line-height: 2;
@@ -1780,6 +1792,7 @@ body {
 
 .notebook-toolbar button { cursor: pointer; }
 .notebook-toolbar button:hover { background: var(--hover, #f1f4fa); }
+.notebook-toolbar button:hover { background: var(--toolbar-hover); }
 .notebook-toolbar select { cursor: pointer; }
 
 .notebook-color-control {
