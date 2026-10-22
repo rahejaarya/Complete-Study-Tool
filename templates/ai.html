@@ -226,6 +226,24 @@ function formatAIResponse(text) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 
+    // Convert common LaTex into readable school notation. The source text was
+    // escaped above, so only these controlled HTML tags are introduced here.
+    text = text.replace(/\$([^$\n]+)\$/g, "$1");
+    text = text.replace(/\\+\[|\\+\]|\\+\(|\\+\)/g, "");
+    text = text.replace(/\\+left|\\+right/g, "");
+    text = text.replace(/\\+quad/g, "&emsp;");
+    text = text.replace(/\\+,/g, " ");
+    text = text.replace(/\\+times/g, "×");
+    text = text.replace(/\\+div/g, "÷");
+    text = text.replace(/\\+frac\{([^{}]+)\}\{([^{}]+)\}/g,
+        '<span class="math-fraction"><span>$1</span><span>$2</span></span>');
+    text = text.replace(/\\+boxed\{([^{}]+)\}/g,
+        '<span class="math-boxed">$1</span>');
+    text = text.replace(/([A-Za-z0-9)])\^\{([^{}]+)\}/g, "$1<sup>$2</sup>");
+    text = text.replace(/([A-Za-z0-9)])\^(-?\d+)/g, "$1<sup>$2</sup>");
+    text = text.replace(/[{}]/g, "");
+    text = text.replace(/\\+/g, "");
+
 
     // Headings
     text = text.replace(
@@ -339,6 +357,62 @@ function addMessage(message, sender) {
     updateScrollBottomButton();
 
     return bubble;
+}
+
+function addGraphCard(graph) {
+    const card = document.createElement("section");
+    card.className = "ai-graph-card";
+    const heading = document.createElement("h3");
+    heading.textContent = `Graph: ${graph.expression}`;
+    const canvas = document.createElement("canvas");
+    canvas.width = 680;
+    canvas.height = 320;
+    canvas.setAttribute("role", "img");
+    canvas.setAttribute("aria-label", `Graph of ${graph.expression}`);
+    card.append(heading, canvas);
+    insertChatEntry(card);
+
+    const context = canvas.getContext("2d");
+    const pad = { left: 46, right: 18, top: 18, bottom: 34 };
+    const width = canvas.width - pad.left - pad.right;
+    const height = canvas.height - pad.top - pad.bottom;
+    const valid = graph.points.filter((point) => Array.isArray(point));
+    const yLimit = Math.max(1, ...valid.map(([, y]) => Math.abs(y)) * 1.1);
+    const xToCanvas = (x) => pad.left + ((x - graph.x_min) / (graph.x_max - graph.x_min)) * width;
+    const yToCanvas = (y) => pad.top + ((yLimit - y) / (2 * yLimit)) * height;
+    const colors = getComputedStyle(document.body);
+    context.fillStyle = colors.getPropertyValue("--white").trim() || "#fff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.strokeStyle = colors.getPropertyValue("--border").trim() || "#d7dce5";
+    for (let step = 0; step <= 4; step += 1) {
+        const x = pad.left + (width * step) / 4;
+        const y = pad.top + (height * step) / 4;
+        context.beginPath(); context.moveTo(x, pad.top); context.lineTo(x, pad.top + height); context.stroke();
+        context.beginPath(); context.moveTo(pad.left, y); context.lineTo(pad.left + width, y); context.stroke();
+    }
+    context.strokeStyle = colors.getPropertyValue("--muted").trim() || "#667085";
+    context.lineWidth = 1.5;
+    if (graph.x_min <= 0 && graph.x_max >= 0) {
+        const x = xToCanvas(0); context.beginPath(); context.moveTo(x, pad.top); context.lineTo(x, pad.top + height); context.stroke();
+    }
+    const y = yToCanvas(0); context.beginPath(); context.moveTo(pad.left, y); context.lineTo(pad.left + width, y); context.stroke();
+    context.strokeStyle = colors.getPropertyValue("--purple").trim() || "#6657d8";
+    context.lineWidth = 2.5;
+    let previous = null;
+    for (const point of graph.points) {
+        if (!Array.isArray(point) || Math.abs(point[1]) > yLimit * 1.2) { previous = null; continue; }
+        context.beginPath();
+        context.moveTo(xToCanvas((previous || point)[0]), yToCanvas((previous || point)[1]));
+        context.lineTo(xToCanvas(point[0]), yToCanvas(point[1]));
+        context.stroke();
+        previous = point;
+    }
+    context.fillStyle = colors.getPropertyValue("--muted").trim() || "#667085";
+    context.font = "12px system-ui";
+    context.fillText(`${graph.x_min}`, pad.left, canvas.height - 12);
+    context.fillText(`${graph.x_max}`, pad.left + width - 24, canvas.height - 12);
+    context.fillText(`${yLimit.toPrecision(3)}`, 4, pad.top + 10);
+    context.fillText(`${(-yLimit).toPrecision(3)}`, 4, pad.top + height);
 }
 
 function addMemoryWarning(message) {
@@ -823,6 +897,10 @@ async function sendMessage() {
                         );
                     }
 
+                }
+
+                else if (event.type === "graph" && event.graph) {
+                    addGraphCard(event.graph);
                 }
 
                 else if (event.type === "done") {

@@ -172,11 +172,12 @@ _MEMORY_WORTHY_RE = re.compile(
 )
 
 
-def _safe_numeric_expression(expression):
+def _safe_numeric_expression(expression, variables=None):
     """Evaluate a short, allow-listed numerical expression without eval()."""
     if not expression or len(expression) > 160:
         return None
 
+    variables = variables or {}
     try:
         tree = ast.parse(expression, mode="eval")
     except SyntaxError:
@@ -187,7 +188,11 @@ def _safe_numeric_expression(expression):
             if not isinstance(node.value, (int, float)) or isinstance(node.value, bool):
                 return None
         elif isinstance(node, ast.Name):
-            if node.id not in _SAFE_MATH_FUNCTIONS and node.id not in _SAFE_MATH_CONSTANTS:
+            if (
+                node.id not in _SAFE_MATH_FUNCTIONS
+                and node.id not in _SAFE_MATH_CONSTANTS
+                and node.id not in variables
+            ):
                 return None
         elif isinstance(node, ast.Call):
             if not isinstance(node.func, ast.Name) or node.func.id not in _SAFE_MATH_FUNCTIONS:
@@ -209,7 +214,7 @@ def _safe_numeric_expression(expression):
         if isinstance(node, ast.Constant):
             return node.value
         if isinstance(node, ast.Name):
-            return _SAFE_MATH_CONSTANTS[node.id]
+            return variables[node.id] if node.id in variables else _SAFE_MATH_CONSTANTS[node.id]
         if isinstance(node, ast.UnaryOp):
             operand = evaluate(node.operand)
             return operand if isinstance(node.op, ast.UAdd) else -operand
@@ -269,6 +274,56 @@ def calculate_math_or_science(message):
         if value is not None:
             return f"Verified calculation: {expression} = {value:.12g}."
     return ""
+
+
+def create_graph_data(message):
+    """Return safe point data for a one-variable Cartesian graph request."""
+    match = re.search(
+        r"\b(?:graph|plot|draw)(?:\s+(?:the|a))?(?:\s+(?:function|equation))?\s*"
+        r"(?:y\s*=\s*)?(.+)",
+        message,
+        re.IGNORECASE,
+    )
+    if not match:
+        return None
+
+    expression = match.group(1).strip().strip("`$ .?!")
+    range_match = re.search(
+        r"\s+from\s+(-?\d+(?:\.\d+)?)\s+to\s+(-?\d+(?:\.\d+)?)\s*$",
+        expression,
+        re.IGNORECASE,
+    )
+    x_min, x_max = -10.0, 10.0
+    if range_match:
+        x_min, x_max = map(float, range_match.groups())
+        expression = expression[:range_match.start()].strip()
+    expression = (
+        re.sub(r"^y\s*=\s*", "", expression, flags=re.IGNORECASE)
+        .translate(str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹", "0123456789"))
+        .replace("^", "**")
+    )
+    if (
+        "x" not in expression.lower()
+        or len(expression) > 120
+        or not re.fullmatch(r"[0-9a-z_+\-*/%().,\s]+", expression)
+        or not x_min < x_max
+        or x_max - x_min > 100
+    ):
+        return None
+
+    points = []
+    for index in range(241):
+        x_value = x_min + (x_max - x_min) * index / 240
+        y_value = _safe_numeric_expression(expression, {"x": x_value})
+        points.append([round(x_value, 8), round(y_value, 8)] if y_value is not None and abs(y_value) <= 1_000_000 else None)
+    if not any(point is not None for point in points):
+        return None
+    return {
+        "expression": f"y = {expression.replace('**', '^')}",
+        "x_min": x_min,
+        "x_max": x_max,
+        "points": points,
+    }
 
 
 def should_update_user_memory(message):
@@ -592,6 +647,9 @@ Match the length to the request:
   to answer correctly.
 - Expand only when the user asks for detail or the subject genuinely requires it.
 - Follow explicit requests for a particular length or format. Never add filler.
+
+Write school math in plain notation, such as x^2, x - 2, and (a + b) / c.
+Do not use LaTex commands or delimiters such as \\frac, \\[, \\(, or $...$.
 
 When a verified calculator result is provided below, use that exact result.
 Show the relevant formula or arithmetic in a student-friendly way, preserve

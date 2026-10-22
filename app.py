@@ -31,6 +31,7 @@ try:
     from static.ai import (  # type: ignore[reportMissingImports]
         ask_ai,
         bound_conversation_history,
+        create_graph_data,
         find_resources,
         search_educational_videos,
         search_web,
@@ -45,6 +46,7 @@ except ModuleNotFoundError:  # pragma: no cover
     from app.static.ai import (  # type: ignore
         ask_ai,
         bound_conversation_history,
+        create_graph_data,
         find_resources,
         search_educational_videos,
         search_web,
@@ -821,6 +823,7 @@ def ai_chat():
         write_json_atomically(chat_path, chat)
 
         lookup_requested = should_recommend_resources(message)
+        graph_data = create_graph_data(message)
         resources = (
             find_resources(
                 message,
@@ -883,6 +886,9 @@ def ai_chat():
                     "type": "resource",
                     "resource": resource
                 }) + "\n"
+
+            if graph_data:
+                yield json.dumps({"type": "graph", "graph": graph_data}) + "\n"
 
             full_response = ""
             for chunk in ask_ai(

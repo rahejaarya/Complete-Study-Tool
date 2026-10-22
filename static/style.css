@@ -1193,6 +1193,61 @@ body {
     background: var(--control-bg);
 }
 
+.chat-bubble sup {
+    margin-left: 1px;
+    font-size: 0.72em;
+    line-height: 0;
+}
+
+.math-fraction {
+    display: inline-grid;
+    vertical-align: middle;
+    margin: 0 0.16em;
+    text-align: center;
+    line-height: 1.15;
+}
+
+.math-fraction > span:first-child {
+    padding: 0 0.24em 0.08em;
+    border-bottom: 1px solid currentColor;
+}
+
+.math-fraction > span:last-child {
+    padding: 0.08em 0.24em 0;
+}
+
+.math-boxed {
+    display: inline-block;
+    padding: 0.08em 0.3em;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    font-weight: 650;
+}
+
+.ai-graph-card {
+    width: min(100%, 680px);
+    margin: 4px 0 10px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--white);
+    box-shadow: 0 3px 12px var(--card-shadow);
+}
+
+.ai-graph-card h3 {
+    margin: 0 0 10px;
+    color: var(--text);
+    font-size: 14px;
+}
+
+.ai-graph-card canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
 .ai-resource-card {
     display: flex;
     gap: 14px;
