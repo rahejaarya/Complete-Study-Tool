@@ -81,7 +81,10 @@
     function applyFormat(command, value = null) {
         restoreEditorSelection();
         document.execCommand("styleWithCSS", false, true);
-        document.execCommand(command, false, value);
+        const applied = document.execCommand(command, false, value);
+        if (command === "hiliteColor" && !applied) {
+            document.execCommand("backColor", false, value);
+        }
         rememberEditorSelection();
         contentInput.dispatchEvent(new Event("input", { bubbles: true }));
     }
@@ -271,6 +274,12 @@
             if (event.target.closest("button")) event.preventDefault();
         });
         toolbar.addEventListener("click", (event) => {
+            const highlight = event.target.closest("[data-highlight-light]");
+            if (highlight) {
+                const isDark = document.documentElement.dataset.theme?.startsWith("dark");
+                applyFormat("hiliteColor", isDark ? highlight.dataset.highlightDark : highlight.dataset.highlightLight);
+                return;
+            }
             const button = event.target.closest("[data-command]");
             if (!button || button.disabled || button.matches("input[type=color]")) return;
             applyFormat(button.dataset.command);
