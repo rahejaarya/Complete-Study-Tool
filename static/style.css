@@ -1067,11 +1067,11 @@ body {
 /* SEARCH */
 
 .search-box {
-    height: 52px;
+    min-height: 56px;
 
     margin-top: 24px;
 
-    padding: 0 17px;
+    padding: 9px 18px;
 
     display: flex;
     align-items: center;
@@ -1087,6 +1087,27 @@ body {
     color: var(--muted);
 
     font-size: 14px;
+}
+
+.search-box #ai-input {
+    width: 100%;
+    min-width: 0;
+    max-height: 72px;
+    flex: 1 1 auto;
+    resize: none;
+    overflow-y: hidden;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+    line-height: 24px;
+}
+
+.search-box #ai-input::placeholder {
+    color: var(--muted);
+    opacity: 1;
 }
 
 .search-box #ai-send {
@@ -1124,7 +1145,7 @@ body {
 }
 
 .dashboard.has-active-chat #chat-messages {
-    padding-bottom: 84px;
+    padding-bottom: 140px;
 }
 
 .dashboard.has-active-chat #ai-prompt-container {

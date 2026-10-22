@@ -106,21 +106,12 @@
                         ">
                             <span class="search-icon" aria-hidden="true">◌</span>
 
-                            <input 
+                            <textarea
                                 id="ai-input"
-                                type="text" 
+                                rows="1"
                                 placeholder="Ask me anything..."
-                                style="
-                                    border: none;
-                                    background: transparent;
-                                    width: 100%;
-                                    min-width: 0;
-                                    flex: 1;
-                                    outline: none;
-                                    font-size: 14px;
-                                    color: var(--text);
-                                "
-                            >
+                                aria-label="Message Cypher"
+                            ></textarea>
 
                             <button id="ai-send" type="button">
                                 Send
@@ -325,7 +316,9 @@ function insertChatEntry(entry, beforeElement = null) {
 }
 
 function scrollChatToLatest() {
-    chatMessages.lastElementChild?.scrollIntoView({ block: "end" });
+    requestAnimationFrame(() => {
+        chatMessages.lastElementChild?.scrollIntoView({ block: "end", behavior: "auto" });
+    });
 }
 
 function addMessage(message, sender) {
@@ -811,6 +804,7 @@ async function sendMessage() {
 
     // Clear input
     aiInput.value = "";
+    resizeAiInput();
 
 
     // Disable send button
@@ -952,7 +946,7 @@ aiInput.addEventListener(
     "keydown",
     function(event) {
 
-        if (event.key === "Enter") {
+        if (event.key === "Enter" && !event.shiftKey) {
 
             event.preventDefault();
 
@@ -962,6 +956,16 @@ aiInput.addEventListener(
 
     }
 );
+
+function resizeAiInput() {
+    aiInput.style.height = "auto";
+    const maxHeight = parseFloat(getComputedStyle(aiInput).lineHeight) * 3;
+    aiInput.style.height = `${Math.min(aiInput.scrollHeight, maxHeight)}px`;
+    aiInput.style.overflowY = aiInput.scrollHeight > maxHeight ? "auto" : "hidden";
+}
+
+aiInput.addEventListener("input", resizeAiInput);
+resizeAiInput();
 
 const aiChatsToggle =
     document.getElementById("ai-chats-toggle");
@@ -1039,13 +1043,14 @@ function positionCypherChat() {
 
     const mainRect = mainContent.getBoundingClientRect();
 
-    // Match the first script's width and centering behavior.
-    const chatWidth = Math.min(850, mainRect.width - 40);
-    const inputWidth = chatWidth;
+    // Keep the conversation readable, while giving the composer the full
+    // available line along the bottom of the main page area.
+    const chatWidth = Math.min(980, mainRect.width - 40);
+    const inputWidth = Math.max(0, mainRect.width - 48);
     const chatLeft = mainRect.left + (mainRect.width / 2);
 
     chatLayout.style.width = `${chatWidth}px`;
-    chatLayout.style.maxWidth = "850px";
+    chatLayout.style.maxWidth = "980px";
     chatLayout.style.boxSizing = "border-box";
 
     if (activeChat) {
@@ -1094,7 +1099,7 @@ function positionCypherChat() {
             transform: "none",
             width: "100%",
             minWidth: "0",
-            maxWidth: "850px",
+            maxWidth: "100%",
             boxSizing: "border-box",
             zIndex: "",
             margin: "0 auto"
@@ -1107,11 +1112,6 @@ function positionCypherChat() {
 
 positionCypherChat();
 window.addEventListener("resize", positionCypherChat);
-
-function scrollChatToLatest() {
-    chatMessages.lastElementChild?.scrollIntoView({ block: "end" });
-}
-
 
 /* Scroll-to-bottom button */
 const scrollBottomButton = document.createElement("button");
