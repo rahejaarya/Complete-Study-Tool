@@ -6505,6 +6505,16 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .main-content {
 }
 
 @media (max-width: 700px) {
+    /* Hide the AI page's left navigation on small screens. */
+    body.ai-page .sidebar {
+        display: none;
+    }
+
+    body.ai-page .main-content {
+        width: 100%;
+        margin-left: 0;
+    }
+
     .sidebar {
         position: absolute;
         top: 10px;
