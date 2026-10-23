@@ -124,5 +124,8 @@ class QuizGeneratorApiTests(unittest.TestCase):
                 content_type="multipart/form-data",
             )
 
-        self.assertEqual(response.status_code, 503)
-        self.assertIn("AI service is available", response.get_json()["error"])
+        self.assertEqual(response.status_code, 502)
+        self.assertEqual(
+            response.get_json()["error"],
+            "Could not create all requested questions.",
+        )

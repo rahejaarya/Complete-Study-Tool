@@ -1811,8 +1811,11 @@ def generate_quiz_api():
             title = urlparse(source_url).hostname or "Web source"
         else:
             return jsonify({"error": "Upload a file or enter a website or YouTube link."}), 400
-        from static.quiz_generator import generate_quiz
+        from static.quiz_generator import QuizGenerationError, generate_quiz
         return jsonify({"title": title, "questions": generate_quiz(source_text, count)})
+    except QuizGenerationError as error:
+        app.logger.warning("Quiz generation returned an incomplete deck: %s", error)
+        return jsonify({"error": str(error)}), 502
     except ValueError as error:
         return jsonify({"error": str(error)}), 400
     except requests.RequestException:
