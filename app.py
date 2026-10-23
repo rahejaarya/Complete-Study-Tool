@@ -275,8 +275,15 @@ def load_user_memory(user_dir):
     memory_path = user_dir / "memory"
     if not memory_path.exists():
         return {"explicit_facts": [], "facts": []}
-    with memory_path.open("r", encoding="utf-8") as memory_file:
-        memory = json.load(memory_file)
+    try:
+        with memory_path.open("r", encoding="utf-8") as memory_file:
+            memory = json.load(memory_file)
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        app.logger.warning(
+            "Ignoring unreadable AI memory file for this request: %s",
+            error,
+        )
+        return {"explicit_facts": [], "facts": []}
     facts = memory.get("facts") if isinstance(memory, dict) else None
     if not isinstance(facts, list):
         facts = []
