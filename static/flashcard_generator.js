@@ -50,6 +50,8 @@
     let currentDeckTitle = "";
     let currentDeckId = null;
     let editingDeckId = null;
+    const pendingGenerationKey = "flashcard-generation-job";
+    let activeGenerationJob = null;
 
     function showError(message = "") {
         errorMessage.textContent = message;
@@ -188,6 +190,43 @@
         showError();
     });
 
+    async function resumeGeneration(jobId) {
+        activeGenerationJob = jobId;
+        const submitButton = document.getElementById("flashcard-generate");
+        submitButton.disabled = true;
+        loading.hidden = false;
+        loadingText.textContent = "Your flashcards are being generated and saved… You can leave this page.";
+        while (activeGenerationJob === jobId) {
+            try {
+                const response = await fetch(`/api/flashcards/generate/${encodeURIComponent(jobId)}`, { headers: { Accept: "application/json" } });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "Could not check flashcard generation status.");
+                if (data.status === "completed" && data.deck) {
+                    localStorage.removeItem(pendingGenerationKey);
+                    activeGenerationJob = null;
+                    startDeck(data.deck.cards, data.deck.title, { persist: false, deckId: data.deck.id });
+                    saveButton.textContent = "Saved";
+                    saveStatus.textContent = "Generated and saved to My flashcards";
+                    return;
+                }
+                if (data.status === "failed") throw new Error(data.error || "Flashcards could not be generated. Please try again.");
+                loadingText.textContent = data.status === "queued"
+                    ? "Your flashcards are queued and will be saved automatically…"
+                    : "Reading your material and building your cards… You can leave this page.";
+            } catch (error) {
+                if (error.message !== "Failed to fetch" && !/network|fetch/i.test(error.message)) {
+                    localStorage.removeItem(pendingGenerationKey);
+                    activeGenerationJob = null;
+                    showError(error.message);
+                    loading.hidden = true;
+                    submitButton.disabled = false;
+                    return;
+                }
+            }
+            await new Promise((resolve) => window.setTimeout(resolve, 1800));
+        }
+    }
+
     uploadForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         showError();
@@ -209,15 +248,16 @@
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || "Flashcards could not be generated.");
-            if (!Array.isArray(data.flashcards) || !data.flashcards.length) {
-                throw new Error("No flashcards could be made from that file. Try another document.");
-            }
-            startDeck(data.flashcards.map((card) => ({ term: card.question, definition: card.answer })), file.name.replace(/\.[^.]+$/, ""));
+            if (!data.job_id) throw new Error("Flashcard generation could not be started.");
+            localStorage.setItem(pendingGenerationKey, data.job_id);
+            await resumeGeneration(data.job_id);
         } catch (error) {
             showError(error.message || "Flashcards could not be generated. Please try again.");
         } finally {
-            submitButton.disabled = false;
-            loading.hidden = true;
+            if (!activeGenerationJob) {
+                submitButton.disabled = false;
+                loading.hidden = true;
+            }
         }
     });
 
@@ -397,6 +437,9 @@
                 saveButton.textContent = "Saved";
             })
             .catch((error) => showError(error.message));
+    } else {
+        const pendingJobId = localStorage.getItem(pendingGenerationKey);
+        if (pendingJobId) resumeGeneration(pendingJobId);
     }
 
     document.addEventListener("keydown", (event) => {

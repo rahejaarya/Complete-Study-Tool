@@ -62,6 +62,7 @@ except ModuleNotFoundError:  # pragma: no cover
     )
 
 app = Flask(__name__)
+flashcard_generation_pool = ThreadPoolExecutor(max_workers=3, thread_name_prefix="flashcard-generation")
 
 
 class _HideAIChatAccessLogs(logging.Filter):
@@ -1664,7 +1665,7 @@ def add_flashcard_to_folder(deck_id, folder_id):
 @app.route("/api/flashcards/generate", methods=["POST"])
 @login_required
 def generate_flashcards_api():
-    """Create a flashcard deck from a supported study document."""
+    """Queue flashcard generation so it can finish after the browser leaves."""
     if request.content_length and request.content_length > 11 * 1024 * 1024:
         return jsonify({"error": "Files must be 10 MB or smaller."}), 413
 
@@ -1684,32 +1685,98 @@ def generate_flashcards_api():
         return jsonify({"error": "Choose between 1 and 50 flashcards."}), 400
 
     focus = request.form.get("focus", "mixed")
-    temporary_path = None
     try:
-        with tempfile.NamedTemporaryFile(suffix=extension, delete=False) as temporary_file:
-            temporary_path = Path(temporary_file.name)
-            uploaded_file.save(temporary_file)
-
-        from static.flashcard_generator import (
-            FlashcardGenerationError,
-            generate_flashcards,
+        job_id = uuid.uuid4().hex
+        user_id = session["user_id"]
+        flashcards_dir = user_save_directory(user_id) / "Flashcards"
+        jobs_dir = flashcards_dir / "generation_jobs"
+        jobs_dir.mkdir(parents=True, exist_ok=True)
+        source_path = jobs_dir / f"{job_id}{extension}"
+        uploaded_file.save(source_path)
+        job_path = jobs_dir / f"{job_id}.json"
+        write_json_atomically(job_path, {
+            "id": job_id,
+            "status": "queued",
+            "title": Path(filename).stem[:60] or "Generated flashcards",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+        flashcard_generation_pool.submit(
+            _run_flashcard_generation, user_id, job_id, source_path, job_path, count, focus
         )
-
-        cards = generate_flashcards(temporary_path, count=count, focus=focus)
-        return jsonify({"flashcards": cards})
-    except FlashcardGenerationError as error:
-        app.logger.warning("Flashcard generation returned no usable cards: %s", error)
-        return jsonify({"error": str(error)}), 502
+        return jsonify({"job_id": job_id}), 202
     except ValueError as error:
         return jsonify({"error": str(error)}), 400
     except Exception:
-        app.logger.exception("Flashcard generation failed")
-        return jsonify({
-            "error": "Flashcards could not be generated. Check that the AI service is available, then try again."
-        }), 503
+        app.logger.exception("Could not queue flashcard generation")
+        return jsonify({"error": "Could not start flashcard generation. Please try again."}), 500
+
+
+def _run_flashcard_generation(user_id, job_id, source_path, job_path, count, focus):
+    """Generate and save a deck independently of the browser request lifecycle."""
+    try:
+        with app.app_context():
+            with job_path.open("r", encoding="utf-8") as job_file:
+                job_metadata = json.load(job_file)
+            title = job_metadata.get("title") or "Generated flashcards"
+            write_json_atomically(job_path, {"id": job_id, "status": "generating", "title": title})
+            from static.flashcard_generator import generate_flashcards
+
+            generated = generate_flashcards(source_path, count=count, focus=focus)
+            cards = [
+                {"term": str(card.get("question", "")).strip(), "definition": str(card.get("answer", "")).strip()}
+                for card in generated
+                if isinstance(card, dict) and str(card.get("question", "")).strip() and str(card.get("answer", "")).strip()
+            ]
+            if not cards:
+                raise ValueError("No complete flashcards could be made from that file. Try another document.")
+
+            decks_path = user_save_directory(user_id) / "Flashcards" / "decks.json"
+            decks = []
+            if decks_path.is_file():
+                with decks_path.open("r", encoding="utf-8") as decks_file:
+                    existing = json.load(decks_file)
+                if isinstance(existing, dict) and isinstance(existing.get("decks"), list):
+                    decks = existing["decks"]
+            now = datetime.now(timezone.utc).isoformat()
+            deck = {
+                "id": uuid.uuid4().hex,
+                "title": title,
+                "cards": cards,
+                "created_at": now,
+                "updated_at": now,
+            }
+            decks.insert(0, deck)
+            write_json_atomically(decks_path, {"decks": decks[:500]})
+            write_json_atomically(job_path, {"id": job_id, "status": "completed", "deck": deck})
+    except Exception as error:
+        app.logger.exception("Flashcard generation job %s failed", job_id)
+        try:
+            write_json_atomically(job_path, {
+                "id": job_id,
+                "status": "failed",
+                "error": str(error) or "Flashcards could not be generated. Please try again.",
+            })
+        except OSError:
+            app.logger.exception("Could not save failed flashcard job %s", job_id)
     finally:
-        if temporary_path is not None:
-            temporary_path.unlink(missing_ok=True)
+        Path(source_path).unlink(missing_ok=True)
+
+
+@app.route("/api/flashcards/generate/<job_id>")
+@login_required
+def flashcard_generation_status_api(job_id):
+    if not re.fullmatch(r"[a-f0-9]{32}", job_id):
+        return jsonify({"error": "Flashcard generation job not found."}), 404
+    job_path = user_save_directory(session["user_id"]) / "Flashcards" / "generation_jobs" / f"{job_id}.json"
+    if not job_path.is_file():
+        return jsonify({"error": "Flashcard generation job not found."}), 404
+    try:
+        with job_path.open("r", encoding="utf-8") as job_file:
+            job = json.load(job_file)
+        return jsonify(job)
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not read flashcard generation job %s", job_id)
+        return jsonify({"error": "Could not check flashcard generation status."}), 500
 
 
 @app.route("/api/quizzes/generate", methods=["POST"])

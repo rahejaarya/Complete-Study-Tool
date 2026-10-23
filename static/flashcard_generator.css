@@ -337,3 +337,9 @@
     .flashcard-submit,
     .flashcard-action { animation: none; transition: none; }
 }
+.flashcard-brand-icon {
+    width: 23px;
+    height: 23px;
+    display: block;
+}
+

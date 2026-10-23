@@ -8720,6 +8720,11 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .logo-mark {
     color: var(--accent-strong);
 }
 
+.translator-launch-icon .flashcard-brand-icon {
+    width: 28px;
+    height: 28px;
+}
+
 .translator-launch-copy {
     display: grid;
     gap: 8px;

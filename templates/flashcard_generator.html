@@ -7,9 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flashcard Studio - Meridian</title>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
-    <script src="{{ url_for('static', filename='flashcard_generator.js', v='5') }}" defer></script>
+    <script src="{{ url_for('static', filename='flashcard_generator.js', v='6') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='flashcard_generator.css', v='5') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='flashcard_generator.css', v='6') }}">
 </head>
 <body>
     <div class="app">
@@ -32,7 +32,13 @@
         <main class="main-content flashcard-page">
             <header class="topbar">
                 <div class="welcome">
-                    <div class="welcome-icon" aria-hidden="true">▤</div>
+                    <div class="welcome-icon" aria-hidden="true">
+                        <svg class="flashcard-brand-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="7" y="3.5" width="12" height="15" rx="2" stroke="currentColor" stroke-width="1.8" />
+                            <path d="M15 20.5H5.5A1.5 1.5 0 0 1 4 19V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                            <path d="M10 8h6M10 11.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                        </svg>
+                    </div>
                     <div><h1>Flashcard Studio</h1><p>Make a deck, flip through it, and see what you know.</p></div>
                 </div>
                 <div class="flashcard-header-links"><a class="resource-browser-back" href="{{ url_for('flashcard_library') }}">My flashcards</a><a class="resource-browser-back" href="{{ url_for('resources') }}">← Study Resources</a></div>

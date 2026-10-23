@@ -187,7 +187,6 @@
                     <a class="translator-launch-card" href="{{ url_for('resources', library='1') }}">
                         <span class="translator-launch-icon" aria-hidden="true">{{ app_icon("folder") }}</span>
                         <span class="translator-launch-copy">
-                            <span class="resource-browser-eyebrow">YOUR LIBRARY</span>
                             <strong>Folders &amp; files</strong>
                             <span>Organize uploads, saved resources, and whiteboards in one place.</span>
                         </span>
@@ -196,16 +195,20 @@
                     <a class="translator-launch-card" href="{{ url_for('translator') }}">
                         <span class="translator-launch-icon" aria-hidden="true">文</span>
                         <span class="translator-launch-copy">
-                            <span class="resource-browser-eyebrow">STUDY TOOL</span>
                             <strong>Translate text</strong>
                             <span>Translate between 50 languages with automatic language detection.</span>
                         </span>
                         <span class="translator-launch-action">Open translator <span aria-hidden="true">→</span></span>
                     </a>
                     <a class="translator-launch-card" href="{{ url_for('flashcard_generator') }}">
-                        <span class="translator-launch-icon" aria-hidden="true">▤</span>
+                        <span class="translator-launch-icon" aria-hidden="true">
+                            <svg class="flashcard-brand-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="7" y="3.5" width="12" height="15" rx="2" stroke="currentColor" stroke-width="1.8" />
+                                <path d="M15 20.5H5.5A1.5 1.5 0 0 1 4 19V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                                <path d="M10 8h6M10 11.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                            </svg>
+                        </span>
                         <span class="translator-launch-copy">
-                            <span class="resource-browser-eyebrow">STUDY TOOL</span>
                             <strong>Flashcard generator</strong>
                             <span>Turn your notes into a deck you can review.</span>
                         </span>
@@ -214,7 +217,6 @@
                     <a class="translator-launch-card" href="{{ url_for('quiz_generator') }}">
                         <span class="translator-launch-icon" aria-hidden="true">✓</span>
                         <span class="translator-launch-copy">
-                            <span class="resource-browser-eyebrow">STUDY TOOL</span>
                             <strong>Quiz generator</strong>
                             <span>Create multiple-choice quizzes from files, websites, or YouTube videos.</span>
                         </span>
