@@ -170,8 +170,9 @@ class SavedFolderUploadTests(unittest.TestCase):
         self.assertTrue((folder_path / "folder.json").is_file())
         self.assertFalse((folder_path / saved_item["storage_id"]).exists())
 
-    def test_existing_notes_can_be_linked_to_folders_without_copying_them(self):
+    def test_existing_notes_and_whiteboards_link_without_copying(self):
         notebook_id = uuid.uuid4().hex
+        whiteboard_id = uuid.uuid4().hex
         notebook = {
             "id": notebook_id,
             "name": "Biology notes",
@@ -179,9 +180,19 @@ class SavedFolderUploadTests(unittest.TestCase):
             "whiteboard": {"strokes": []},
             "kind": "notes",
         }
+        whiteboard = {
+            "id": whiteboard_id,
+            "name": "Cell diagram",
+            "content": "",
+            "whiteboard": {"strokes": [{"points": [[1, 2]]}]},
+            "kind": "whiteboard",
+        }
         save_notebook = self.client.put(
             "/api/notebooks",
-            json={"notebooks": [notebook], "active_id": notebook_id},
+            json={
+                "notebooks": [notebook, whiteboard],
+                "active_id": notebook_id,
+            },
         )
         self.assertEqual(save_notebook.status_code, 200)
 
@@ -195,26 +206,44 @@ class SavedFolderUploadTests(unittest.TestCase):
         self.assertEqual(item["notebook_id"], notebook_id)
         self.assertEqual(item["file_type"], "notes")
 
+        whiteboard_response = self.client.post(
+            f"/api/saved-folders/{self.folder_id}/notebooks",
+            json={"notebook_id": whiteboard_id},
+        )
+        self.assertEqual(whiteboard_response.status_code, 201)
+        self.assertEqual(
+            whiteboard_response.get_json()["item"]["file_type"],
+            "whiteboard",
+        )
+
         duplicate_response = self.client.post(
             f"/api/saved-folders/{self.folder_id}/notebooks",
             json={"notebook_id": notebook_id},
         )
         self.assertEqual(duplicate_response.status_code, 200)
         folder = self.client.get("/api/saved-folders").get_json()[0]
-        self.assertEqual(len(folder["items"]), 1)
-
-        stored_notebooks = self.client.get("/api/notebooks").get_json()
-        self.assertEqual(stored_notebooks["notebooks"], [notebook])
+        self.assertEqual(len(folder["items"]), 2)
+        self.assertEqual(self.client.get("/api/notebooks").get_json()["notebooks"], [
+            notebook,
+            whiteboard,
+        ])
 
         renamed_notebook = {**notebook, "name": "Updated biology notes"}
+        renamed_whiteboard = {**whiteboard, "name": "Updated cell diagram"}
         update_notebook = self.client.put(
             "/api/notebooks",
-            json={"notebooks": [renamed_notebook], "active_id": notebook_id},
+            json={
+                "notebooks": [renamed_notebook, renamed_whiteboard],
+                "active_id": notebook_id,
+            },
         )
         self.assertEqual(update_notebook.status_code, 200)
         self.assertEqual(
-            self.client.get("/api/saved-folders").get_json()[0]["items"][0]["notebook_id"],
-            notebook_id,
+            {
+                item["notebook_id"]
+                for item in self.client.get("/api/saved-folders").get_json()[0]["items"]
+            },
+            {notebook_id, whiteboard_id},
         )
 
     def test_library_page_has_study_resources_back_link_and_no_whiteboard_launch_card(self):
