@@ -110,7 +110,7 @@
         if (routeLayer || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         const link = event.target.closest?.("a[href]");
         if (!link || link.hasAttribute("download") || !isInternalUrl(link.href)) return;
-        if (!window.studyToolHasActiveAudio?.()) return;
+        if (!window.studyToolHasActiveAudio?.() && !window.studyToolHasActiveTimer?.()) return;
         event.preventDefault();
         routeTo(link.href);
     }, true);

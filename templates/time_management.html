@@ -8,6 +8,7 @@
     <title>Time Management &amp; Schedule | Meridian</title>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
     <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='persistent_audio_navigation.js') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
     <style>
@@ -957,6 +958,7 @@
             let sessionPhase = "work";
             let remainingSeconds = selectedPreset.work * 60;
             let timerInterval;
+            window.studyToolHasActiveTimer = () => Boolean(timerInterval);
 
             // Format the remaining timer duration as a zero-padded clock value.
             function formatTime(totalSeconds) {
