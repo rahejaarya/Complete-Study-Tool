@@ -3,12 +3,21 @@
     {
       "id": "0a5537b4-a044-4d90-9154-db16d88afc40",
       "name": "Untitled note",
-      "content": "<br>",
+      "content": "<span style=\"color: rgb(197, 61, 61);\"><br></span>",
       "whiteboard": {
         "strokes": []
       },
       "kind": "notes"
+    },
+    {
+      "id": "16dc3066-520e-40b3-aacb-9914122176ed",
+      "name": "Untitled whiteboard",
+      "content": "",
+      "whiteboard": {
+        "strokes": []
+      },
+      "kind": "whiteboard"
     }
   ],
-  "active_id": "0a5537b4-a044-4d90-9154-db16d88afc40"
+  "active_id": "16dc3066-520e-40b3-aacb-9914122176ed"
 }

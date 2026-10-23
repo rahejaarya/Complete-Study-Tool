@@ -7,6 +7,7 @@
     const boardCanvas = document.getElementById("workspace-board");
     const boardContext = boardCanvas?.getContext("2d");
     const titleInput = document.getElementById("workspace-document-title");
+    const themeToggle = document.getElementById("workspace-theme-toggle");
     const workspace = document.getElementById("notes-workspace");
     const library = document.getElementById("workspace-library");
     const libraryEmpty = document.getElementById("workspace-library-empty");
@@ -159,14 +160,15 @@
 
     function makeFilePreview(file) {
         const page = document.createElement("div");
-        page.className = `workspace-card-page${file.kind === "whiteboard" ? " is-whiteboard" : ""}`;
+        const isDark = file.theme === "dark";
+        page.className = `workspace-card-page${file.kind === "whiteboard" ? " is-whiteboard" : ""}${isDark ? " is-dark" : ""}`;
         if (file.kind === "whiteboard") {
             const canvas = document.createElement("canvas");
             canvas.className = "workspace-card-board-preview";
             canvas.width = 240;
             canvas.height = 310;
             const context = canvas.getContext("2d");
-            context.fillStyle = "#fff";
+            context.fillStyle = isDark ? "#222733" : "#fff";
             context.fillRect(0, 0, canvas.width, canvas.height);
             (file.whiteboard?.strokes || []).forEach((stroke) => {
                 if (stroke.type === "text") {
@@ -180,20 +182,21 @@
                 context.beginPath();
                 context.moveTo(points[0].x * canvas.width, points[0].y * canvas.height);
                 points.slice(1).forEach((point) => context.lineTo(point.x * canvas.width, point.y * canvas.height));
-                context.strokeStyle = stroke.tool === "eraser" ? "#fff" : (stroke.color || "#20242d");
+                context.globalCompositeOperation = stroke.tool === "eraser" ? "destination-out" : "source-over";
+                context.strokeStyle = stroke.color || "#20242d";
                 context.lineWidth = Math.max(1, (Number(stroke.size) || 5) * .38 * (stroke.tool === "marker" ? 2.4 : 1));
                 context.lineCap = "round";
                 context.lineJoin = "round";
                 context.globalAlpha = stroke.tool === "highlighter" ? .24 : 1;
                 context.stroke();
                 context.globalAlpha = 1;
+                context.globalCompositeOperation = "source-over";
             });
             page.append(canvas);
         } else {
             const content = document.createElement("div");
             content.className = "workspace-card-page-text";
-            const parsed = new DOMParser().parseFromString(String(file.content || ""), "text/html");
-            content.textContent = parsed.body.textContent.trim().slice(0, 650);
+            content.innerHTML = cleanHtml(String(file.content || ""));
             page.append(content);
         }
         return page;
@@ -274,6 +277,7 @@
         notePanel.hidden = file.kind !== "notes";
         boardPanel.hidden = file.kind !== "whiteboard";
         titleInput.value = file.name;
+        applyFileTheme(file);
         titleInput.placeholder = file.kind === "notes" ? "Untitled note" : "Untitled whiteboard";
         if (file.kind === "notes") {
             const content = String(file.content || "");
@@ -295,6 +299,25 @@
         library.hidden = false;
         renderFiles();
     }
+
+    function applyFileTheme(file) {
+        const dark = file?.theme === "dark";
+        documentView.classList.toggle("is-dark", dark);
+        themeToggle.textContent = dark ? "Light mode" : "Dark mode";
+        themeToggle.setAttribute("aria-pressed", String(dark));
+        if (file?.kind === "whiteboard") requestAnimationFrame(() => {
+            if (!boardPanel.hidden) drawBoard();
+        });
+    }
+
+    themeToggle.addEventListener("click", () => {
+        const file = currentFile();
+        if (!file) return;
+        file.theme = file.theme === "dark" ? "light" : "dark";
+        applyFileTheme(file);
+        renderFiles();
+        scheduleSave();
+    });
 
     function selectKind(kind) {
         activeKind = kind;
@@ -381,7 +404,7 @@
         const width = boardCanvas.clientWidth;
         const height = boardCanvas.clientHeight;
         boardContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-        boardContext.fillStyle = "#ffffff";
+        boardContext.fillStyle = currentFile()?.theme === "dark" ? "#222733" : "#ffffff";
         boardContext.fillRect(0, 0, width, height);
         currentStrokes().forEach((stroke) => {
             if (stroke.type === "text") {
