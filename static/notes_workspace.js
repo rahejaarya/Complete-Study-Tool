@@ -175,6 +175,19 @@
             context.fillStyle = isDark ? darkPaperColor() : "#fff";
             context.fillRect(0, 0, canvas.width, canvas.height);
             (file.whiteboard?.strokes || []).forEach((stroke) => {
+                if (stroke.type === "image" && stroke.data) {
+                    const image = new Image();
+                    image.onload = () => {
+                        if (canvas.isConnected) context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                    };
+                    image.src = stroke.data;
+                    return;
+                }
+                if (stroke.type === "fill") {
+                    context.fillStyle = stroke.color || "#20242d";
+                    context.fillRect(0, 0, canvas.width, canvas.height);
+                    return;
+                }
                 if (stroke.type === "text") {
                     context.fillStyle = stroke.color || "#20242d";
                     context.font = `${Math.max(8, (Number(stroke.size) || 20) * .38)}px Arial`;
@@ -415,6 +428,24 @@
         boardContext.fillStyle = currentFile()?.theme === "dark" ? darkPaperColor() : "#ffffff";
         boardContext.fillRect(0, 0, width, height);
         currentStrokes().forEach((stroke) => {
+            if (stroke.type === "image" && stroke.data) {
+                const image = new Image();
+                image.onload = () => {
+                    if (currentFile()?.id === activeFileId) {
+                        boardContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+                        boardContext.drawImage(image, 0, 0, width, height);
+                    }
+                };
+                image.src = stroke.data;
+                return;
+            }
+            if (stroke.type === "fill") {
+                boardContext.globalCompositeOperation = "source-over";
+                boardContext.globalAlpha = 1;
+                boardContext.fillStyle = stroke.color || "#20242d";
+                boardContext.fillRect(0, 0, width, height);
+                return;
+            }
             if (stroke.type === "text") {
                 boardContext.globalCompositeOperation = "source-over";
                 boardContext.fillStyle = stroke.color || "#20242d";
@@ -476,6 +507,54 @@
         drawBoard();
         scheduleSave();
         updateHistoryButtons();
+    }
+
+    function fillBoardRegion(point) {
+        const width = boardCanvas.clientWidth;
+        const height = boardCanvas.clientHeight;
+        if (!width || !height) return;
+        const sourceCanvas = document.createElement("canvas");
+        sourceCanvas.width = width;
+        sourceCanvas.height = height;
+        const sourceContext = sourceCanvas.getContext("2d", { willReadFrequently: true });
+        sourceContext.drawImage(boardCanvas, 0, 0, width, height);
+        const image = sourceContext.getImageData(0, 0, width, height);
+        const x = Math.max(0, Math.min(width - 1, Math.floor(point.x * width)));
+        const y = Math.max(0, Math.min(height - 1, Math.floor(point.y * height)));
+        const pixels = image.data;
+        const start = (y * width + x) * 4;
+        const target = [pixels[start], pixels[start + 1], pixels[start + 2], pixels[start + 3]];
+        const colorCanvas = document.createElement("canvas");
+        colorCanvas.width = colorCanvas.height = 1;
+        const colorContext = colorCanvas.getContext("2d");
+        colorContext.fillStyle = activeColor;
+        colorContext.fillRect(0, 0, 1, 1);
+        const replacement = [...colorContext.getImageData(0, 0, 1, 1).data];
+        if (target.every((value, index) => value === replacement[index])) return;
+        const matches = (index) => Math.abs(pixels[index] - target[0]) < 20
+            && Math.abs(pixels[index + 1] - target[1]) < 20
+            && Math.abs(pixels[index + 2] - target[2]) < 20
+            && Math.abs(pixels[index + 3] - target[3]) < 20;
+        const stack = [x, y];
+        const seen = new Uint8Array(width * height);
+        while (stack.length) {
+            const fy = stack.pop();
+            const fx = stack.pop();
+            if (fx < 0 || fy < 0 || fx >= width || fy >= height) continue;
+            const position = fy * width + fx;
+            if (seen[position]) continue;
+            seen[position] = 1;
+            const offset = position * 4;
+            if (!matches(offset)) continue;
+            pixels[offset] = replacement[0];
+            pixels[offset + 1] = replacement[1];
+            pixels[offset + 2] = replacement[2];
+            pixels[offset + 3] = replacement[3];
+            stack.push(fx - 1, fy, fx + 1, fy, fx, fy - 1, fx, fy + 1);
+        }
+        sourceContext.putImageData(image, 0, 0);
+        currentStrokes().push({ type: "image", data: sourceCanvas.toDataURL("image/png") });
+        saveBoardChange();
     }
 
     document.querySelectorAll("[data-workspace-kind]").forEach((button) => {
@@ -587,6 +666,14 @@
 
     boardCanvas.addEventListener("pointerdown", (event) => {
         if (!currentFile()) return;
+        if (activeTool === "bucket") {
+            drawBoard();
+            const point = boardPoint(event);
+            const strokeCount = currentStrokes().length;
+            fillBoardRegion(point);
+            if (currentStrokes().length > strokeCount) pushHistory();
+            return;
+        }
         if (activeTool === "text") {
             const text = window.prompt("Text to add to the board:");
             if (text) {
