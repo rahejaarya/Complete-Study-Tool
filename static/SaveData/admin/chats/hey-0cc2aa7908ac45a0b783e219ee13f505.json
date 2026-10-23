@@ -1,0 +1,18 @@
+{
+  "id": "0cc2aa7908ac45a0b783e219ee13f505",
+  "title": "hey",
+  "created_at": "2026-10-23T02:25:13.672099+00:00",
+  "updated_at": "2026-10-23T02:25:13.674455+00:00",
+  "summary": "",
+  "summary_through": 0,
+  "messages": [
+    {
+      "role": "user",
+      "content": "hey"
+    },
+    {
+      "role": "assistant",
+      "content": "Hey! What would you like help studying today?"
+    }
+  ]
+}

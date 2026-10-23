@@ -58,7 +58,22 @@
             preview.append(image, play);
             card.append(preview);
         }
-        card.append(heading, metadata, description);
+        const actions = document.createElement("div");
+        actions.className = "resource-browser-result-actions";
+        const saveButton = document.createElement("button");
+        saveButton.type = "button";
+        saveButton.className = "resource-browser-save-button";
+        saveButton.textContent = "Add to folder";
+        saveButton.addEventListener("click", () => {
+            if (window.MeridianSavedFolderPicker) {
+                void window.MeridianSavedFolderPicker.save(resource, type, saveButton);
+            } else {
+                console.error("Folder saving is unavailable on this page.");
+                saveButton.textContent = "Saving unavailable";
+            }
+        });
+        actions.append(saveButton);
+        card.append(heading, metadata, description, actions);
         return card;
     }
 
@@ -92,12 +107,18 @@
         try {
             const response = await fetch("/api/resource-browser/search", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                credentials: "same-origin",
                 body: JSON.stringify({ query }),
                 signal: activeRequest.signal
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || "The search could not be completed.");
+            const data = await window.MeridianApi.read(
+                response,
+                "The search could not be completed."
+            );
 
             const searchedTopic = data.query;
             topicHeading.textContent = searchedTopic;
@@ -131,7 +152,11 @@
             activeSummaryRequest = new AbortController();
             fetch("/api/resource-browser/summary", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                credentials: "same-origin",
                 body: JSON.stringify({
                     query: searchedTopic,
                     web_results: data.web_results || [],
@@ -140,8 +165,10 @@
                 signal: activeSummaryRequest.signal
             })
                 .then(async (summaryResponse) => {
-                    const summaryData = await summaryResponse.json();
-                    if (!summaryResponse.ok) throw new Error(summaryData.error || "Overview unavailable.");
+                    const summaryData = await window.MeridianApi.read(
+                        summaryResponse,
+                        "Overview unavailable."
+                    );
                     if (topicHeading.textContent === searchedTopic) summary.textContent = summaryData.summary;
                 })
                 .catch((summaryError) => {
@@ -173,6 +200,7 @@
         void searchTopic(query);
     });
 
-    const initialQuery = new URLSearchParams(window.location.search).get("q");
+    const params = new URLSearchParams(window.location.search);
+    const initialQuery = params.get("q") || params.get("query");
     if (initialQuery) void searchTopic(initialQuery.slice(0, 180));
 })();

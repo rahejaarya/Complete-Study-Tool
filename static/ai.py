@@ -8,11 +8,11 @@ from datetime import date
 import ollama
 from ddgs import DDGS
 
-MODEL = "qwen3.5:9b"
+MODEL = "qwen3.5:2b"
 
-# Keep Cypher responsive on a 16 GB laptop while retaining enough context for a
-# useful multi-turn study conversation.
-CHAT_OPTIONS = {"temperature": 0.2, "num_predict": 3200, "num_ctx": 12288}
+# Use the locally installed 2B model for a quick first response while preserving
+# enough context for useful multi-turn study conversations.
+CHAT_OPTIONS = {"temperature": 0.2, "num_predict": 1800, "num_ctx": 12288}
 
 _GREETING_REPLIES = {
     "hi": "Hi! What would you like help studying today?",
@@ -116,6 +116,21 @@ _CURRENT_INFO_REQUEST_RE = re.compile(
     r"this\s+year|up[\s-]to[\s-]date|breaking\s+news)\b",
     re.IGNORECASE,
 )
+_FACT_CHECK_REQUEST_RE = re.compile(
+    r"\b(?:is|are|was|were|does|do|did|has|have|had)\b.{0,100}"
+    r"\b(?:official|real|legit(?:imate)?|exist(?:s|ed)?|a product|"
+    r"a brand|made by|owned by|released by|sold by|manufactured by)\b|"
+    r"\b(?:official|real|legit(?:imate)?|exist(?:s|ed)?|product|brand)\b"
+    r".{0,100}\b(?:is|are|was|were|does|do|did|has|have|had)\b",
+    re.IGNORECASE | re.DOTALL,
+)
+_INFORMATION_REQUEST_RE = re.compile(
+    r"^\s*(?:what|why|when|where|who|whom|whose|which|how|is|are|was|were|"
+    r"do|does|did|has|have|had|can|could|would|will|should)\b|"
+    r"\b(?:explain|define|describe|compare|contrast|summarize|tell\s+me\s+"
+    r"about|help\s+me\s+understand|teach\s+me)\b|\?",
+    re.IGNORECASE,
+)
 _VIDEO_REQUEST_RE = re.compile(r"\bvideos?\b", re.IGNORECASE)
 _WEB_SEARCH_PREFIX_RE = re.compile(
     r"^\s*(?:(?:please|can\s+you|could\s+you|would\s+you)\s+)?"
@@ -144,7 +159,8 @@ _RESOURCE_PREFERENCE_RE = re.compile(
 )
 _CONTEXTUAL_FOLLOWUP_RE = re.compile(
     r"\b(?:it|that|those|them|this|these|more|another|continue|"
-    r"earlier|above|same|related|topic)\b",
+    r"earlier|above|same|related|topic)\b|"
+    r"^\s*(?:why|how|what|when|where|who|which)[?.!\s]*$",
     re.IGNORECASE,
 )
 
@@ -364,13 +380,15 @@ def conversational_reply(message):
     return None
 
 def should_search_web(message, conversation_history=None, conversation_summary=""):
-    """Use fast, predictable rules so ordinary questions reach Cypher immediately."""
+    """Research factual questions and information requests before answering."""
     if conversational_reply(message) or calculate_math_or_science(message):
         return False
     return bool(
         _WEB_SEARCH_REQUEST_RE.search(message)
         or _CURRENT_INFO_REQUEST_RE.search(message)
         or _RESOURCE_REQUEST_RE.search(message)
+        or _FACT_CHECK_REQUEST_RE.search(message)
+        or _INFORMATION_REQUEST_RE.search(message)
     )
 
 def should_recommend_resources(message):
@@ -602,15 +620,7 @@ def ask_ai(
         )
         search_query = _resource_search_query(search_query)
 
-        print(f"[AI WEB] Searching: {search_query}", flush=True)
-
-
         fresh_web_context = research_web(search_query, max_pages=1)
-
-        print(
-            f"[AI WEB] Retrieved {len(fresh_web_context)} characters",
-            flush=True,
-        )
 
         if fresh_web_context.strip():
             if web_context.strip():
@@ -628,11 +638,6 @@ def ask_ai(
                 "Tell the user that web verification failed and ask whether "
                 "they would like to try again."
             )
-
-        print(
-            f"[AI WEB] Research returned {len(web_context)} characters",
-            flush=True,
-        )
 
     system_prompt = """You are Cypher, Meridian's helpful AI study assistant.
 
@@ -1073,7 +1078,7 @@ def find_resources(query, conversation_history=None, conversation_summary=""):
         return []
 
     search_query = _search_query_with_history(
-        user_input,
+        query,
         conversation_history,
         conversation_summary,
     )
@@ -1084,7 +1089,7 @@ def find_resources(query, conversation_history=None, conversation_summary=""):
         re.search(
             r"\b(?:latest|newest|most recent|last)\b.{0,70}\bepisodes?\b"
             r"|\bepisodes?\b.{0,70}\b(?:latest|newest|most recent)\b",
-            user_input,
+            query,
             re.IGNORECASE,
         )
     )

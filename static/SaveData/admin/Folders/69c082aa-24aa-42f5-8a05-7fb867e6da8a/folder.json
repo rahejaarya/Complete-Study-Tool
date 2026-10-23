@@ -1,0 +1,34 @@
+{
+  "id": "69c082aa-24aa-42f5-8a05-7fb867e6da8a",
+  "name": "sdfdsf",
+  "items": [
+    {
+      "kind": "file",
+      "storage_id": "45000cfe75e348d9b13833781c8dbaa6",
+      "file_id": "45000cfe75e348d9b13833781c8dbaa6",
+      "title": "Screenshot_2026-10-17_at_5.29.54_PM.png",
+      "original_filename": "Screenshot_2026-10-17_at_5.29.54_PM.png",
+      "filename": "45000cfe75e348d9b13833781c8dbaa6.png",
+      "file_type": "image/png",
+      "uploaded_at": "2026-10-23T00:55:37+00:00",
+      "custom_title": "test"
+    },
+    {
+      "kind": "web",
+      "storage_id": "bcb6263d1c224bfb9c5948c63b91044d",
+      "title": "AFSAEF - Education Resources",
+      "filename": "AFSAEF - Education Resources",
+      "url": "https://afsaef.org/Resources/",
+      "file_type": "web link",
+      "uploaded_at": "2026-10-23T01:03:32+00:00"
+    },
+    {
+      "kind": "whiteboard",
+      "notebook_id": "bf70f2dbeaa945798c45ac36fb7c5738",
+      "title": "Untitled whiteboard",
+      "file_type": "whiteboard",
+      "uploaded_at": "2026-10-23T02:47:18+00:00",
+      "display_size": "medium"
+    }
+  ]
+}

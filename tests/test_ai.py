@@ -721,6 +721,37 @@ class StudyAssistantApiTests(unittest.TestCase):
         find_resources.assert_not_called()
         self.assertEqual(len(list((Path(self.temp_dir.name) / "admin" / "chats").glob("*.json"))), 1)
 
+    def test_chat_endpoint_handles_requested_web_search(self):
+        search_result = {
+            "title": "Climate research overview",
+            "url": "https://example.com/climate",
+            "description": "An overview of recent climate research.",
+        }
+
+        with patch(
+            "static.ai.search_web",
+            return_value=[search_result],
+        ) as search_web, patch(
+            "app.ask_ai",
+            return_value=iter(["Here is a concise overview."]),
+        ):
+            response = self.client.post(
+                "/api/ai",
+                json={"message": "Search the web for recent climate research."},
+            )
+            events = [
+                json.loads(line)
+                for line in response.get_data(as_text=True).splitlines()
+            ]
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [event["type"] for event in events],
+            ["chat", "resource", "token", "done"],
+        )
+        self.assertEqual(events[1]["resource"]["title"], search_result["title"])
+        search_web.assert_called_once_with("recent climate research")
+
     def test_first_message_creates_a_named_chat_and_saves_the_assistant_reply(self):
         with patch("app.should_recommend_resources", return_value=False), patch(
             "app.ask_ai",

@@ -1,0 +1,84 @@
+<article class="tool-card" id="translator-tool">
+                                    <div class="tool-card-header">
+                                        <div>
+                                            <h3>Translator</h3>
+                                            <p>Translate text between languages.</p>
+                                        </div>
+                                    </div>
+
+                                    {% set translator_languages = [
+                                        ('en', 'English'), ('es', 'Spanish'), ('fr', 'French'), ('de', 'German'),
+                                        ('it', 'Italian'), ('pt', 'Portuguese'), ('zh', 'Chinese'), ('ja', 'Japanese'),
+                                        ('ko', 'Korean'), ('ar', 'Arabic'), ('hi', 'Hindi'), ('ru', 'Russian'),
+                                        ('bn', 'Bengali'), ('pa', 'Punjabi'), ('ur', 'Urdu'), ('vi', 'Vietnamese'),
+                                        ('th', 'Thai'), ('id', 'Indonesian'), ('ms', 'Malay'), ('tl', 'Filipino'),
+                                        ('tr', 'Turkish'), ('nl', 'Dutch'), ('pl', 'Polish'), ('uk', 'Ukrainian'),
+                                        ('cs', 'Czech'), ('el', 'Greek'), ('he', 'Hebrew'), ('fa', 'Persian'),
+                                        ('sw', 'Swahili'), ('ro', 'Romanian'), ('hu', 'Hungarian'), ('sv', 'Swedish'),
+                                        ('da', 'Danish'), ('no', 'Norwegian'), ('fi', 'Finnish'), ('bg', 'Bulgarian'),
+                                        ('hr', 'Croatian'), ('sk', 'Slovak'), ('sr', 'Serbian'), ('ta', 'Tamil'),
+                                        ('te', 'Telugu'), ('mr', 'Marathi'), ('gu', 'Gujarati'), ('kn', 'Kannada'),
+                                        ('ml', 'Malayalam'), ('ne', 'Nepali'), ('si', 'Sinhala'), ('my', 'Burmese'),
+                                        ('km', 'Khmer'), ('lo', 'Lao')
+                                    ] %}
+                                    <form id="translator-form" class="translator-form">
+                                        <div class="translator-panels">
+                                            <div class="translator-panel">
+                                                <label for="translator-source-language">From</label>
+                                                <select id="translator-source-language">
+                                                    <option value="auto">Detect language</option>
+                                                    {% for code, name in translator_languages %}
+                                                    <option value="{{ code }}">{{ name }}</option>
+                                                    {% endfor %}
+                                                </select>
+
+                                                <textarea id="translator-input" rows="7"
+                                                        maxlength="5000"
+                                                        placeholder="Enter text..."
+                                                        aria-label="Text to translate"></textarea>
+
+                                                <div class="translator-panel-footer">
+                                                    <span id="translator-character-count">0 / 5000</span>
+                                                    <button type="button" id="translator-clear"
+                                                            class="tool-text-button">Clear</button>
+                                                </div>
+                                            </div>
+
+                                            <div class="translator-panel">
+                                                <label for="translator-target-language">To</label>
+                                                <select id="translator-target-language">
+                                                    {% for code, name in translator_languages %}
+                                                    <option value="{{ code }}"{% if code == 'es' %} selected{% endif %}>{{ name }}</option>
+                                                    {% endfor %}
+                                                </select>
+
+                                                <textarea id="translator-output" rows="7"
+                                                        maxlength="5000"
+                                                        placeholder="Translation appears here..."
+                                                        aria-label="Translated text"
+                                                        readonly></textarea>
+
+                                                <div class="translator-panel-footer">
+                                                    <span id="translator-status" role="status"
+                                                        aria-live="polite"></span>
+                                                    <button type="button" id="translator-copy"
+                                                            class="tool-text-button">Copy</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="translator-bottom-row">
+                                            <button type="button" id="translator-swap"
+                                                    class="translator-swap"
+                                                    aria-label="Swap source and target languages">
+                                                <svg viewBox="0 0 24 24" aria-hidden="true"
+                                                     focusable="false">
+                                                    <path d="M7 7h13m0 0-4-4m4 4-4 4M17 17H4m0 0 4 4m-4-4 4-4"/>
+                                                </svg>
+                                                <span>Swap languages</span>
+                                            </button>
+                                            <span id="translator-error" class="translator-error"
+                                                role="alert" hidden></span>
+                                        </div>
+                                    </form>
+                                </article>

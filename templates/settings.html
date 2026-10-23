@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% include "_favicon.html" %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Meridian</title>
@@ -40,7 +41,7 @@
                             {% if profile_picture_url %}
                             <img src="{{ profile_picture_url }}" alt="">
                             {% else %}
-                            <span>{{ session.get("username", "A")[0]|upper }}</span>
+                            <img src="{{ url_for('static', filename='default-profile.svg') }}" alt="">
                             {% endif %}
                             <span class="profile-picture-edit-indicator" aria-hidden="true">
                                 <svg viewBox="0 0 20 20" fill="none" focusable="false">
@@ -51,6 +52,12 @@
                         </label>
                     </form>
                 </div>
+                {% if profile_picture_url %}
+                <form method="POST" action="{{ url_for('settings') }}" class="profile-picture-remove-form">
+                    <input type="hidden" name="action" value="remove_profile_picture">
+                    <button type="submit" class="profile-picture-remove">Remove profile picture</button>
+                </form>
+                {% endif %}
                 <h2>{{ username }}</h2>
                 <p class="user-role">Student Account</p>
                 <form method="POST" action="{{ url_for('settings') }}" class="settings-form account-username-form">
@@ -76,8 +83,7 @@
                     <input type="hidden" name="action" value="delete_account">
 
                     <div class="form-group">
-                        <label for="delete_password">Enter Password to Confirm</label>
-                        <input type="password" id="delete_password" name="delete_password" required placeholder="Enter password">
+                        <input type="password" id="delete_password" name="delete_password" required placeholder="Enter Password to Confirm">
                     </div>
 
                     <button type="submit" class="delete-btn">Delete Account</button>

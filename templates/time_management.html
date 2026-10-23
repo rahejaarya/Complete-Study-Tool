@@ -2,11 +2,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% include "_favicon.html" %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Management &amp; Schedule | Meridian</title>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
     <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='persistent_audio_navigation.js') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
     <style>
@@ -438,7 +440,6 @@
 
                             <div class="preset-heading">
                                 <h3>Choose a study rhythm</h3>
-                                <p>Select a preset to set the work-session timer.</p>
                             </div>
 
                             <div class="preset-grid" role="group" aria-label="Study and break presets">
@@ -956,6 +957,8 @@
             let sessionPhase = "work";
             let remainingSeconds = selectedPreset.work * 60;
             let timerInterval;
+            let timerHasStarted = false;
+            let timerAudioContext;
 
             // Format the remaining timer duration as a zero-padded clock value.
             function formatTime(totalSeconds) {
@@ -970,9 +973,60 @@
                 return `${minutes}:${seconds}`;
             }
 
+            window.studyToolHasActiveTimer = () => timerHasStarted;
+            window.studyToolGetTimerState = () => ({
+                active: timerHasStarted,
+                isRunning: Boolean(timerInterval),
+                phase: sessionPhase === "work" ? "Study" : "Break",
+                remaining: formatTime(remainingSeconds)
+            });
+            window.studyToolToggleTimerPause = () => {
+                if (!timerHasStarted) return;
+                timerInterval ? pauseTimer() : startTimer();
+            };
+
+            function publishTimerState() {
+                window.dispatchEvent(new CustomEvent("studytool:timer-state", {
+                    detail: window.studyToolGetTimerState()
+                }));
+            }
+
+            function getTimerAudioContext() {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContextClass) return null;
+                timerAudioContext ??= new AudioContextClass();
+                if (timerAudioContext.state === "suspended") {
+                    void timerAudioContext.resume().catch(() => {});
+                }
+                return timerAudioContext;
+            }
+
+            function playTimerRingtone() {
+                const context = getTimerAudioContext();
+                if (!context) return;
+
+                const notes = [659.25, 783.99, 987.77, 783.99];
+                const startTime = context.currentTime + 0.03;
+                notes.forEach((frequency, index) => {
+                    const noteStart = startTime + index * 0.23;
+                    const oscillator = context.createOscillator();
+                    const volume = context.createGain();
+                    oscillator.type = "sine";
+                    oscillator.frequency.setValueAtTime(frequency, noteStart);
+                    volume.gain.setValueAtTime(0.0001, noteStart);
+                    volume.gain.exponentialRampToValueAtTime(0.16, noteStart + 0.025);
+                    volume.gain.exponentialRampToValueAtTime(0.0001, noteStart + 0.2);
+                    oscillator.connect(volume);
+                    volume.connect(context.destination);
+                    oscillator.start(noteStart);
+                    oscillator.stop(noteStart + 0.21);
+                });
+            }
+
             // Refresh the visible timer display from the remaining seconds.
             function renderTimer() {
                 timerReadout.textContent = formatTime(remainingSeconds);
+                publishTimerState();
             }
 
             // Describe whether the current timer interval is study or break time.
@@ -992,6 +1046,7 @@
 
                 startButton.disabled = false;
                 pauseButton.disabled = true;
+                publishTimerState();
             }
 
             // Start the countdown and transition between study and break intervals.
@@ -1000,6 +1055,8 @@
                     return;
                 }
 
+                getTimerAudioContext();
+                timerHasStarted = true;
                 timerStatus.textContent =
                     `${selectedPreset.name} ${sessionPhase === "work" ? "study" : "break"} session in progress.`;
 
@@ -1013,6 +1070,7 @@
                     if (remainingSeconds <= 0) {
                         remainingSeconds = 0;
                         renderTimer();
+                        playTimerRingtone();
 
                         if (sessionPhase === "work") {
                             sessionPhase = "break";
@@ -1028,6 +1086,7 @@
                         }
 
                         stopTimer();
+                        timerHasStarted = false;
 
                         sessionPhase = "work";
                         remainingSeconds = selectedPreset.work * 60;
@@ -1039,6 +1098,7 @@
                             "Break complete. Start your next study session when you are ready.";
                     }
                 }, 1000);
+                publishTimerState();
             }
 
             // Pause the countdown while retaining the current remaining duration.
@@ -1057,6 +1117,7 @@
             function resetTimer() {
                 stopTimer();
 
+                timerHasStarted = false;
                 sessionPhase = "work";
                 remainingSeconds = selectedPreset.work * 60;
 
