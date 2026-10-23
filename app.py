@@ -1,4 +1,5 @@
 import json
+import logging
 import mimetypes
 import os
 import re
@@ -60,6 +61,9 @@ except ModuleNotFoundError:  # pragma: no cover
     )
 
 app = Flask(__name__)
+# Werkzeug's development-server access log prints every requested URL, including
+# AI chat endpoints. Keep application warnings/errors, but hide routine requests.
+logging.getLogger("werkzeug").disabled = True
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "studytool-dev-secret-key")
 app.config["DATABASE"] = os.path.join(app.root_path, "studytool.db")
@@ -2503,5 +2507,4 @@ def serve_saved_folder_file(folder_id, file_id):
 
 
 if __name__ == "__main__":
-    print(app.url_map)
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8000)), debug=False)

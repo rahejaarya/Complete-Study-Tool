@@ -620,15 +620,7 @@ def ask_ai(
         )
         search_query = _resource_search_query(search_query)
 
-        print(f"[AI WEB] Searching: {search_query}", flush=True)
-
-
         fresh_web_context = research_web(search_query, max_pages=1)
-
-        print(
-            f"[AI WEB] Retrieved {len(fresh_web_context)} characters",
-            flush=True,
-        )
 
         if fresh_web_context.strip():
             if web_context.strip():
@@ -646,11 +638,6 @@ def ask_ai(
                 "Tell the user that web verification failed and ask whether "
                 "they would like to try again."
             )
-
-        print(
-            f"[AI WEB] Research returned {len(web_context)} characters",
-            flush=True,
-        )
 
     system_prompt = """You are Cypher, Meridian's helpful AI study assistant.
 
