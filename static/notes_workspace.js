@@ -175,6 +175,11 @@
             context.fillStyle = isDark ? darkPaperColor() : "#fff";
             context.fillRect(0, 0, canvas.width, canvas.height);
             (file.whiteboard?.strokes || []).forEach((stroke) => {
+                if (stroke.type === "fill") {
+                    context.fillStyle = stroke.color || "#20242d";
+                    context.fillRect(0, 0, canvas.width, canvas.height);
+                    return;
+                }
                 if (stroke.type === "text") {
                     context.fillStyle = stroke.color || "#20242d";
                     context.font = `${Math.max(8, (Number(stroke.size) || 20) * .38)}px Arial`;
@@ -415,6 +420,13 @@
         boardContext.fillStyle = currentFile()?.theme === "dark" ? darkPaperColor() : "#ffffff";
         boardContext.fillRect(0, 0, width, height);
         currentStrokes().forEach((stroke) => {
+            if (stroke.type === "fill") {
+                boardContext.globalCompositeOperation = "source-over";
+                boardContext.globalAlpha = 1;
+                boardContext.fillStyle = stroke.color || "#20242d";
+                boardContext.fillRect(0, 0, width, height);
+                return;
+            }
             if (stroke.type === "text") {
                 boardContext.globalCompositeOperation = "source-over";
                 boardContext.fillStyle = stroke.color || "#20242d";
@@ -587,6 +599,12 @@
 
     boardCanvas.addEventListener("pointerdown", (event) => {
         if (!currentFile()) return;
+        if (activeTool === "bucket") {
+            pushHistory();
+            currentStrokes().push({ type: "fill", color: activeColor });
+            saveBoardChange();
+            return;
+        }
         if (activeTool === "text") {
             const text = window.prompt("Text to add to the board:");
             if (text) {
