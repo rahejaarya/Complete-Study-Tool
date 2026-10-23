@@ -9211,7 +9211,7 @@ body.notes-workspace-body { overflow: hidden; }
 .workspace-confirm-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 7px; }
 .workspace-confirm-actions button { padding: 9px 15px; border: 1px solid var(--border); border-radius: 10px; background: var(--soft-surface); color: var(--text); font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; }
 .workspace-confirm-actions .workspace-confirm-delete { border-color: #c74242; background: #c74242; color: #fff; }
-.dashboard-notebook-launchers { display: grid; width: 100%; height: 100%; min-height: 150px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.dashboard-notebook-launchers { display: grid; width: 100%; height: 100%; min-height: 150px; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 .dashboard-notebook-launcher {
     display: flex;
     align-items: center;
