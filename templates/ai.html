@@ -18,7 +18,7 @@
 
             {% include "_sidebar_header.html" %}
 
-            <nav class="navigation" id="primary-navigation"></nav>
+            <nav class="navigation" id="primary-navigation">
 
                 <a href="{{ url_for('home') }}" class="nav-link">
                     <span class="nav-icon">⌂</span>
@@ -146,8 +146,6 @@
             </div>
         </form>
     </dialog>
-
-</body>
 
 <script>
 
@@ -475,9 +473,55 @@ function addResourceCard(resource, afterElement = null) {
     addButton.title = "Add to Study Resources";
     addButton.setAttribute("aria-label", "Add to Study Resources");
 
-    addButton.addEventListener("click", (event) => {
+    addButton.addEventListener("click", async (event) => {
         event.preventDefault();
         event.stopPropagation();
+        addButton.disabled = true;
+        try {
+            const foldersResponse = await fetch("/api/saved-folders");
+            if (!foldersResponse.ok) throw new Error("Could not load study folders.");
+            const folders = await foldersResponse.json();
+            if (!Array.isArray(folders) || !folders.length) {
+                alert("Create a Study Resources folder first, then try again.");
+                return;
+            }
+            const choice = window.prompt(
+                `Save to which folder? Enter its number:\n${folders.map((folder, index) => `${index + 1}. ${folder.name}`).join("\n")}`,
+                "1"
+            );
+            if (choice === null) return;
+            const folder = folders[Number(choice) - 1];
+            if (!folder) {
+                alert("That folder number is not valid.");
+                return;
+            }
+            const saveResponse = await fetch(
+                `/api/saved-folders/${encodeURIComponent(folder.id)}/web-resources`,
+                {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        title: resource.title,
+                        url: resource.url,
+                        file_type: /youtube\.com|youtu\.be/i.test(resource.url)
+                            ? "video link"
+                            : "web link"
+                    })
+                }
+            );
+            if (!saveResponse.ok) {
+                const result = await saveResponse.json().catch(() => ({}));
+                throw new Error(result.error || "Could not save this resource.");
+            }
+            addButton.textContent = "✓";
+            addButton.title = `Saved to ${folder.name}`;
+            addButton.setAttribute("aria-label", `Saved to ${folder.name}`);
+        } catch (error) {
+            console.error(error);
+            alert(error.message || "Could not save this resource.");
+        } finally {
+            addButton.disabled = false;
+        }
     });
 
     card.appendChild(addButton);
@@ -925,6 +969,10 @@ async function sendMessage() {
 
                     addMemoryWarning(event.message);
 
+                }
+
+                else if (event.type === "error") {
+                    thinkingBubble.textContent = "AI Error: " + event.message;
                 }
 
                 scrollChatToLatest();

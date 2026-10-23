@@ -9830,6 +9830,18 @@ body.notes-workspace-body { overflow: hidden; }
     overflow-wrap: anywhere;
 }
 
+.folder-web-search-type {
+    grid-column: 1;
+    width: fit-content;
+    padding: 2px 7px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
 .folder-web-search-result p {
     grid-column: 1;
     margin: 0;

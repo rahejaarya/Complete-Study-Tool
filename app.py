@@ -924,6 +924,13 @@ def ai_chat():
                 conversation_summary=conversation_summary,
                 tool_results=tool_results,
             ):
+                if chunk.startswith("Error: "):
+                    app.logger.error("AI model request failed: %s", chunk[7:])
+                    yield json.dumps({
+                        "type": "error",
+                        "message": "The AI model could not generate a response. Check that Ollama is running and the configured model is installed.",
+                    }) + "\n"
+                    return
                 full_response += chunk
                 yield json.dumps({
                     "type": "token",
