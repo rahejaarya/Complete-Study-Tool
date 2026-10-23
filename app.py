@@ -61,9 +61,20 @@ except ModuleNotFoundError:  # pragma: no cover
     )
 
 app = Flask(__name__)
-# Werkzeug's development-server access log prints every requested URL, including
-# AI chat endpoints. Keep application warnings/errors, but hide routine requests.
-logging.getLogger("werkzeug").disabled = True
+
+
+class _HideAIChatAccessLogs(logging.Filter):
+    """Keep the local-server startup URL visible without logging chat routes."""
+
+    def filter(self, record):
+        message = record.getMessage()
+        return not re.search(
+            r'"(?:GET|POST|PUT|PATCH|DELETE) /api/ai(?:/| )',
+            message,
+        )
+
+
+logging.getLogger("werkzeug").addFilter(_HideAIChatAccessLogs())
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "studytool-dev-secret-key")
 app.config["DATABASE"] = os.path.join(app.root_path, "studytool.db")
