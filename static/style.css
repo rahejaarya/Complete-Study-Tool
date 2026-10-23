@@ -4966,6 +4966,10 @@ body {
     line-height: 1.3;
 }
 
+body.persistent-audio-routed .now-playing-indicator {
+    display: none;
+}
+
 .now-playing-dot {
     width: 8px;
     height: 8px;
@@ -5022,12 +5026,28 @@ body.audio-route-open {
     background: var(--page-bg);
 }
 
+.persistent-audio-route-layer.persistent-audio-background-only {
+    pointer-events: none;
+    background: transparent;
+}
+
 .persistent-audio-route-frame {
     width: 100%;
     height: 100%;
     display: block;
     border: 0;
     background: var(--page-bg);
+}
+
+.persistent-audio-source-frame,
+.persistent-timer-source-frame {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
 }
 
 .persistent-media-hud {
@@ -5059,6 +5079,14 @@ body.audio-route-open {
     color: var(--text);
     box-shadow: 0 5px 20px var(--card-shadow);
     font-size: 12px;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+
+.persistent-now-playing.is-dragging,
+.persistent-study-timer.is-dragging {
+    cursor: grabbing;
 }
 
 .persistent-now-playing[hidden] {
@@ -5082,6 +5110,9 @@ body.audio-route-open {
     color: var(--text);
     box-shadow: 0 5px 20px var(--card-shadow);
     font-size: 12px;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
 }
 
 .persistent-study-timer[hidden] {
@@ -5104,7 +5135,7 @@ body.audio-route-open {
     color: inherit;
     font: inherit;
     text-align: left;
-    cursor: pointer;
+    cursor: grab;
 }
 
 .persistent-study-timer-readout:hover {

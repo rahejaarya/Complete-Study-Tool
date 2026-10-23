@@ -6,7 +6,7 @@ import ollama
 from pypdf import PdfReader
 from docx import Document
 
-MODEL = "qwen3.5:9b"
+MODEL = "qwen3.5:2b"
 
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 MAX_TEXT_CHARS = 40_000
@@ -50,7 +50,13 @@ def extract_file_text(file_path):
             for paragraph in document.paragraphs
             if paragraph.text.strip()
         ]
-        text = "\n".join(paragraphs)
+        table_rows = [
+            " | ".join(cell.text.strip() for cell in row.cells)
+            for table in document.tables
+            for row in table.rows
+            if any(cell.text.strip() for cell in row.cells)
+        ]
+        text = "\n".join([*paragraphs, *table_rows])
 
     text = text.strip()
 

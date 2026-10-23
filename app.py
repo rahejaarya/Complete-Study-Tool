@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from functools import wraps
 from pathlib import Path
 from urllib.parse import parse_qs, quote_plus, urlparse, urlsplit
+from flask import render_template
 
 from flask import (
     Flask,
@@ -1410,6 +1411,10 @@ def resources():
         library_mode=False,
     )
 
+@app.route("/study-tools")
+def study_tools():
+    return render_template("study_tools.html")
+
 @app.route("/resource-browser")
 @login_required
 def resource_browser():
@@ -1422,6 +1427,56 @@ def resource_browser():
 def translator():
     """Render the full-page translator workspace."""
     return render_template("translator.html")
+
+@app.route("/flashcard-generator")
+@login_required
+def flashcard_generator():
+    return render_template("flashcard_generator.html")
+
+
+@app.route("/api/flashcards/generate", methods=["POST"])
+@login_required
+def generate_flashcards_api():
+    """Create a flashcard deck from a supported study document."""
+    if request.content_length and request.content_length > 11 * 1024 * 1024:
+        return jsonify({"error": "Files must be 10 MB or smaller."}), 413
+
+    uploaded_file = request.files.get("file")
+    if uploaded_file is None or not uploaded_file.filename:
+        return jsonify({"error": "Choose a TXT, PDF, or DOCX file."}), 400
+
+    filename = secure_filename(uploaded_file.filename)
+    extension = Path(filename).suffix.lower()
+    if extension not in {".txt", ".pdf", ".docx"}:
+        return jsonify({"error": "Use a TXT, PDF, or DOCX file."}), 400
+    try:
+        count = int(request.form.get("count", "20"))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Choose a valid number of flashcards."}), 400
+    if not 1 <= count <= 50:
+        return jsonify({"error": "Choose between 1 and 50 flashcards."}), 400
+
+    focus = request.form.get("focus", "mixed")
+    temporary_path = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=extension, delete=False) as temporary_file:
+            temporary_path = Path(temporary_file.name)
+            uploaded_file.save(temporary_file)
+
+        from static.flashcard_generator import generate_flashcards
+
+        cards = generate_flashcards(temporary_path, count=count, focus=focus)
+        return jsonify({"flashcards": cards})
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    except Exception:
+        app.logger.exception("Flashcard generation failed")
+        return jsonify({
+            "error": "Flashcards could not be generated. Check that the AI service is available, then try again."
+        }), 503
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
 
 
 @app.route("/api/resource-browser/search", methods=["POST"])

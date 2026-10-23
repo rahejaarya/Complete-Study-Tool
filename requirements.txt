@@ -6,3 +6,6 @@ requests>=2.31,<3.0
 ollama>=0.4,<1.0
 # DuckDuckGo search client used to find educational videos and web resources.
 ddgs>=9.0,<10.0
+# Document readers used by the flashcard generator.
+pypdf>=5.0,<7.0
+python-docx>=1.1,<2.0

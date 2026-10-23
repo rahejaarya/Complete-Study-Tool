@@ -1,4 +1,9 @@
 {
-  "explicit_facts": [],
-  "facts": []
+  "explicit_facts": [
+    "User is studying Chapter 21 notes for AP Euro.",
+    "User specifically needs information about section covering Charles X."
+  ],
+  "facts": [
+    "Assistant previously mentioned key concepts: Conservative Order, Peace Settlements (Congress of Vienna), Liberalism, Restoration King (Charles X)."
+  ]
 }

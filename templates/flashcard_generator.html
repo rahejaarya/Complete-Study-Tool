@@ -1,0 +1,91 @@
+{% from "_app_icon.html" import app_icon %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include "_favicon.html" %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard Studio - Meridian</title>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='flashcard_generator.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='flashcard_generator.css') }}">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            {% include "_sidebar_header.html" %}
+            <nav class="navigation" id="primary-navigation">
+                <a href="{{ url_for('home') }}" class="nav-link"><span class="nav-icon">⌂</span>Dashboard</a>
+                <a href="{{ url_for('resources') }}" class="nav-link active" aria-current="page"><span class="nav-icon">{{ app_icon("resources") }}</span>Study Resources</a>
+                <a href="{{ url_for('noise_songs') }}" class="nav-link"><span class="nav-icon">♫</span>Noise &amp; Songs</a>
+                <a href="{{ url_for('time_management') }}" class="nav-link"><span class="nav-icon">◷</span>Time Management</a>
+                <a href="{{ url_for('support') }}" class="nav-link"><span class="nav-icon">♡</span>Student Support</a>
+                {% include "_ai_nav.html" %}
+            </nav>
+            <div class="sidebar-bottom">
+                <a href="{{ url_for('settings') }}" class="nav-link"><span class="nav-icon">⚙</span>Settings</a>
+                <a href="{{ url_for('support') }}" class="nav-link"><span class="nav-icon">?</span>Help</a>
+            </div>
+        </aside>
+
+        <main class="main-content flashcard-page">
+            <header class="topbar">
+                <div class="welcome">
+                    <div class="welcome-icon" aria-hidden="true">▤</div>
+                    <div><h1>Flashcard Studio</h1><p>Turn your study notes into a deck you can review.</p></div>
+                </div>
+                <a class="resource-browser-back" href="{{ url_for('resources') }}">← Study Resources</a>
+            </header>
+
+            <section class="flashcard-builder" aria-labelledby="flashcard-heading">
+                <div class="flashcard-intro">
+                    <p class="flashcard-eyebrow">BUILD A DECK</p>
+                    <h2 id="flashcard-heading">What are you studying?</h2>
+                    <p>Upload class notes or a study guide. The generator uses the material to create question and answer cards.</p>
+                </div>
+                <form class="flashcard-form" id="flashcard-form">
+                    <label class="flashcard-upload" for="flashcard-file">Study file
+                        <input id="flashcard-file" name="file" type="file" accept=".txt,.pdf,.docx" required>
+                        <span class="flashcard-help">TXT, PDF, or DOCX · up to 10 MB · scanned PDFs need selectable text</span>
+                    </label>
+                    <label for="flashcard-count">Number of cards
+                        <select id="flashcard-count" name="count">
+                            <option value="10">10 cards</option><option value="20" selected>20 cards</option>
+                            <option value="30">30 cards</option><option value="50">50 cards</option>
+                        </select>
+                    </label>
+                    <label for="flashcard-focus">Focus
+                        <select id="flashcard-focus" name="focus">
+                            <option value="mixed" selected>Mixed review</option><option value="definitions">Definitions</option>
+                            <option value="key concepts">Key concepts</option><option value="exam revision">Exam revision</option>
+                        </select>
+                    </label>
+                    <button class="flashcard-submit" id="flashcard-submit" type="submit">Generate flashcards</button>
+                </form>
+                <p class="flashcard-error" id="flashcard-error" role="alert" hidden></p>
+                <div class="flashcard-loading" id="flashcard-loading" role="status" aria-live="polite" hidden>
+                    <span class="flashcard-spinner" aria-hidden="true"></span><span>Reading your material and building the deck…</span>
+                </div>
+            </section>
+
+            <section class="flashcard-review" id="flashcard-review" aria-labelledby="flashcard-review-heading" hidden>
+                <div class="flashcard-review-top">
+                    <div><p class="flashcard-eyebrow">YOUR DECK</p><h2 id="flashcard-review-heading">Review flashcards</h2></div>
+                    <span class="flashcard-progress" id="flashcard-progress" aria-live="polite"></span>
+                </div>
+                <article class="flashcard-card" aria-live="polite">
+                    <h3 id="flashcard-question"></h3>
+                    <div id="flashcard-answer-wrap" hidden><p class="flashcard-answer-label">Answer</p><p id="flashcard-answer"></p></div>
+                </article>
+                <div class="flashcard-controls">
+                    <button class="flashcard-action secondary" id="flashcard-previous" type="button">Previous</button>
+                    <button class="flashcard-action" id="flashcard-reveal" type="button">Show answer</button>
+                    <button class="flashcard-action secondary" id="flashcard-next" type="button">Next</button>
+                </div>
+            </section>
+        </main>
+    </div>
+    {% include "_mobile_navigation.html" %}
+</body>
+</html>
