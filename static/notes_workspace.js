@@ -674,6 +674,9 @@
                 control.disabled = false;
             });
             selectKind(activeKind);
+            const requestedFileId = new URLSearchParams(window.location.search).get("file_id");
+            const requestedFile = requestedFileId && data.notebooks.find((file) => file.id === requestedFileId);
+            if (requestedFile && requestedFile.kind === activeKind) openFile(requestedFile.id);
             if (migrated) scheduleSave();
             if (!data.notebooks.some((file) => file.kind === activeKind)) renderFiles();
         } catch (error) {

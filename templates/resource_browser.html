@@ -2,10 +2,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% include "_favicon.html" %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Browse &amp; Learn - Meridian</title>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='api_response.js') }}"></script>
+    <script src="{{ url_for('static', filename='saved_folder_picker.js') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="{{ url_for('static', filename='resource_browser.js') }}" defer></script>
 </head>
@@ -65,7 +68,6 @@
                             <p class="resource-browser-eyebrow">CYPHER OVERVIEW</p>
                             <h2 id="resource-browser-topic"></h2>
                         </div>
-                        <span class="resource-browser-summary-mark" aria-hidden="true">✦</span>
                     </div>
                     <div class="resource-browser-summary-text" id="resource-browser-summary"></div>
                     <p class="resource-browser-source-note" id="resource-browser-source-note"></p>

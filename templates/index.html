@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% include "_favicon.html" %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> Meridian </title>
@@ -84,9 +85,7 @@
                         {% if profile_picture_url %}
                         <img class="welcome-icon welcome-profile-picture" src="{{ profile_picture_url }}" alt="">
                         {% else %}
-                        <div class="welcome-icon">
-                            ☀
-                        </div>
+                        <img class="welcome-icon welcome-profile-picture" src="{{ url_for('static', filename='default-profile.svg') }}" alt="">
                         {% endif %}
                         <div>
                             <h1>Welcome back, {{ username }}</h1>
@@ -232,8 +231,13 @@
                         <div class="dashboard-notebook-launchers" aria-label="Open notes and whiteboard">
                             <a class="dashboard-notebook-launcher" href="{{ url_for('notes') }}?kind=notes">
                                 <span class="dashboard-notebook-launcher-icon" aria-hidden="true">✎</span>
-                                <span><strong>Notes &amp; Whiteboard</strong><small>Write and organize notes, or sketch ideas and diagrams</small></span>
-                                <span class="dashboard-notebook-open">Open notes &amp; whiteboard</span>
+                                <span><strong>Notes</strong><small>Write and organize your study notes</small></span>
+                                <span class="dashboard-notebook-open">Open notes</span>
+                            </a>
+                            <a class="dashboard-notebook-launcher is-board" href="{{ url_for('notes') }}?kind=whiteboard">
+                                <span class="dashboard-notebook-launcher-icon" aria-hidden="true">▤</span>
+                                <span><strong>Whiteboard</strong><small>Sketch ideas and diagrams</small></span>
+                                <span class="dashboard-notebook-open">Open whiteboard</span>
                             </a>
                         </div>
 
@@ -416,7 +420,11 @@
         (() => {
             const quotes = [
                 { text: "What's the 'C' in CTE?", author: "— Benjamin Johnson" },
+                { text: "Learning is just Googling things before the test and hoping for the best.", author: "— Arya Raheja" },
+                { text: "My brain has 67 tabs open, and one of them is playing music.", author: "— Arya Raheja" },
+                { text: "Be the reason your group project actually gets finished.", author: "— Arya Raheja" },
                 { text: "Your time is limited, so don't waste it living someone else's life.", author: "— Steve Jobs" },
+                { text: "You can't outsmart one who lacks smart.", author: "— Dulan kariyawasami" },
                 { text: "I've failed over and over and over again in my life. And that is why I succeed.", author: "— Michael Jordan" },
                 { text: "A champion is defined by how they recover when they fall.", author: "— Serena Williams" },
                 { text: "You miss 100% of the shots you don't take.", author: "— Wayne Gretzky" },

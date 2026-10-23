@@ -1,8 +1,9 @@
+import io
 import tempfile
 import unittest
 from pathlib import Path
 
-from app import app, get_db, init_db
+from app import app, get_db, init_db, user_profile_picture_path
 
 
 class SettingsTests(unittest.TestCase):
@@ -49,6 +50,46 @@ class SettingsTests(unittest.TestCase):
         self.assertNotIn(b"Account Preferences", response.data)
         self.assertNotIn(b"Default Dashboard View", response.data)
         self.assertNotIn(b"Reminders &amp; feature updates", response.data)
+
+    def test_profile_picture_can_be_removed_and_default_avatar_is_restored(self):
+        self.login()
+        upload_response = self.client.post(
+            "/settings",
+            data={
+                "action": "upload_profile_picture",
+                "profile_picture": (
+                    io.BytesIO(b"\xff\xd8\xffprofile image data\xff\xd9"),
+                    "avatar.jpg",
+                ),
+            },
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(upload_response.status_code, 200)
+        connection = get_db()
+        try:
+            user = connection.execute(
+                "SELECT id FROM users WHERE username = ?",
+                ("admin",),
+            ).fetchone()
+        finally:
+            connection.close()
+        picture_path = user_profile_picture_path(user["id"])
+        self.assertTrue(picture_path.is_file())
+        self.assertIn(b"Remove profile picture", upload_response.data)
+
+        remove_response = self.client.post(
+            "/settings",
+            data={"action": "remove_profile_picture"},
+        )
+
+        self.assertEqual(remove_response.status_code, 200)
+        self.assertFalse(picture_path.exists())
+        self.assertIn(b"Your default avatar is restored", remove_response.data)
+        self.assertNotIn(b"Remove profile picture", remove_response.data)
+        self.assertIn("☀".encode(), remove_response.data)
+        picture_response = self.client.get("/profile-picture")
+        self.assertEqual(picture_response.status_code, 404)
+        self.assertIn("☀".encode(), self.client.get("/").data)
 
     def test_password_change_and_account_deletion_use_hashed_credentials(self):
         self.login()

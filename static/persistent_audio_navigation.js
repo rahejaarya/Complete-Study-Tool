@@ -6,12 +6,18 @@
     const app = document.querySelector(".app");
     if (!app) return;
 
+    const originalUrl = new URL(location.href);
+    const originalTitle = document.title;
     let routeFrame;
     let routeLayer;
     let nowPlaying;
     let nowPlayingText;
     let pauseButton;
     let stopButton;
+    let persistentHud;
+    let timerHud;
+    let timerReadout;
+    let timerPauseButton;
 
     function isInternalUrl(rawUrl) {
         try {
@@ -19,6 +25,37 @@
         } catch {
             return false;
         }
+    }
+
+    function isOriginalPage(rawUrl) {
+        try {
+            const target = new URL(rawUrl, location.href);
+            return target.origin === originalUrl.origin && target.pathname === originalUrl.pathname;
+        } catch {
+            return false;
+        }
+    }
+
+    function closeRouteLayer() {
+        routeLayer?.remove();
+        routeLayer = null;
+        routeFrame = null;
+        app.classList.remove("audio-route-background");
+        document.body.classList.remove("audio-route-open");
+        persistentHud?.remove();
+        persistentHud = null;
+        nowPlaying = null;
+        timerHud?.remove();
+        timerHud = null;
+        document.title = originalTitle;
+    }
+
+    function createPersistentHud() {
+        if (persistentHud) return;
+        persistentHud = document.createElement("div");
+        persistentHud.className = "persistent-media-hud";
+        persistentHud.setAttribute("aria-label", "Active media and study timer");
+        document.body.append(persistentHud);
     }
 
     function updatePlayer(state = window.studyToolGetAudioState?.()) {
@@ -34,6 +71,38 @@
         pauseButton.textContent = state.paused ? "Resume" : "Pause";
         pauseButton.setAttribute("aria-label", state.paused ? "Resume audio" : "Pause audio");
         stopButton.hidden = !state.hasAudio;
+        updateTimerHud();
+    }
+
+    function updateTimerHud(state = window.studyToolGetTimerState?.()) {
+        if (!timerHud) return;
+        state ||= { active: false, isRunning: false, phase: "Study", remaining: "00:00" };
+        timerHud.hidden = !state.active;
+        timerReadout.textContent = `${state.phase} · ${state.remaining}`;
+        timerReadout.setAttribute("aria-label", `Open Time Management. ${state.phase}, ${state.remaining} remaining.`);
+        timerPauseButton.textContent = state.isRunning ? "Pause" : "Resume";
+        timerPauseButton.setAttribute("aria-label", state.isRunning ? "Pause study timer" : "Resume study timer");
+    }
+
+    function createTimerHud() {
+        if (timerHud) return;
+        timerHud = document.createElement("div");
+        timerHud.className = "persistent-study-timer";
+        timerHud.setAttribute("role", "group");
+        timerHud.setAttribute("aria-label", "Study timer controls");
+        timerReadout = document.createElement("button");
+        timerReadout.type = "button";
+        timerReadout.className = "persistent-study-timer-readout";
+        timerReadout.title = "Open Time Management";
+        timerReadout.addEventListener("click", () => routeTo(originalUrl.href));
+        timerPauseButton = document.createElement("button");
+        timerPauseButton.type = "button";
+        timerPauseButton.className = "persistent-now-playing-control";
+        timerPauseButton.addEventListener("click", () => window.studyToolToggleTimerPause?.());
+        timerHud.append(timerReadout, timerPauseButton);
+        createPersistentHud();
+        persistentHud.append(timerHud);
+        updateTimerHud();
     }
 
     function createPlayer() {
@@ -58,12 +127,20 @@
         stopButton.textContent = "Stop";
         stopButton.addEventListener("click", () => window.studyToolStopActiveAudio?.());
         nowPlaying.append(dot, nowPlayingText, pauseButton, stopButton);
-        document.body.append(nowPlaying);
+        createPersistentHud();
+        persistentHud.append(nowPlaying);
         updatePlayer();
     }
 
     function routeTo(url, addHistory = true) {
         if (!isInternalUrl(url)) return;
+        if (isOriginalPage(url)) {
+            if (routeLayer) {
+                if (addHistory) history.pushState({ studyToolAudioRoute: true }, "", url);
+                closeRouteLayer();
+            }
+            return;
+        }
         if (!routeLayer) {
             routeLayer = document.createElement("div");
             routeLayer.className = "persistent-audio-route-layer";
@@ -76,12 +153,14 @@
             app.classList.add("audio-route-background");
             document.body.classList.add("audio-route-open");
             createPlayer();
+            createTimerHud();
         }
         if (addHistory) history.pushState({ studyToolAudioRoute: true }, "", url);
         routeFrame.src = url;
     }
 
     function handleFrameLoad() {
+        if (!routeFrame) return;
         let frameDocument;
         let frameUrl;
         try {
@@ -110,24 +189,18 @@
         if (routeLayer || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         const link = event.target.closest?.("a[href]");
         if (!link || link.hasAttribute("download") || !isInternalUrl(link.href)) return;
-        if (!window.studyToolHasActiveAudio?.()) return;
+        if (!window.studyToolHasActiveAudio?.() && !window.studyToolHasActiveTimer?.()) return;
         event.preventDefault();
         routeTo(link.href);
     }, true);
 
     window.addEventListener("studytool:now-playing", (event) => updatePlayer(event.detail));
+    window.addEventListener("studytool:timer-state", (event) => updateTimerHud(event.detail));
     window.addEventListener("popstate", (event) => {
         if (event.state?.studyToolAudioRoute) {
             routeTo(location.href, false);
         } else if (routeLayer) {
-            routeLayer.remove();
-            routeLayer = null;
-            routeFrame = null;
-            app.classList.remove("audio-route-background");
-            document.body.classList.remove("audio-route-open");
-            nowPlaying?.remove();
-            nowPlaying = null;
-            document.title = document.querySelector("title")?.textContent || "Meridian";
+            closeRouteLayer();
         }
     });
 })();

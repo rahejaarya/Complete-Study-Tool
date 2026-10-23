@@ -1,16 +1,23 @@
 {% from "_app_icon.html" import app_icon %}
+{% set library_mode = (library_mode|default(false)) or request.args.get("library") == "1" %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% include "_favicon.html" %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Study Resources - Meridian</title>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='api_response.js') }}"></script>
     <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
+    {% if not library_mode %}
+    <script src="{{ url_for('static', filename='saved_folder_picker.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='resource_browser.js') }}" defer></script>
+    {% endif %}
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
-<body>
+<body{% if library_mode %} class="library-mode"{% endif %}>
 
     <div class="app">
 
@@ -75,151 +82,128 @@
                 <div class="welcome">
                     <div class="welcome-icon">{{ app_icon("resources") }}</div>
                     <div>
+                        {% if library_mode %}
+                        <h1>Your study library</h1>
+                        <p>Keep your folders, resources, notes, and whiteboards together.</p>
+                        {% else %}
                         <h1>What do you want to learn?</h1>
                         <p>Find free resources for any subject or topic.</p>
+                        {% endif %}
                     </div>
                 </div>
+                {% if library_mode %}
+                <a class="resource-browser-back" href="{{ url_for('resources') }}">← Study Resources</a>
+                {% endif %}
 
             </header>
 
 
-            <!-- Resources Dashboard Wireframe -->
-            <section class="dashboard">
+            <section class="dashboard resources-dashboard">
+                {% if not library_mode %}
+                <section class="resource-browser-search-panel resources-search-panel" aria-labelledby="browse-search-heading">
+                    <div class="resource-browser-search-copy">
+                        <p class="resource-browser-eyebrow">EXPLORE A TOPIC</p>
+                        <h2 id="browse-search-heading">What are you studying?</h2>
+                        <p>Get a Cypher overview, useful websites, and related YouTube lessons.</p>
+                    </div>
+                    <form id="resource-browser-form" class="resource-browser-form">
+                        <label class="sr-only" for="resource-browser-query">Topic to browse</label>
+                        <input id="resource-browser-query" name="query" type="search" maxlength="180" value="{{ query }}" placeholder="Try “how photosynthesis works”" autocomplete="off" required>
+                        <button class="resource-browser-submit" type="submit">Search</button>
+                    </form>
+                    <p class="resource-browser-error" id="resource-browser-error" role="alert" hidden></p>
+                </section>
+                {% endif %}
 
-                <!-- Saved Content Directory -->
-                    <section class="saved-content-directory">
-                        <div class="directory-heading">
+                {% if not library_mode %}
+                <div class="resource-browser-loading" id="resource-browser-loading" role="status" aria-live="polite" hidden>
+                    <span class="resource-browser-spinner" aria-hidden="true"></span>
+                    <span>Searching learning sites and videos…</span>
+                </div>
+
+                <section class="resource-browser-results" id="resource-browser-results" aria-live="polite" hidden>
+                    <article class="resource-browser-summary">
+                        <div class="resource-browser-summary-heading">
                             <div>
-                                <h2 id="saved-content-title">Browse your Saved Content</h2>
+                                <p class="resource-browser-eyebrow">CYPHER OVERVIEW</p>
+                                <h2 id="resource-browser-topic"></h2>
                             </div>
                         </div>
-
-                        <div class="folder-toolbar" id="folder-toolbar" hidden>
-                            <button type="button" class="folder-back-button" id="folder-back">
-                                ← All folders
-                            </button>
+                        <div class="resource-browser-summary-text" id="resource-browser-summary"></div>
+                        <p class="resource-browser-source-note" id="resource-browser-source-note"></p>
+                    </article>
+                    <div class="resource-browser-section-heading">
+                        <div>
+                            <p class="resource-browser-eyebrow">KEEP EXPLORING</p>
+                            <h2>Videos &amp; websites</h2>
                         </div>
+                    </div>
+                    <div class="resource-browser-columns">
+                        <section class="resource-browser-list-section" aria-labelledby="browse-videos-heading">
+                            <h3 id="browse-videos-heading">Videos</h3>
+                            <div class="resource-browser-list" id="resource-browser-videos"></div>
+                        </section>
+                        <section class="resource-browser-list-section" aria-labelledby="browse-web-heading">
+                            <h3 id="browse-web-heading">Websites &amp; study resources</h3>
+                            <div class="resource-browser-list" id="resource-browser-web"></div>
+                        </section>
+                    </div>
+                </section>
+                {% endif %}
 
+                <div class="resources-workspace-grid">
+                    {% if library_mode %}
+                    <section class="saved-content-directory resources-folder-panel" aria-labelledby="saved-content-title">
+                        <div class="directory-heading">
+                            <div>
+                                <p class="resource-browser-eyebrow">YOUR LIBRARY</p>
+                                <h2 id="saved-content-title">Your folders</h2>
+                            </div>
+                        </div>
+                        <div class="folder-toolbar" id="folder-toolbar" hidden>
+                            <button type="button" class="folder-back-button" id="folder-back">← All folders</button>
+                            <div class="folder-add-menu-wrapper">
+                                <button type="button" class="folder-toolbar-add-button" id="folder-toolbar-add" aria-label="Add content" aria-expanded="false" aria-controls="folder-add-popup">+</button>
+                                <div class="folder-add-popup" id="folder-add-popup" role="menu" hidden>
+                                    <button type="button" role="menuitem" data-action="computer-upload"><span class="folder-popup-icon">↑</span>Upload files</button>
+                                    <button type="button" role="menuitem" data-action="whiteboard"><span class="folder-popup-icon">▤</span>New whiteboard</button>
+                                    <button type="button" role="menuitem" data-action="note"><span class="folder-popup-icon">✎</span>New note</button>
+                                    <button type="button" role="menuitem" data-action="existing-notebook"><span class="folder-popup-icon">▤</span>Add existing note or whiteboard</button>
+                                    <button type="button" role="menuitem" data-action="web-search"><span class="folder-popup-icon">⌕</span>Browse videos &amp; resources</button>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="file" id="folder-file-input" hidden multiple>
                         <div class="folder-grid" id="folder-grid"></div>
-
                         <div class="folder-empty-state" id="folder-empty-state" hidden>
                             <div class="folder-empty-icon folder-icon" id="empty-folder-icon"></div>
                             <h3>This folder is empty</h3>
                             <p>Your saved learning materials will appear here.</p>
                         </div>
-
-                        <p class="directory-feedback" id="directory-feedback"
-                        role="status" aria-live="polite"></p>
+                        <p class="directory-feedback" id="directory-feedback" role="status" aria-live="polite"></p>
                     </section>
 
-                    <!-- Divider between saved folders and tools -->
-                    <div class="resources-divider"></div>
-
-                        <!-- Study Tools -->
-                        <section class="study-tools" aria-labelledby="study-tools-title">
-                            <div class="study-tools-heading">
-                                <h2 id="study-tools-title">Tools</h2>
-                            </div>
-
-                            <div class="tools-grid">
-                                <article class="tool-card" id="translator-tool">
-                                    <div class="tool-card-header">
-                                        <div class="tool-icon" aria-hidden="true">
-                                            <svg viewBox="0 0 24 24" width="28" height="28"
-                                                fill="none" stroke="currentColor" stroke-width="1.7"
-                                                stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M4 5h10M9 3v2c0 5-2 8-5 10"/>
-                                                <path d="M6 9c1.5 2.5 3.5 4 6 5"/>
-                                                <path d="m13 20 4-10 4 10M14.5 17h5"/>
-                                                <path d="M16 5h5"/>
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <h3>Translator</h3>
-                                            <p>Translate text between languages.</p>
-                                        </div>
-                                    </div>
-
-                                    <form id="translator-form" class="translator-form">
-                                        <div class="translator-panels">
-                                            <div class="translator-panel">
-                                                <label for="translator-source-language">From</label>
-                                                <select id="translator-source-language">
-                                                    <option value="auto">Detect language</option>
-                                                    <option value="en">English</option>
-                                                    <option value="es">Spanish</option>
-                                                    <option value="fr">French</option>
-                                                    <option value="de">German</option>
-                                                    <option value="it">Italian</option>
-                                                    <option value="pt">Portuguese</option>
-                                                    <option value="zh">Chinese</option>
-                                                    <option value="ja">Japanese</option>
-                                                    <option value="ko">Korean</option>
-                                                    <option value="ar">Arabic</option>
-                                                    <option value="hi">Hindi</option>
-                                                    <option value="ru">Russian</option>
-                                                </select>
-
-                                                <textarea id="translator-input" rows="7"
-                                                        maxlength="5000"
-                                                        placeholder="Enter text..."
-                                                        aria-label="Text to translate"></textarea>
-
-                                                <div class="translator-panel-footer">
-                                                    <span id="translator-character-count">0 / 5000</span>
-                                                    <button type="button" id="translator-clear"
-                                                            class="tool-text-button">Clear</button>
-                                                </div>
-                                            </div>
-
-                                            <div class="translator-panel">
-                                                <label for="translator-target-language">To</label>
-                                                <select id="translator-target-language">
-                                                    <option value="en">English</option>
-                                                    <option value="es" selected>Spanish</option>
-                                                    <option value="fr">French</option>
-                                                    <option value="de">German</option>
-                                                    <option value="it">Italian</option>
-                                                    <option value="pt">Portuguese</option>
-                                                    <option value="zh">Chinese</option>
-                                                    <option value="ja">Japanese</option>
-                                                    <option value="ko">Korean</option>
-                                                    <option value="ar">Arabic</option>
-                                                    <option value="hi">Hindi</option>
-                                                    <option value="ru">Russian</option>
-                                                </select>
-
-                                                <textarea id="translator-output" rows="7"
-                                                        maxlength="5000"
-                                                        placeholder="Translation appears here..."
-                                                        aria-label="Translated text"
-                                                        readonly></textarea>
-
-                                                <div class="translator-panel-footer">
-                                                    <span id="translator-status" role="status"
-                                                        aria-live="polite"></span>
-                                                    <button type="button" id="translator-copy"
-                                                            class="tool-text-button">Copy</button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="translator-bottom-row">
-                                            <button type="button" id="translator-swap"
-                                                    class="translator-swap">
-                                                ⇄ Swap languages
-                                            </button>
-                                            <span id="translator-error" class="translator-error"
-                                                role="alert" hidden></span>
-                                        </div>
-                                    </form>
-                                </article>
-                            </div>
-                        </section>
-
-                    </section>
-
-
+                    {% else %}
+                    <a class="translator-launch-card" href="{{ url_for('resources', library='1') }}">
+                        <span class="translator-launch-icon" aria-hidden="true">📁</span>
+                        <span class="translator-launch-copy">
+                            <span class="resource-browser-eyebrow">YOUR LIBRARY</span>
+                            <strong>Folders &amp; files</strong>
+                            <span>Organize uploads, saved resources, and whiteboards in one place.</span>
+                        </span>
+                        <span class="translator-launch-action">Open your library <span aria-hidden="true">→</span></span>
+                    </a>
+                    <a class="translator-launch-card" href="{{ url_for('translator') }}">
+                        <span class="translator-launch-icon" aria-hidden="true">文</span>
+                        <span class="translator-launch-copy">
+                            <span class="resource-browser-eyebrow">STUDY TOOL</span>
+                            <strong>Translate text</strong>
+                            <span>Translate between 50 languages with automatic language detection.</span>
+                        </span>
+                        <span class="translator-launch-action">Open translator <span aria-hidden="true">→</span></span>
+                    </a>
+                    {% endif %}
+                </div>
             </section>
 
         </main>
@@ -256,6 +240,7 @@
 
         <!-- App Logic Scripts -->
     
+    {% if library_mode %}
     <script>
     (() => {
         const grid = document.getElementById("folder-grid");
@@ -263,6 +248,64 @@
         const backButton = document.getElementById("folder-back");
         const emptyState = document.getElementById("folder-empty-state");
         const feedback = document.getElementById("directory-feedback");
+        const fileInput = document.getElementById("folder-file-input");
+
+        const addButton = document.getElementById("folder-toolbar-add");
+        const addPopup = document.getElementById("folder-add-popup");
+
+        function closeAddPopup() {
+            if (addPopup) addPopup.hidden = true;
+
+            if (addButton) {
+                addButton.setAttribute("aria-expanded", "false");
+            }
+        }
+
+        if (addButton && addPopup) {
+            addButton.addEventListener("click", event => {
+                event.stopPropagation();
+
+                const shouldOpen = addPopup.hidden;
+
+                closeMenu();
+
+                addPopup.hidden = !shouldOpen;
+                addButton.setAttribute("aria-expanded", String(shouldOpen));
+            });
+
+            addPopup.addEventListener("click", event => {
+                event.stopPropagation();
+
+                const option = event.target.closest("[data-action]");
+                if (!option) return;
+
+                const action = option.dataset.action;
+
+                closeAddPopup();
+
+                if (action === "computer-upload") {
+                    fileInput?.click();
+                } else if (action === "whiteboard") {
+                    createNotebookInFolder("whiteboard");
+                } else if (action === "note") {
+                    createNotebookInFolder("notes");
+                } else if (action === "existing-notebook") {
+                    addExistingNotebookToFolder();
+                } else if (action === "web-search") {
+                    openWebSearch();
+                }
+            });
+
+            document.addEventListener("click", event => {
+                if (
+                    !addPopup.contains(event.target) &&
+                    !addButton.contains(event.target)
+                ) {
+                    closeAddPopup();
+                }
+            });
+        }
+
 
         if (!grid || !toolbar || !backButton || !emptyState) {
             console.error("Folder system: required HTML elements are missing.");
@@ -270,9 +313,336 @@
         }
 
         let folders = [];
+        let notebooks = [];
         let openFolderId = null;
         let menu = null;
         let modal = null;
+
+        async function createNotebookInFolder(kind) {
+            const activeFolder = folders.find(folder => folder.id === openFolderId);
+            if (!activeFolder) return;
+            const label = kind === "whiteboard" ? "whiteboard" : "note";
+            if (feedback) feedback.textContent = `Creating ${label}…`;
+            try {
+                const response = await fetch(
+                    `/api/saved-folders/${encodeURIComponent(activeFolder.id)}/${label}s`,
+                    { method: "POST", headers: { "Accept": "application/json" }, credentials: "same-origin" }
+                );
+                const result = await window.MeridianApi.read(response, `Could not create a ${label}.`);
+                activeFolder.items.push(result.item);
+                if (result.notebook) notebooks.push(result.notebook);
+                render();
+                if (feedback) feedback.textContent = `${label === "whiteboard" ? "Whiteboard" : "Note"} added to this folder.`;
+            } catch (error) {
+                if (feedback) feedback.textContent = error.message || `Could not create a ${label}.`;
+            }
+        }
+
+        async function addExistingNotebookToFolder() {
+            const activeFolder = folders.find(folder => folder.id === openFolderId);
+            if (!activeFolder) return;
+
+            try {
+                const response = await fetch("/api/notebooks", {
+                    headers: { "Accept": "application/json" },
+                    credentials: "same-origin"
+                });
+                const notebookData = await window.MeridianApi.read(
+                    response,
+                    "Could not load your notes and whiteboards."
+                );
+                notebooks = Array.isArray(notebookData.notebooks)
+                    ? notebookData.notebooks
+                    : [];
+                if (!notebooks.length) {
+                    if (feedback) feedback.textContent =
+                        "Create a note or whiteboard in Notes before adding it to a folder.";
+                    return;
+                }
+
+                showFolderDialog({
+                    title: "Add an existing note or whiteboard",
+                    message: "Choose an item to link to this folder. It stays in Notes and changes sync automatically.",
+                    selectOptions: notebooks.map(notebook => ({
+                        value: notebook.id,
+                        label: `${notebook.name} (${notebook.kind === "whiteboard" ? "Whiteboard" : "Note"})`
+                    })),
+                    confirmText: "Add to folder",
+                    onConfirm: async notebookId => {
+                        try {
+                            const addResponse = await fetch(
+                                `/api/saved-folders/${encodeURIComponent(activeFolder.id)}/notebooks`,
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "Accept": "application/json"
+                                    },
+                                    credentials: "same-origin",
+                                    body: JSON.stringify({ notebook_id: notebookId })
+                                }
+                            );
+                            const result = await window.MeridianApi.read(
+                                addResponse,
+                                "Could not add this note or whiteboard."
+                            );
+                            if (!activeFolder.items.some(
+                                item => item.notebook_id === result.item.notebook_id
+                            )) {
+                                activeFolder.items.push(result.item);
+                            }
+                            render();
+                            if (feedback) feedback.textContent =
+                                "Linked to this folder. Changes in Notes will stay in sync.";
+                        } catch (error) {
+                            console.error("Could not add notebook to folder:", error);
+                            if (feedback) feedback.textContent =
+                                error.message || "Could not add this note or whiteboard.";
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Could not load notes and whiteboards:", error);
+                if (feedback) feedback.textContent =
+                    error.message || "Could not load your notes and whiteboards.";
+            }
+        }
+
+        function openWebSearch() {
+            const activeFolder = folders.find(
+                folder => folder.id === openFolderId
+            );
+            if (!activeFolder) {
+                if (feedback) feedback.textContent = "Open a folder before searching for resources.";
+                return;
+            }
+
+            closeDialog();
+            const overlay = document.createElement("div");
+            overlay.className = "folder-dialog-overlay";
+            overlay.addEventListener("click", event => {
+                if (event.target === overlay) closeDialog();
+            });
+
+            const dialog = document.createElement("section");
+            dialog.className = "folder-dialog folder-web-search-dialog";
+            dialog.setAttribute("role", "dialog");
+            dialog.setAttribute("aria-modal", "true");
+            dialog.setAttribute("aria-labelledby", "folder-web-search-title");
+
+            const heading = document.createElement("h2");
+            heading.className = "folder-dialog-title";
+            heading.id = "folder-web-search-title";
+            heading.textContent = "Search the web";
+
+            const description = document.createElement("p");
+            description.className = "folder-dialog-message";
+            description.textContent =
+                "Find public learning resources and save links to this folder.";
+
+            const form = document.createElement("form");
+            form.className = "folder-web-search-form";
+            const queryInput = document.createElement("input");
+            queryInput.type = "search";
+            queryInput.maxLength = 180;
+            queryInput.required = true;
+            queryInput.placeholder = "Search a topic";
+            queryInput.setAttribute("aria-label", "Search learning resources");
+            const searchButton = document.createElement("button");
+            searchButton.type = "submit";
+            searchButton.className = "folder-dialog-button primary";
+            searchButton.textContent = "Search";
+            form.append(queryInput, searchButton);
+
+            const status = document.createElement("p");
+            status.className = "folder-web-search-status";
+            status.setAttribute("role", "status");
+            const resultList = document.createElement("div");
+            resultList.className = "folder-web-search-results";
+
+            const actions = document.createElement("div");
+            actions.className = "folder-dialog-actions";
+            const closeButton = document.createElement("button");
+            closeButton.type = "button";
+            closeButton.className = "folder-dialog-button";
+            closeButton.textContent = "Close";
+            closeButton.addEventListener("click", closeDialog);
+            actions.append(closeButton);
+            dialog.append(heading, description, form, status, resultList, actions);
+            overlay.append(dialog);
+            document.body.append(overlay);
+            modal = overlay;
+
+            form.addEventListener("submit", async event => {
+                event.preventDefault();
+                const query = queryInput.value.trim();
+                if (query.length < 2) {
+                    status.textContent = "Enter at least two characters to search.";
+                    queryInput.focus();
+                    return;
+                }
+
+                searchButton.disabled = true;
+                searchButton.textContent = "Searching…";
+                status.textContent = "Searching for learning resources…";
+                resultList.replaceChildren();
+                try {
+                    const response = await fetch("/api/resource-browser/search", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Accept": "application/json"
+                        },
+                        credentials: "same-origin",
+                        body: JSON.stringify({ query })
+                    });
+                    const data = await window.MeridianApi.read(
+                        response,
+                        "The web search could not be completed."
+                    );
+                    const results = [
+                        ...(Array.isArray(data.web_results) ? data.web_results : [])
+                            .map(item => ({ ...item, file_type: "web link" })),
+                        ...(Array.isArray(data.video_results) ? data.video_results : [])
+                            .map(item => ({ ...item, file_type: "video link" }))
+                    ];
+
+                    status.textContent = data.search_note || (
+                        results.length
+                            ? "Choose a result to save it to this folder."
+                            : "No results were returned. Try a different search."
+                    );
+                    results.forEach(resource => {
+                        const resultCard = document.createElement("article");
+                        resultCard.className = "folder-web-search-result";
+
+                        const titleLink = document.createElement("a");
+                        titleLink.href = resource.url;
+                        titleLink.target = "_blank";
+                        titleLink.rel = "noopener noreferrer";
+                        titleLink.textContent = resource.title || "Study resource";
+
+                        const summary = document.createElement("p");
+                        summary.textContent = resource.description || resource.publisher || "";
+
+                        const saveButton = document.createElement("button");
+                        saveButton.type = "button";
+                        saveButton.className = "folder-dialog-button primary";
+                        saveButton.textContent = "Save to folder";
+                        saveButton.addEventListener("click", async () => {
+                            saveButton.disabled = true;
+                            saveButton.textContent = "Saving…";
+                            try {
+                                const saveResponse = await fetch(
+                                    `/api/saved-folders/${encodeURIComponent(activeFolder.id)}/web-resources`,
+                                    {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "Accept": "application/json"
+                                        },
+                                        credentials: "same-origin",
+                                        body: JSON.stringify({
+                                            title: resource.title,
+                                            url: resource.url,
+                                            file_type: resource.file_type
+                                        })
+                                    }
+                                );
+                                const saved = await window.MeridianApi.read(
+                                    saveResponse,
+                                    "Could not save this resource."
+                                );
+                                const currentFolder = folders.find(
+                                    folder => folder.id === activeFolder.id
+                                );
+                                if (currentFolder) currentFolder.items.push(saved.item);
+                                saveButton.textContent = "Saved";
+                                render();
+                                if (feedback) feedback.textContent = "";
+                            } catch (error) {
+                                console.error("Could not save web resource:", error);
+                                status.textContent = error.message ||
+                                    "Could not save this resource. Please retry.";
+                                saveButton.disabled = false;
+                                saveButton.textContent = "Save to folder";
+                            }
+                        });
+
+                        resultCard.append(titleLink, summary, saveButton);
+                        resultList.append(resultCard);
+                    });
+
+                    if (results.length === 0 && data.web_search_url) {
+                        const fallback = document.createElement("a");
+                        fallback.href = data.web_search_url;
+                        fallback.target = "_blank";
+                        fallback.rel = "noopener noreferrer";
+                        fallback.textContent = "Open this search in your browser";
+                        resultList.append(fallback);
+                    }
+                } catch (error) {
+                    console.error("Study resource web search failed:", error);
+                    status.textContent = error.message ||
+                        "The search could not be completed. Please retry.";
+                } finally {
+                    searchButton.disabled = false;
+                    searchButton.textContent = "Search";
+                }
+            });
+
+            queryInput.focus();
+        }
+
+        if (fileInput) {
+            fileInput.addEventListener("change", async () => {
+                const activeFolder = folders.find(
+                    folder => folder.id === openFolderId
+                );
+                const files = Array.from(fileInput.files || []);
+                fileInput.value = "";
+
+                if (!activeFolder || files.length === 0) return;
+
+                const uploadErrors = [];
+                for (const file of files) {
+                    if (feedback) {
+                        feedback.textContent = `Uploading ${file.name}…`;
+                    }
+
+                    const body = new FormData();
+                    body.append("file", file);
+
+                    try {
+                        const response = await fetch(
+                            `/api/saved-folders/${encodeURIComponent(activeFolder.id)}/files`,
+                            {
+                                method: "POST",
+                                headers: { "Accept": "application/json" },
+                                body,
+                                credentials: "same-origin"
+                            }
+                        );
+                        const result = await window.MeridianApi.read(
+                            response,
+                            "Could not upload this file."
+                        );
+
+                        activeFolder.items.push(result.file);
+                    } catch (error) {
+                        console.error("Could not upload study file:", error);
+                        uploadErrors.push(
+                            error.message || `Could not upload ${file.name}.`
+                        );
+                    }
+                }
+
+                render();
+                if (feedback) {
+                    feedback.textContent = uploadErrors.join(" ");
+                }
+            });
+        }
 
         async function loadFolders() {
             try {
@@ -284,15 +654,26 @@
                     credentials: "same-origin"
                 });
 
-                if (!response.ok) {
-                    throw new Error("Could not load saved folders.");
-                }
-
-                const stored = await response.json();
+                const stored = await window.MeridianApi.read(
+                    response,
+                    "Could not load saved folders."
+                );
 
                 if (!Array.isArray(stored)) {
                     throw new Error("Invalid saved folder data.");
                 }
+
+                const notebooksResponse = await fetch("/api/notebooks", {
+                    headers: { "Accept": "application/json" },
+                    credentials: "same-origin"
+                });
+                const notebookData = await window.MeridianApi.read(
+                    notebooksResponse,
+                    "Could not load your notes and whiteboards."
+                );
+                notebooks = Array.isArray(notebookData.notebooks)
+                    ? notebookData.notebooks
+                    : [];
 
                 folders = stored.filter(folder =>
                     folder &&
@@ -324,9 +705,7 @@
                     body: JSON.stringify(folders)
                 });
 
-                if (!response.ok) {
-                    throw new Error("Server could not save folders.");
-                }
+                await window.MeridianApi.read(response, "Server could not save folders.");
 
                 if (feedback) feedback.textContent = "";
                 return true;
@@ -335,9 +714,87 @@
 
                 if (feedback) {
                     feedback.textContent =
-                        "Unable to save folders. Please try again.";
+                        error.message || "Unable to save folders. Please try again.";
                 }
 
+                return false;
+            }
+        }
+
+        function uniqueFolderName() {
+            const existingNames = new Set(
+                folders.map(folder => folder.name.trim().toLocaleLowerCase())
+            );
+            let name = "New folder";
+            let suffix = 2;
+            while (existingNames.has(name.toLocaleLowerCase())) {
+                name = `New folder ${suffix}`;
+                suffix += 1;
+            }
+            return name;
+        }
+
+        async function updateFolderItem(folder, item, updates) {
+            const itemId = item.storage_id || item.file_id || item.notebook_id;
+            if (!itemId) {
+                if (feedback) feedback.textContent = "This saved item cannot be updated.";
+                return false;
+            }
+            try {
+                const response = await fetch(
+                    `/api/saved-folders/${encodeURIComponent(folder.id)}` +
+                    `/items/${encodeURIComponent(itemId)}`,
+                    {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Accept": "application/json"
+                        },
+                        credentials: "same-origin",
+                        body: JSON.stringify(updates)
+                    }
+                );
+                const result = await window.MeridianApi.read(
+                    response,
+                    "Could not update this saved item."
+                );
+                Object.assign(item, result.item);
+                if (feedback) feedback.textContent = "";
+                render();
+                return true;
+            } catch (error) {
+                console.error("Could not update saved folder item:", error);
+                if (feedback) feedback.textContent =
+                    error.message || "Could not update this saved item.";
+                return false;
+            }
+        }
+
+        async function removeFolderItem(folder, item) {
+            const itemId = item.storage_id || item.file_id || item.notebook_id;
+            if (!itemId) {
+                if (feedback) feedback.textContent = "This saved item cannot be removed.";
+                return false;
+            }
+            try {
+                const response = await fetch(
+                    `/api/saved-folders/${encodeURIComponent(folder.id)}` +
+                    `/items/${encodeURIComponent(itemId)}`,
+                    {
+                        method: "DELETE",
+                        headers: { "Accept": "application/json" },
+                        credentials: "same-origin"
+                    }
+                );
+                await window.MeridianApi.read(response, "Could not remove this item from the folder.");
+                folder.items = folder.items.filter(candidate => candidate !== item);
+                if (feedback) feedback.textContent = "Removed from this folder.";
+                render();
+                return true;
+            } catch (error) {
+                console.error("Could not remove saved folder item:", error);
+                if (feedback) feedback.textContent =
+                    error.message || "Could not remove this item from the folder.";
                 return false;
             }
         }
@@ -381,6 +838,7 @@
             message,
             icon = "📁",
             inputValue = null,
+            selectOptions = null,
             confirmText = "Save",
             danger = false,
             onConfirm
@@ -412,6 +870,7 @@
             dialog.append( heading, description);
 
             let input = null;
+            let select = null;
 
             if (inputValue !== null) {
                 input = document.createElement("input");
@@ -423,6 +882,19 @@
                 input.setAttribute("aria-label", "Folder name");
                 input.required = true;
                 dialog.append(input);
+            }
+
+            if (Array.isArray(selectOptions)) {
+                select = document.createElement("select");
+                select.className = "folder-dialog-input";
+                select.setAttribute("aria-label", "Choose a note or whiteboard");
+                selectOptions.forEach(optionData => {
+                    const option = document.createElement("option");
+                    option.value = optionData.value;
+                    option.textContent = optionData.label;
+                    select.append(option);
+                });
+                dialog.append(select);
             }
 
             const actions = document.createElement("div");
@@ -453,7 +925,7 @@
                 if (input) input.setCustomValidity("");
 
                 closeDialog();
-                onConfirm(value);
+                onConfirm(select ? select.value : value);
             });
 
             actions.append(cancel, confirm);
@@ -477,6 +949,8 @@
 
                 input.focus();
                 input.select();
+            } else if (select) {
+                select.focus();
             } else {
                 cancel.focus();
             }
@@ -484,24 +958,25 @@
 
 
         function createFolder() {
-            const folder = {
-                id: (crypto.randomUUID
-                    ? crypto.randomUUID()
-                    : `${Date.now()}-${Math.random()}`),
-                name: "Folder",
-                items: []
-            };
-
-            folders.push(folder);
-            
-            saveFolders().then(success => {
-                if (!success) {
-                    folders.pop();
-                    render();
-                    return;
+            showFolderDialog({
+                title: "Create folder",
+                message: "Give your new folder a name.",
+                inputValue: uniqueFolderName(),
+                confirmText: "Create folder",
+                onConfirm: name => {
+                    const folder = {
+                        id: (crypto.randomUUID
+                            ? crypto.randomUUID()
+                            : `${Date.now()}-${Math.random().toString(36).slice(2)}`),
+                        name,
+                        items: []
+                    };
+                    folders.push(folder);
+                    saveFolders().then(success => {
+                        if (!success) folders.pop();
+                        render();
+                    });
                 }
-
-                render();
             });
         }
 
@@ -628,6 +1103,11 @@
             title.className = "folder-card-title";
             title.textContent = folder.name;
 
+            const meta = document.createElement("span");
+            meta.className = "folder-card-meta";
+            const itemCount = Array.isArray(folder.items) ? folder.items.length : 0;
+            meta.textContent = `${itemCount} ${itemCount === 1 ? "item" : "items"}`;
+
             const dots = document.createElement("button");
             dots.type = "button";
             dots.className = "folder-options-button";
@@ -667,7 +1147,7 @@
             });
 
             top.append(icon);
-            card.append(top, title, dots);
+            card.append(top, title, meta, dots);
 
             return card;
         }
@@ -687,26 +1167,216 @@
             if (heading) {
                 heading.textContent = activeFolder
                     ? activeFolder.name
-                    : "Browse your Saved Content";
+                    : "Your folders";
             }
 
             toolbar.hidden = !activeFolder;
             emptyState.hidden = true;
+            grid.classList.toggle("folder-files-grid", Boolean(activeFolder));
 
             if (activeFolder) {
                 activeFolder.items.forEach(item => {
-                    const card = document.createElement("div");
-                    card.className = "folder-card";
+                    const isUploadedFile =
+                        item && item.kind === "file" &&
+                        typeof item.file_id === "string";
+                    const isWebResource =
+                        item && item.kind === "web" &&
+                        typeof item.url === "string";
+                    const isWhiteboard =
+                        item && typeof item.notebook_id === "string" &&
+                        (item.kind === "whiteboard" || item.file_type === "whiteboard");
+                    const linkedNotebook =
+                        item && typeof item.notebook_id === "string"
+                            ? notebooks.find(notebook => notebook.id === item.notebook_id)
+                            : null;
+                    const card = document.createElement("article");
+                    card.className = "folder-file-card";
 
                     const icon = document.createElement("span");
-                    icon.className = "folder-icon";
-                    setFolderIcon(icon, "file");
+                    icon.className = "folder-file-icon";
+                    const extension = (item?.title || "").split(".").pop().toLowerCase();
+                    const iconLabels = {
+                        "application/pdf": "PDF",
+                        "image": "IMG",
+                        "video": "VID",
+                        "audio": "AUD",
+                        "text": "TXT",
+                        "note": "NOTE",
+                        "notes": "NOTE",
+                        "whiteboard": "BOARD",
+                        "web link": "WEB",
+                        "video link": "VID"
+                    };
+                    const fileType = item?.file_type || "";
+                    icon.textContent =
+                        iconLabels[fileType] ||
+                        iconLabels[fileType.split("/")[0]] ||
+                        (isWhiteboard ? "BOARD" : isWebResource ? "WEB" : extension.toUpperCase().slice(0, 4) || "FILE");
+                    icon.setAttribute("aria-hidden", "true");
 
                     const title = document.createElement("span");
-                    title.className = "folder-card-title";
-                    title.textContent = item.title || "Saved content";
+                    title.className = "folder-file-name";
+                    title.textContent =
+                        item?.custom_title ||
+                        linkedNotebook?.name ||
+                        item?.original_filename || item?.title || item?.filename || "Saved content";
 
+                    const preview = document.createElement("div");
+                    preview.className = "folder-file-preview";
+                    if (linkedNotebook?.kind === "whiteboard") {
+                        const canvas = document.createElement("canvas");
+                        canvas.width = 640;
+                        canvas.height = 360;
+                        canvas.setAttribute("aria-label", `Preview of ${linkedNotebook.name}`);
+                        const context = canvas.getContext("2d");
+                        if (context) {
+                            context.fillStyle = "#fff";
+                            context.fillRect(0, 0, canvas.width, canvas.height);
+                            (linkedNotebook.whiteboard?.strokes || []).forEach(stroke => {
+                                if (stroke.type === "text") {
+                                    context.fillStyle = stroke.color || "#20242d";
+                                    context.font = `${Math.max(12, (Number(stroke.size) || 20) * 1.5)}px Arial`;
+                                    context.fillText(
+                                        String(stroke.text || "").slice(0, 100),
+                                        (Number(stroke.x) || 0) * canvas.width,
+                                        (Number(stroke.y) || 0) * canvas.height
+                                    );
+                                    return;
+                                }
+                                const points = Array.isArray(stroke.points) ? stroke.points : [];
+                                if (!points.length) return;
+                                context.beginPath();
+                                context.moveTo(
+                                    (Number(points[0].x) || 0) * canvas.width,
+                                    (Number(points[0].y) || 0) * canvas.height
+                                );
+                                points.slice(1).forEach(point => context.lineTo(
+                                    (Number(point.x) || 0) * canvas.width,
+                                    (Number(point.y) || 0) * canvas.height
+                                ));
+                                context.strokeStyle = stroke.color || "#20242d";
+                                context.lineWidth = Math.max(2, (Number(stroke.size) || 5) * 1.5);
+                                context.lineCap = "round";
+                                context.lineJoin = "round";
+                                context.stroke();
+                            });
+                        }
+                        preview.append(canvas);
+                    } else if (linkedNotebook && linkedNotebook.kind !== "whiteboard") {
+                        const parsedContent = new DOMParser().parseFromString(
+                            String(linkedNotebook.content || ""),
+                            "text/html"
+                        );
+                        preview.textContent =
+                            parsedContent.body.textContent.trim().slice(0, 360) ||
+                            "This note is empty.";
+                    } else if (isWebResource) {
+                        preview.textContent = item.description || item.url;
+                    } else if (isUploadedFile) {
+                        preview.textContent = item.original_filename || item.title || "Saved file";
+                    }
+
+                    const uploadDate = document.createElement("time");
+                    uploadDate.className = "folder-file-meta";
+                    const uploadedAt = new Date(item?.uploaded_at);
+                    if (linkedNotebook) {
+                        uploadDate.textContent =
+                            `Linked ${linkedNotebook.kind === "whiteboard" ? "whiteboard" : "note"} · synced with Notes`;
+                    } else if (
+                        typeof item?.uploaded_at === "string" &&
+                        !Number.isNaN(uploadedAt.getTime())
+                    ) {
+                        uploadDate.dateTime = item.uploaded_at;
+                        uploadDate.textContent =
+                            `Uploaded ${new Intl.DateTimeFormat(undefined, {
+                                dateStyle: "medium",
+                                timeStyle: "short"
+                            }).format(uploadedAt)}`;
+                    } else {
+                        uploadDate.textContent = "Upload date unavailable";
+                    }
+
+                    const actions = document.createElement("div");
+                    actions.className = "folder-file-actions";
+                    const renameButton = document.createElement("button");
+                    renameButton.type = "button";
+                    renameButton.textContent = "Rename";
+                    renameButton.addEventListener("click", () => {
+                        showFolderDialog({
+                            title: "Rename saved item",
+                            message: "This changes the name shown in this folder only.",
+                            inputValue: item.custom_title ||
+                                linkedNotebook?.name ||
+                                item?.original_filename || item?.title || item?.filename ||
+                                "Saved content",
+                            confirmText: "Save name",
+                            onConfirm: name => updateFolderItem(
+                                activeFolder,
+                                item,
+                                { custom_title: name }
+                            )
+                        });
+                    });
+                    const removeButton = document.createElement("button");
+                    removeButton.type = "button";
+                    removeButton.className = "folder-item-remove";
+                    removeButton.textContent = "Remove";
+                    removeButton.addEventListener("click", () => {
+                        showFolderDialog({
+                            title: "Remove item from folder?",
+                            message: linkedNotebook
+                                ? "This removes the link from this folder. The note or whiteboard will remain in Notes."
+                                : "This removes the item from this folder.",
+                            confirmText: "Remove",
+                            danger: true,
+                            onConfirm: () => removeFolderItem(activeFolder, item)
+                        });
+                    });
+                    if (isUploadedFile) {
+                        const fileUrl =
+                            `/api/saved-folders/${encodeURIComponent(activeFolder.id)}` +
+                            `/files/${encodeURIComponent(item.file_id)}`;
+                        const openLink = document.createElement("a");
+                        openLink.href = fileUrl;
+                        openLink.target = "_blank";
+                        openLink.rel = "noopener";
+                        openLink.textContent = "Open";
+                        const downloadLink = document.createElement("a");
+                        downloadLink.href = `${fileUrl}?download=1`;
+                        downloadLink.textContent = "Download";
+                        actions.append(openLink, downloadLink);
+                    } else if (isWebResource) {
+                        try {
+                            const resourceUrl = new URL(item.url);
+                            if (["http:", "https:"].includes(resourceUrl.protocol)) {
+                                const openLink = document.createElement("a");
+                                openLink.href = resourceUrl.href;
+                                openLink.target = "_blank";
+                                openLink.rel = "noopener noreferrer";
+                                openLink.textContent = "Open resource";
+                                actions.append(openLink);
+                            }
+                        } catch {
+                            console.warn("Skipping invalid saved web resource URL.");
+                        }
+                    } else if (isWhiteboard || linkedNotebook) {
+                        const openLink = document.createElement("a");
+                        const notebookKind = linkedNotebook?.kind || "whiteboard";
+                        openLink.href = notebookKind === "whiteboard"
+                            ? `/notes?kind=whiteboard&file_id=${encodeURIComponent(item.notebook_id)}`
+                            : `/notes?file_id=${encodeURIComponent(item.notebook_id)}`;
+                        openLink.textContent = notebookKind === "whiteboard"
+                            ? "Open whiteboard"
+                            : "Open note";
+                        actions.append(openLink);
+                    }
+
+                    actions.prepend(renameButton, removeButton);
                     card.append(icon, title);
+                    if (preview.textContent || preview.childElementCount) {
+                        card.append(preview);
+                    }
+                    card.append(uploadDate, actions);
                     grid.append(card);
                 });
 
@@ -765,300 +1435,10 @@ setFolderIcon(document.getElementById("empty-folder-icon"), "folder");
 loadFolders();
 })();
 
-    (() => {
-    const form = document.getElementById("translator-form");
-    if (!form) return;
 
-    const source = document.getElementById("translator-source-language");
-    const target = document.getElementById("translator-target-language");
-    const input = document.getElementById("translator-input");
-    const output = document.getElementById("translator-output");
-    const count = document.getElementById("translator-character-count");
-    const status = document.getElementById("translator-status");
-    const error = document.getElementById("translator-error");
-    const clear = document.getElementById("translator-clear");
-    const swap = document.getElementById("translator-swap");
-    const copy = document.getElementById("translator-copy");
-
-    const API = "https://translate.argosopentech.com/translate";
-
-    const languages = {
-    en: "English",
-    es: "Spanish",
-    fr: "French",
-    de: "German",
-    it: "Italian",
-    pt: "Portuguese",
-    zh: "Chinese",
-    ja: "Japanese",
-    ko: "Korean",
-    ar: "Arabic",
-    hi: "Hindi",
-    ru: "Russian"
-    };
-
-    const languagePatterns = [
-        { code: "es", pattern: /[¿¡ñáéíóúü]/i },
-        { code: "fr", pattern: /[àâçéèêëîïôùûüÿœæ]/i },
-        { code: "de", pattern: /[äöüß]/i },
-        { code: "pt", pattern: /[ãõáàâçéêíóôú]/i },
-        { code: "it", pattern: /[àèéìíîòóù]/i },
-        { code: "ru", pattern: /[\u0400-\u04FF]/ },
-        { code: "ar", pattern: /[\u0600-\u06FF]/ },
-        { code: "hi", pattern: /[\u0900-\u097F]/ },
-        { code: "zh", pattern: /[\u4E00-\u9FFF]/ },
-        { code: "ja", pattern: /[\u3040-\u30FF]/ },
-        { code: "ko", pattern: /[\uAC00-\uD7AF]/ }
-    ];
-
-    function detectLanguage(text) {
-        for (const language of languagePatterns) {
-            if (language.pattern.test(text)) {
-                return language.code;
-            }
-        }
-
-        // Basic Latin text defaults to English.
-        if (/[a-z]/i.test(text)) {
-            return "en";
-        }
-
-        return null;
-    }
-
-    let timer = null;
-    let controller = null;
-    let requestNumber = 0;
-    let detectedLanguage = null;
-
-    function showError(message = "") {
-    error.textContent = message;
-    error.hidden = !message;
-    }
-
-    function cancelRequest() {
-    clearTimeout(timer);
-
-    if (controller) {
-    controller.abort();
-    controller = null;
-    }
-
-    requestNumber++;
-    }
-
-    async function translate() {
-    const text = input.value.trim();
-    const currentRequest = ++requestNumber;
-
-    if (controller) controller.abort();
-
-    controller = new AbortController();
-
-    showError("");
-
-    if (!text) {
-    output.value = "";
-    status.textContent = "";
-    detectedLanguage = null;
-
-    if (source.value === "auto") {
-        // Keep automatic detection selected until text is entered.
-    }
-
-    return;
-    }
-
-    if (source.value !== "auto" && source.value === target.value) {
-    output.value = text;
-    status.textContent = "Both languages are the same.";
-    return;
-    }
-
-    status.textContent = "Translating…";
-
-    try {
-    const response = await fetch("/api/translate", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        },
-        body: JSON.stringify({
-            text: text,
-            source: source.value,
-            target: target.value
-        }),
-        signal: controller.signal
-    });
-
-    if (!response.ok) {
-        throw new Error(
-            response.status === 429
-                ? "Too many requests. Please wait and try again."
-                : "The translation service is unavailable. Please try again later."
-        );
-    }
-
-    const data = await response.json();
-
-    if (currentRequest !== requestNumber) return;
-
-    if (typeof data.translatedText !== "string") {
-        throw new Error(data.error || "No translation was returned.");
-    }
-
-    output.value = data.translatedText;
-
-    if (source.value === "auto" && data.detectedLanguage?.language) {
-        let detected = data.detectedLanguage.language.toLowerCase();
-
-        // Normalize language codes returned by the API.
-        if (detected.includes("-")) {
-            detected = detected.split("-")[0];
-        }
-
-        if (detected.startsWith("zh")) detected = "zh";
-        if (detected.startsWith("pt")) detected = "pt";
-
-        if (languages[detected]) {
-            detectedLanguage = detected;
-
-            // Actually select the detected language in the dropdown.
-            source.value = detected;
-        }
-    } else if (source.value !== "auto") {
-        detectedLanguage = source.value;
-    }
-
-    const from = detectedLanguage
-        ? languages[detectedLanguage]
-        : languages[source.value];
-
-    status.textContent = source.value === "auto" && from
-        ? `${from} → ${languages[target.value]}`
-        : `Translated to ${languages[target.value]}.`;
-
-    } catch (err) {
-    if (err.name === "AbortError") return;
-    if (currentRequest !== requestNumber) return;
-
-    status.textContent = "";
-    showError(err.message || "Translation failed.");
-    }
-    }
-
-    function scheduleTranslation() {
-    cancelRequest();
-
-    count.textContent = `${input.value.length} / 5000`;
-    showError("");
-
-    if (!input.value.trim()) {
-    output.value = "";
-    status.textContent = "";
-    detectedLanguage = null;
-    source.options[0].textContent = "Detect language";
-    return;
-    }
-
-    status.textContent = "Waiting…";
-    timer = setTimeout(translate, 500);
-    }
-
-    input.addEventListener("input", () => {
-        count.textContent = `${input.value.length} / 5000`;
-        showError("");
-
-        if (!input.value.trim()) {
-            cancelRequest();
-            output.value = "";
-            status.textContent = "";
-            detectedLanguage = null;
-
-            // Restore Auto Detect as the selected option.
-            source.value = "auto";
-            return;
-        }
-
-        scheduleTranslation();
-    });
-
-    source.addEventListener("change", () => {
-    detectedLanguage = null;
-    source.options[0].textContent = "Detect language";
-    scheduleTranslation();
-    });
-
-    target.addEventListener("change", scheduleTranslation);
-
-    clear.addEventListener("click", () => {
-    cancelRequest();
-
-    input.value = "";
-    output.value = "";
-    count.textContent = "0 / 5000";
-    status.textContent = "";
-    detectedLanguage = null;
-    source.options[0].textContent = "Detect language";
-
-    showError("");
-    input.focus();
-    });
-
-    swap.addEventListener("click", () => {
-    const oldInput = input.value;
-    const oldOutput = output.value;
-
-    if (!oldOutput.trim()) {
-    showError("Enter text and wait for the translation before swapping.");
-    return;
-    }
-
-    const actualSource = source.value === "auto"
-    ? detectedLanguage
-    : source.value;
-
-    if (!actualSource || !languages[actualSource]) {
-    showError("Wait for language detection to finish before swapping.");
-    return;
-    }
-
-    cancelRequest();
-
-    input.value = oldOutput;
-    output.value = oldInput;
-
-    const oldTarget = target.value;
-    source.value = oldTarget;
-    target.value = actualSource;
-    detectedLanguage = null;
-    source.options[0].textContent = "Detect language";
-
-    count.textContent = `${input.value.length} / 5000`;
-    showError("");
-
-    scheduleTranslation();
-    });
-
-    copy.addEventListener("click", async () => {
-    if (!output.value) return;
-
-    try {
-    await navigator.clipboard.writeText(output.value);
-    status.textContent = "Copied to clipboard.";
-    } catch {
-    output.focus();
-    output.select();
-    status.textContent = "Copy the selected text manually.";
-    }
-    });
-
-    form.addEventListener("submit", event => {
-    event.preventDefault();
-    scheduleTranslation();
-    });
-    })();
 
 </script>
+    {% endif %}
 
+</body>
+</html>

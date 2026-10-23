@@ -1,4 +1,5 @@
 import json
+import logging
 import mimetypes
 import os
 import re
@@ -26,6 +27,7 @@ from flask import (
 )
 from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 
 try:
     from static.ai import (  # type: ignore[reportMissingImports]
@@ -59,6 +61,20 @@ except ModuleNotFoundError:  # pragma: no cover
     )
 
 app = Flask(__name__)
+
+
+class _HideAIChatAccessLogs(logging.Filter):
+    """Keep the local-server startup URL visible without logging chat routes."""
+
+    def filter(self, record):
+        message = record.getMessage()
+        return not re.search(
+            r'"(?:GET|POST|PUT|PATCH|DELETE) /api/ai(?:/| )',
+            message,
+        )
+
+
+logging.getLogger("werkzeug").addFilter(_HideAIChatAccessLogs())
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "studytool-dev-secret-key")
 app.config["DATABASE"] = os.path.join(app.root_path, "studytool.db")
@@ -73,6 +89,25 @@ USER_SONG_MEDIA_EXTENSIONS = USER_SONG_AUDIO_EXTENSIONS | USER_SONG_VIDEO_EXTENS
 MAX_USER_SONG_SIZE = 25 * 1024 * 1024
 MAX_USER_SONGS = 50
 MAX_PROFILE_PICTURE_SIZE = 5 * 1024 * 1024
+MAX_STUDY_FILE_SIZE = 25 * 1024 * 1024
+
+
+@app.before_request
+def block_private_save_data_static_access():
+    """Keep authenticated user data private even though it lives under static/."""
+    if request.endpoint != "static" or not request.view_args:
+        return None
+
+    relative_path = Path(request.view_args["filename"])
+    if relative_path.parts and relative_path.parts[0] == "SaveData":
+        return jsonify({"error": "Not found."}), 404
+
+    private_root = Path(app.config["SAVE_DATA_DIR"]).resolve()
+    static_root = Path(app.static_folder).resolve()
+    requested_path = (static_root / relative_path).resolve()
+    if requested_path == private_root or private_root in requested_path.parents:
+        return jsonify({"error": "Not found."}), 404
+    return None
 
 
 def youtube_video_id(media_url):
@@ -255,8 +290,28 @@ def load_user_memory(user_dir):
     memory_path = user_dir / "memory"
     if not memory_path.exists():
         return {"explicit_facts": [], "facts": []}
-    with memory_path.open("r", encoding="utf-8") as memory_file:
-        memory = json.load(memory_file)
+    try:
+        with memory_path.open("r", encoding="utf-8") as memory_file:
+            memory = json.load(memory_file)
+    except json.JSONDecodeError as error:
+        app.logger.warning(
+            "Resetting malformed AI memory file: %s",
+            error,
+        )
+        # A malformed memory file otherwise causes the same warning on every
+        # chat request. Recover it to a valid empty memory atomically so the
+        # assistant can keep working and future requests stay clean.
+        try:
+            write_json_atomically(
+                memory_path,
+                {"explicit_facts": [], "facts": []},
+            )
+        except OSError as write_error:
+            app.logger.warning("Could not reset malformed AI memory file: %s", write_error)
+        return {"explicit_facts": [], "facts": []}
+    except (OSError, UnicodeError) as error:
+        app.logger.warning("Ignoring unreadable AI memory file: %s", error)
+        return {"explicit_facts": [], "facts": []}
     facts = memory.get("facts") if isinstance(memory, dict) else None
     if not isinstance(facts, list):
         facts = []
@@ -414,6 +469,8 @@ def login_required(view):
     def wrapped_view(*args, **kwargs):
         if "user_id" in session:
             return view(*args, **kwargs)
+        if request.path.startswith("/api/"):
+            return jsonify({"error": "Please sign in to continue."}), 401
         return redirect(url_for("login", next=request.path))
 
     return wrapped_view
@@ -680,10 +737,19 @@ def safe_next_url(target):
 def load_resources():
     """Load the bundled study-resource catalog when its JSON file exists."""
     json_path = os.path.join(app.root_path, "data", "resources.json")
-    if os.path.exists(json_path):
+    try:
         with open(json_path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return []
+            resources = json.load(f)
+    except FileNotFoundError:
+        return []
+    except (OSError, json.JSONDecodeError):
+        app.logger.exception("Could not load the bundled study resource catalog")
+        return []
+
+    if not isinstance(resources, list):
+        app.logger.error("Study resource catalog must contain a JSON list")
+        return []
+    return [resource for resource in resources if isinstance(resource, dict)]
 
 
 # -----------------------------------------------------------------------------
@@ -902,6 +968,13 @@ def ai_chat():
                 conversation_summary=conversation_summary,
                 tool_results=tool_results,
             ):
+                if chunk.startswith("Error: "):
+                    app.logger.error("AI model request failed: %s", chunk[7:])
+                    yield json.dumps({
+                        "type": "error",
+                        "message": "The AI model could not generate a response. Check that Ollama is running and the configured model is installed.",
+                    }) + "\n"
+                    return
                 full_response += chunk
                 yield json.dumps({
                     "type": "token",
@@ -960,12 +1033,33 @@ def list_ai_chats():
         user_dir = ai_user_directory()
         chats = []
         for chat_path in (user_dir / "chats").glob("*.json"):
-            with chat_path.open("r", encoding="utf-8") as chat_file:
-                chat = json.load(chat_file)
+            if chat_path.is_symlink() or not chat_path.is_file():
+                continue
+            try:
+                with chat_path.open("r", encoding="utf-8") as chat_file:
+                    chat = json.load(chat_file)
+            except (OSError, UnicodeError, json.JSONDecodeError) as error:
+                app.logger.warning(
+                    "Skipping unreadable saved AI conversation %s: %s",
+                    chat_path.name,
+                    error,
+                )
+                continue
+            if (
+                not isinstance(chat, dict)
+                or not isinstance(chat.get("id"), str)
+                or not isinstance(chat.get("title"), str)
+            ):
+                app.logger.warning(
+                    "Skipping invalid saved AI conversation %s",
+                    chat_path.name,
+                )
+                continue
+            updated_at = chat.get("updated_at", "")
             chats.append({
                 "id": chat["id"],
                 "title": chat["title"],
-                "updated_at": chat.get("updated_at", ""),
+                "updated_at": updated_at if isinstance(updated_at, str) else "",
             })
         chats.sort(key=lambda chat: chat["updated_at"], reverse=True)
         return jsonify({"chats": chats})
@@ -1171,6 +1265,18 @@ def settings():
                                 )
                                 error = "Your profile picture could not be saved. Please try again."
 
+        elif action == "remove_profile_picture":
+            try:
+                user_profile_picture_path(user_id).unlink(missing_ok=True)
+                success = "Profile picture removed. Your default avatar is restored."
+            except OSError as picture_error:
+                app.logger.exception(
+                    "Could not remove profile picture for user %s: %s",
+                    user_id,
+                    picture_error,
+                )
+                error = "Your profile picture could not be removed. Please try again."
+
         elif action == "change_username":
             new_username = request.form.get("new_username", "").strip()
             current_password = request.form.get("username_current_password", "")
@@ -1283,9 +1389,15 @@ def resources():
         search_term = query.lower()
         filtered_resources = [
             item for item in all_resources
-            if search_term in item.get("title", "").lower()
-            or search_term in item.get("subject", "").lower()
-            or search_term in item.get("description", "").lower()
+            if any(
+                search_term in value.lower()
+                for value in (
+                    item.get("title"),
+                    item.get("subject"),
+                    item.get("description"),
+                )
+                if isinstance(value, str)
+            )
         ]
     else:
         filtered_resources = all_resources
@@ -1295,8 +1407,8 @@ def resources():
         resources=filtered_resources,
         query=query,
         web_results=web_results,
+        library_mode=False,
     )
-
 
 @app.route("/resource-browser")
 @login_required
@@ -1305,11 +1417,20 @@ def resource_browser():
     return render_template("resource_browser.html")
 
 
+@app.route("/translator")
+@login_required
+def translator():
+    """Render the full-page translator workspace."""
+    return render_template("translator.html")
+
+
 @app.route("/api/resource-browser/search", methods=["POST"])
 @login_required
 def resource_browser_search():
     """Search the web and generate a study overview for a requested topic."""
     data = request.get_json(silent=True) or {}
+    if not isinstance(data, dict):
+        return jsonify({"error": "Enter a topic to search."}), 400
     query = data.get("query", "")
     if not isinstance(query, str):
         return jsonify({"error": "Enter a topic to search."}), 400
@@ -1378,8 +1499,17 @@ def resource_browser_search():
             if not isinstance(result, dict):
                 continue
             url = str(result.get("url") or "").strip()
-            parsed = urlsplit(url)
-            if parsed.scheme not in {"http", "https"} or not parsed.hostname or url in seen_urls:
+            try:
+                parsed = urlsplit(url)
+            except ValueError:
+                continue
+            if (
+                parsed.scheme not in {"http", "https"}
+                or not parsed.hostname
+                or parsed.username
+                or parsed.password
+                or url in seen_urls
+            ):
                 continue
             title = str(result.get("title") or "").strip()
             if not title:
@@ -1412,6 +1542,8 @@ def resource_browser_search():
 def resource_browser_summary():
     """Generate the slower local-model overview after search results appear."""
     data = request.get_json(silent=True) or {}
+    if not isinstance(data, dict):
+        return jsonify({"error": "Enter a topic between 2 and 180 characters."}), 400
     query = data.get("query", "")
     if not isinstance(query, str) or not 2 <= len(query.strip()) <= 180:
         return jsonify({"error": "Enter a topic between 2 and 180 characters."}), 400
@@ -1577,8 +1709,21 @@ def translate_text():
                 continue
 
     if not isinstance(translation, str):
-        return jsonify({"error": "The translation service could not translate this text."}), 502
-    return jsonify({"translatedText": translation})
+        app.logger.error(
+            "Translation failed: all providers failed. Source=%s, Target=%s",
+            source_for_translation,
+            target,
+        )
+        return jsonify({
+            "error": "The translation service is temporarily unavailable."
+        }), 502
+
+    return jsonify({
+        "translatedText": translation,
+        "detectedLanguage": {
+            "language": source_for_translation
+        } if source_for_translation != "auto" else None
+    })
 
 
 
@@ -1962,16 +2107,8 @@ def notes():
 
 init_db()
 
-from pathlib import Path
-import json
-import shutil
-import uuid
-
-from flask import jsonify, request, session
-
-# Static/SaveData/<username>/Folders/<folder name>/
-SAVE_DATA_ROOT = Path(app.root_path) / "static" / "SaveData"
-
+# static/SaveData/<username>/Folders/<folder-id>/folder.json
+FOLDER_ID_PATTERN = re.compile(r"[A-Za-z0-9_-]{1,80}\Z")
 
 def get_user_folders_dir():
     username = session.get("username")
@@ -1986,16 +2123,64 @@ def get_user_folders_dir():
     ):
         return None
 
-    folders_dir = SAVE_DATA_ROOT / username / "Folders"
+    folders_dir = Path(app.config["SAVE_DATA_DIR"]) / username / "Folders"
     folders_dir.mkdir(parents=True, exist_ok=True)
 
     return folders_dir
 
 
-def read_folder_data(folder_path):
-    metadata_file = folder_path / ".folder.json"
+def valid_folder_id(folder_id):
+    return isinstance(folder_id, str) and FOLDER_ID_PATTERN.fullmatch(folder_id) is not None
 
-    if metadata_file.exists():
+
+def migrate_legacy_saved_folders(folders_dir):
+    """Move name-based folders and legacy metadata into the stable ID layout."""
+    for old_path in list(folders_dir.iterdir()):
+        if old_path.is_symlink() or not old_path.is_dir():
+            continue
+
+        folder = read_folder_data(old_path)
+        folder_id = folder.get("id")
+        if not valid_folder_id(folder_id):
+            folder_id = uuid.uuid4().hex
+            folder["id"] = folder_id
+
+        folder_path = folders_dir / folder_id
+        if old_path != folder_path:
+            if folder_path.exists():
+                raise ValueError("A saved folder ID conflicts with an existing directory.")
+            old_path.rename(folder_path)
+
+        folder["name"] = folder.get("name") or old_path.name
+        write_folder_data(folder_path, folder)
+        (folder_path / ".folder.json").unlink(missing_ok=True)
+
+
+def find_saved_folder(folder_id):
+    """Find a folder by its stored ID within the signed-in user's directory."""
+    if not valid_folder_id(folder_id):
+        return None
+
+    folders_dir = get_user_folders_dir()
+    if folders_dir is None:
+        return None
+
+    folder_path = folders_dir / folder_id
+    if (
+        folder_path.is_symlink()
+        or not folder_path.is_dir()
+        or folder_path.resolve().parent != folders_dir.resolve()
+    ):
+        return None
+    return folder_path if read_folder_data(folder_path).get("id") == folder_id else None
+
+
+def read_folder_data(folder_path):
+    metadata_file = folder_path / "folder.json"
+    if not metadata_file.is_file():
+        metadata_file = folder_path / ".folder.json"
+
+    if metadata_file.is_file():
         with metadata_file.open("r", encoding="utf-8") as file:
             data = json.load(file)
 
@@ -2004,10 +2189,10 @@ def read_folder_data(folder_path):
             and isinstance(data.get("id"), str)
             and isinstance(data.get("items"), list)
         ):
-            data["name"] = folder_path.name
+            if not isinstance(data.get("name"), str) or not data["name"].strip():
+                data["name"] = folder_path.name
             return data
 
-    # Recognize folders that already exist on disk.
     return {
         "id": str(uuid.uuid4()),
         "name": folder_path.name,
@@ -2016,34 +2201,27 @@ def read_folder_data(folder_path):
 
 
 def write_folder_data(folder_path, folder):
-    metadata_file = folder_path / ".folder.json"
-    temporary_file = folder_path / ".folder.tmp"
-
-    with temporary_file.open("w", encoding="utf-8") as file:
-        json.dump(folder, file, ensure_ascii=False, indent=2)
-
-    temporary_file.replace(metadata_file)
+    metadata_file = folder_path / "folder.json"
+    write_json_atomically(metadata_file, folder)
 
 
 @app.route("/api/saved-folders", methods=["GET"])
+@login_required
 def load_saved_folders():
-    folders_dir = get_user_folders_dir()
-
-    if folders_dir is None:
-        return jsonify({"error": "Please sign in first."}), 401
-
     try:
+        folders_dir = get_user_folders_dir()
+        if folders_dir is None:
+            return jsonify({"error": "Please sign in to continue."}), 401
+        migrate_legacy_saved_folders(folders_dir)
         folders = []
 
         for folder_path in folders_dir.iterdir():
-            if not folder_path.is_dir():
+            if folder_path.is_symlink() or not folder_path.is_dir():
                 continue
 
             folder = read_folder_data(folder_path)
-            folder["name"] = folder_path.name
-
-            # Store stable IDs for existing folders.
-            write_folder_data(folder_path, folder)
+            if folder_path.name != folder.get("id"):
+                continue
             folders.append(folder)
 
         folders.sort(key=lambda folder: folder["name"].casefold())
@@ -2056,12 +2234,8 @@ def load_saved_folders():
 
 
 @app.route("/api/saved-folders", methods=["PUT"])
+@login_required
 def save_saved_folders():
-    folders_dir = get_user_folders_dir()
-
-    if folders_dir is None:
-        return jsonify({"error": "Please sign in first."}), 401
-
     data = request.get_json(silent=True)
 
     if not isinstance(data, list) or len(data) > 500:
@@ -2080,8 +2254,7 @@ def save_saved_folders():
         items = folder.get("items")
 
         if (
-            not isinstance(folder_id, str)
-            or not folder_id
+            not valid_folder_id(folder_id)
             or not isinstance(name, str)
             or not name.strip()
             or len(name.strip()) > 100
@@ -2108,41 +2281,37 @@ def save_saved_folders():
         seen_names.add(normalized_name)
 
     try:
-        # Match existing directories to their stable IDs.
+        folders_dir = get_user_folders_dir()
+        if folders_dir is None:
+            return jsonify({"error": "Please sign in to continue."}), 401
+        migrate_legacy_saved_folders(folders_dir)
         existing = {}
 
         for path in folders_dir.iterdir():
-            if path.is_dir():
+            if not path.is_symlink() and path.is_dir():
                 folder = read_folder_data(path)
                 existing[folder["id"]] = path
 
-        # Create new directories or rename existing directories.
         for folder in data:
             folder_id = folder["id"]
             name = folder["name"].strip()
             old_path = existing.get(folder_id)
-            new_path = folders_dir / name
+            new_path = folders_dir / folder_id
 
-            if old_path is not None and old_path != new_path:
-                if new_path.exists():
-                    return jsonify({
-                        "error": f"A folder named '{name}' already exists."
-                    }), 409
-
-                old_path.rename(new_path)
-                new_path = folders_dir / name
-
-            elif old_path is None and new_path.exists():
-                return jsonify({
-                    "error": f"A folder named '{name}' already exists."
-                }), 409
-
+            if old_path is None and new_path.exists():
+                return jsonify({"error": "A folder with this ID already exists."}), 409
+            if old_path is None and folder["items"]:
+                return jsonify({"error": "New folders cannot contain unverified files."}), 400
+            stored_items = (
+                read_folder_data(old_path)["items"]
+                if old_path is not None
+                else []
+            )
             new_path.mkdir(parents=True, exist_ok=True)
-
             write_folder_data(new_path, {
                 "id": folder_id,
                 "name": name,
-                "items": folder["items"]
+                "items": stored_items,
             })
 
         # Remove directories for folders deleted in the interface.
@@ -2155,6 +2324,447 @@ def save_saved_folders():
     except (OSError, ValueError, json.JSONDecodeError):
         app.logger.exception("Could not save folders")
         return jsonify({"error": "Could not save folders."}), 500
+
+
+@app.route(
+    "/api/saved-folders/<folder_id>/items/<item_id>",
+    methods=["PATCH"],
+)
+@login_required
+def update_saved_folder_item(folder_id, item_id):
+    """Update a folder-specific display name without changing its source."""
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", item_id):
+        return jsonify({"error": "Saved item not found."}), 404
+
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict) or not data:
+        return jsonify({"error": "Choose a valid item update."}), 400
+
+    updates = {}
+    if "custom_title" in data:
+        custom_title = data["custom_title"]
+        if (
+            not isinstance(custom_title, str)
+            or not custom_title.strip()
+            or len(custom_title.strip()) > 240
+            or any(ord(char) < 32 for char in custom_title)
+        ):
+            return jsonify({"error": "Item names must be 1 to 240 characters."}), 400
+        updates["custom_title"] = custom_title.strip()
+
+    if not updates or set(data) != set(updates):
+        return jsonify({"error": "Choose a valid item update."}), 400
+
+    try:
+        folder_path = find_saved_folder(folder_id)
+        if folder_path is None:
+            return jsonify({"error": "Folder not found."}), 404
+
+        folder = read_folder_data(folder_path)
+        item = next(
+            (
+                candidate for candidate in folder["items"]
+                if isinstance(candidate, dict)
+                and any(
+                    candidate.get(key) == item_id
+                    for key in ("storage_id", "file_id", "notebook_id")
+                )
+            ),
+            None,
+        )
+        if item is None:
+            return jsonify({"error": "Saved item not found."}), 404
+
+        item.update(updates)
+        write_folder_data(folder_path, folder)
+        return jsonify({"item": item})
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not update a saved folder item")
+        return jsonify({"error": "Could not update this saved item."}), 500
+
+
+@app.route(
+    "/api/saved-folders/<folder_id>/items/<item_id>",
+    methods=["DELETE"],
+)
+@login_required
+def remove_saved_folder_item(folder_id, item_id):
+    """Remove an item from a folder without deleting linked notes or whiteboards."""
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", item_id):
+        return jsonify({"error": "Saved item not found."}), 404
+
+    try:
+        folder_path = find_saved_folder(folder_id)
+        if folder_path is None:
+            return jsonify({"error": "Folder not found."}), 404
+
+        folder = read_folder_data(folder_path)
+        item_index = next(
+            (
+                index for index, candidate in enumerate(folder["items"])
+                if isinstance(candidate, dict)
+                and any(
+                    candidate.get(key) == item_id
+                    for key in ("storage_id", "file_id", "notebook_id")
+                )
+            ),
+            None,
+        )
+        if item_index is None:
+            return jsonify({"error": "Saved item not found."}), 404
+
+        item = folder["items"].pop(item_index)
+        write_folder_data(folder_path, folder)
+
+        if item.get("kind") == "file":
+            filename = item.get("filename")
+            file_id = item.get("file_id")
+            if (
+                isinstance(filename, str)
+                and isinstance(file_id, str)
+                and item.get("storage_id", file_id) == file_id
+                and Path(filename).name == filename
+                and (
+                    filename == file_id
+                    or filename.startswith(f"{file_id}.")
+                )
+            ):
+                file_path = folder_path / filename
+                if file_path.resolve().parent == folder_path.resolve():
+                    file_path.unlink(missing_ok=True)
+
+        return jsonify({"success": True})
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not remove an item from a saved folder")
+        return jsonify({"error": "Could not remove this saved item."}), 500
+
+
+@app.route("/api/saved-folders/<folder_id>/files", methods=["POST"])
+@login_required
+def upload_saved_folder_file(folder_id):
+    """Save one uploaded study file inside an owned folder."""
+    try:
+        folder_path = find_saved_folder(folder_id)
+        if folder_path is None:
+            return jsonify({"error": "Folder not found."}), 404
+
+        if (
+            request.content_length
+            and request.content_length > MAX_STUDY_FILE_SIZE + 1024 * 1024
+        ):
+            return jsonify({"error": "Files must be 25 MB or smaller."}), 413
+
+        uploaded_file = request.files.get("file")
+        if uploaded_file is None or not uploaded_file.filename:
+            return jsonify({"error": "Choose a file to upload."}), 400
+
+        display_name = secure_filename(uploaded_file.filename)
+        if not display_name:
+            return jsonify({"error": "Choose a file with a valid filename."}), 400
+
+        folder = read_folder_data(folder_path)
+        file_id = uuid.uuid4().hex
+        extension = Path(display_name).suffix.lower()
+        stored_name = f"{file_id}{extension}"
+        temporary_path = folder_path / f".{file_id}.upload"
+        saved_path = folder_path / stored_name
+
+        file_item = {
+            "kind": "file",
+            "storage_id": file_id,
+            "file_id": file_id,
+            "title": display_name,
+            "original_filename": display_name,
+            "filename": stored_name,
+            "file_type": mimetypes.guess_type(display_name)[0] or "application/octet-stream",
+            "uploaded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        }
+        try:
+            uploaded_file.save(temporary_path)
+            file_size = temporary_path.stat().st_size
+            if file_size == 0:
+                temporary_path.unlink()
+                return jsonify({"error": "The selected file is empty."}), 400
+            if file_size > MAX_STUDY_FILE_SIZE:
+                temporary_path.unlink()
+                return jsonify({"error": "Files must be 25 MB or smaller."}), 413
+            os.replace(temporary_path, saved_path)
+        except OSError:
+            temporary_path.unlink(missing_ok=True)
+            raise
+
+        folder["items"].append(file_item)
+        try:
+            write_folder_data(folder_path, folder)
+        except OSError:
+            saved_path.unlink(missing_ok=True)
+            raise
+
+        return jsonify({
+            "file": file_item,
+            "url": url_for(
+                "serve_saved_folder_file",
+                folder_id=folder_id,
+                file_id=file_id,
+            ),
+        }), 201
+    except RequestEntityTooLarge:
+        return jsonify({"error": "Files must be 25 MB or smaller."}), 413
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not save a study file")
+        return jsonify({"error": "Could not save the uploaded file."}), 500
+
+
+@app.route(
+    "/api/saved-folders/<folder_id>/whiteboards",
+    defaults={"notebook_kind": "whiteboard"},
+    methods=["POST"],
+)
+@app.route(
+    "/api/saved-folders/<folder_id>/notes",
+    defaults={"notebook_kind": "notes"},
+    methods=["POST"],
+)
+@login_required
+def create_saved_folder_notebook(folder_id, notebook_kind):
+    """Create a note or whiteboard and add a link to it in the selected folder."""
+    try:
+        folder_path = find_saved_folder(folder_id)
+        if folder_path is None:
+            return jsonify({"error": "Folder not found."}), 404
+
+        user_dir = user_save_directory(session["user_id"])
+        notebooks_path = user_dir / "Notebooks" / "notebooks.json"
+        if notebooks_path.exists():
+            with notebooks_path.open("r", encoding="utf-8") as file:
+                saved_notebooks = json.load(file)
+            if not isinstance(saved_notebooks, dict):
+                raise ValueError("Saved notebooks must be an object.")
+            notebook_data = clean_notebook_data(saved_notebooks)
+        else:
+            notebook_data = {"notebooks": [], "active_id": ""}
+
+        notebook_id = uuid.uuid4().hex
+        name = "Untitled whiteboard" if notebook_kind == "whiteboard" else "Untitled note"
+        notebook = {
+            "id": notebook_id,
+            "name": name,
+            "content": "",
+            "whiteboard": {"strokes": []},
+            "kind": notebook_kind,
+        }
+        notebook_data["notebooks"].append(notebook)
+        notebook_data["active_id"] = notebook_id
+        write_json_atomically(notebooks_path, notebook_data)
+
+        folder = read_folder_data(folder_path)
+        item = {
+            "kind": notebook_kind,
+            "notebook_id": notebook_id,
+            "title": name,
+            "file_type": notebook_kind,
+            "uploaded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        }
+        folder["items"].append(item)
+        write_folder_data(folder_path, folder)
+        return jsonify({"item": item, "notebook": notebook}), 201
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not create a note or whiteboard in a folder")
+        label = "whiteboard" if notebook_kind == "whiteboard" else "note"
+        return jsonify({"error": f"Could not create the {label}."}), 500
+
+
+@app.route("/api/saved-folders/<folder_id>/notebooks", methods=["POST"])
+@login_required
+def add_saved_folder_notebook(folder_id):
+    """Link an existing note or whiteboard to a folder without copying it."""
+    try:
+        folder_path = find_saved_folder(folder_id)
+        if folder_path is None:
+            return jsonify({"error": "Folder not found."}), 404
+
+        data = request.get_json(silent=True)
+        notebook_id = data.get("notebook_id") if isinstance(data, dict) else None
+        if (
+            not isinstance(notebook_id, str)
+            or not re.fullmatch(r"[A-Za-z0-9_-]{1,36}", notebook_id)
+        ):
+            return jsonify({"error": "Choose a valid note or whiteboard."}), 400
+
+        notebooks_path = (
+            user_save_directory(session["user_id"])
+            / "Notebooks"
+            / "notebooks.json"
+        )
+        if not notebooks_path.is_file():
+            return jsonify({"error": "Note or whiteboard not found."}), 404
+        with notebooks_path.open("r", encoding="utf-8") as file:
+            saved_notebooks = json.load(file)
+        if not isinstance(saved_notebooks, dict):
+            raise ValueError("Saved notebooks must be an object.")
+        notebook_data = clean_notebook_data(saved_notebooks)
+        notebook = next(
+            (
+                item for item in notebook_data["notebooks"]
+                if item["id"] == notebook_id
+            ),
+            None,
+        )
+        if notebook is None:
+            return jsonify({"error": "Note or whiteboard not found."}), 404
+
+        folder = read_folder_data(folder_path)
+        existing_item = next(
+            (
+                item for item in folder["items"]
+                if isinstance(item, dict)
+                and item.get("notebook_id") == notebook_id
+            ),
+            None,
+        )
+        if existing_item is not None:
+            return jsonify({"item": existing_item}), 200
+
+        item = {
+            "kind": "notebook",
+            "notebook_id": notebook["id"],
+            "title": notebook["name"],
+            "file_type": notebook["kind"],
+            "uploaded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        }
+        folder["items"].append(item)
+        write_folder_data(folder_path, folder)
+        return jsonify({"item": item}), 201
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not link a notebook to a saved folder")
+        return jsonify({"error": "Could not add this note or whiteboard."}), 500
+
+
+@app.route("/api/saved-folders/<folder_id>/web-resources", methods=["POST"])
+@login_required
+def save_saved_web_resource(folder_id):
+    """Save a public search-result link without fetching its URL server-side."""
+    try:
+        folder_path = find_saved_folder(folder_id)
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not locate the web resource folder")
+        return jsonify({"error": "Could not access this folder."}), 500
+    if folder_path is None:
+        return jsonify({"error": "Folder not found."}), 404
+
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "Choose a web resource to save."}), 400
+
+    title = data.get("title")
+    url = data.get("url")
+    resource_type = data.get("file_type", "web link")
+    if (
+        not isinstance(title, str)
+        or not title.strip()
+        or len(title.strip()) > 240
+        or not isinstance(url, str)
+        or not url.strip()
+        or len(url.strip()) > 2048
+        or not isinstance(resource_type, str)
+        or resource_type not in {"web link", "video link"}
+    ):
+        return jsonify({"error": "The web resource details are invalid."}), 400
+
+    try:
+        parsed_url = urlsplit(url.strip())
+    except ValueError:
+        return jsonify({"error": "The web resource URL is invalid."}), 400
+    if (
+        parsed_url.scheme not in {"http", "https"}
+        or not parsed_url.hostname
+        or parsed_url.username
+        or parsed_url.password
+    ):
+        return jsonify({"error": "Only public HTTP or HTTPS links can be saved."}), 400
+
+    try:
+        folder = read_folder_data(folder_path)
+        resource_id = uuid.uuid4().hex
+        item = {
+            "kind": "web",
+            "storage_id": resource_id,
+            "title": title.strip(),
+            "filename": title.strip(),
+            "url": url.strip(),
+            "file_type": resource_type,
+            "uploaded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        }
+        folder["items"].append(item)
+        write_folder_data(folder_path, folder)
+        return jsonify({"item": item}), 201
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not save a web resource")
+        return jsonify({"error": "Could not save this web resource."}), 500
+
+
+@app.route("/api/saved-folders/<folder_id>/files/<file_id>")
+@login_required
+def serve_saved_folder_file(folder_id, file_id):
+    """View or download an uploaded file from the signed-in user's folder."""
+    if not re.fullmatch(r"[a-f0-9]{32}", file_id):
+        return jsonify({"error": "File not found."}), 404
+
+    try:
+        folder_path = find_saved_folder(folder_id)
+        if folder_path is None:
+            return jsonify({"error": "File not found."}), 404
+
+        folder = read_folder_data(folder_path)
+        file_item = next(
+            (
+                item for item in folder["items"]
+                if isinstance(item, dict)
+                and item.get("kind") == "file"
+                and item.get("file_id") == file_id
+            ),
+            None,
+        )
+        if file_item is None:
+            return jsonify({"error": "File not found."}), 404
+
+        filename = file_item.get("filename")
+        title = file_item.get("title")
+        storage_id = file_item.get("storage_id", file_id)
+        if (
+            not isinstance(filename, str)
+            or not isinstance(title, str)
+            or storage_id != file_id
+            or Path(filename).name != filename
+            or not filename.startswith(f"{file_id}.")
+            and filename != file_id
+        ):
+            raise ValueError("Saved study file metadata is invalid.")
+
+        file_path = folder_path / filename
+        if not file_path.is_file() or file_path.resolve().parent != folder_path.resolve():
+            return jsonify({"error": "File not found."}), 404
+
+        mimetype = mimetypes.guess_type(filename)[0] or "application/octet-stream"
+        inline_extensions = {
+            ".gif", ".jpeg", ".jpg", ".mp3", ".mp4", ".ogg", ".pdf",
+            ".png", ".txt", ".wav", ".webm", ".webp",
+        }
+        response = send_file(
+            file_path,
+            mimetype=mimetype,
+            as_attachment=(
+                request.args.get("download") == "1"
+                or Path(filename).suffix.lower() not in inline_extensions
+            ),
+            download_name=title,
+            conditional=True,
+        )
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not serve a saved study file")
+        return jsonify({"error": "Could not open the saved file."}), 500
 
 
 if __name__ == "__main__":
