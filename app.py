@@ -2342,7 +2342,10 @@ def update_saved_folder_item(folder_id, item_id):
 
     if "display_size" in data:
         display_size = data["display_size"]
-        if display_size not in {"small", "medium", "large"}:
+        if (
+            not isinstance(display_size, str)
+            or display_size not in {"small", "medium", "large"}
+        ):
             return jsonify({"error": "Choose a valid item size."}), 400
         updates["display_size"] = display_size
 
@@ -2359,11 +2362,10 @@ def update_saved_folder_item(folder_id, item_id):
             (
                 candidate for candidate in folder["items"]
                 if isinstance(candidate, dict)
-                and item_id in {
-                    candidate.get("storage_id"),
-                    candidate.get("file_id"),
-                    candidate.get("notebook_id"),
-                }
+                and any(
+                    candidate.get(key) == item_id
+                    for key in ("storage_id", "file_id", "notebook_id")
+                )
             ),
             None,
         )
