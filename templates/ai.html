@@ -933,7 +933,7 @@ async function sendMessage() {
                 if (event.type === "chat") {
 
                     currentChatId = event.chat.id;
-                    await loadChatList();
+                    loadChatList().catch(console.error);
 
                 }
 
@@ -1002,7 +1002,7 @@ async function sendMessage() {
         isSendingMessage = false;
         activeChatRequest = null;
         newChatButton.disabled = false;
-        await loadChatList();
+        loadChatList().catch(console.error);
 
         aiInput.focus();
 

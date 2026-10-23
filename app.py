@@ -998,12 +998,33 @@ def list_ai_chats():
         user_dir = ai_user_directory()
         chats = []
         for chat_path in (user_dir / "chats").glob("*.json"):
-            with chat_path.open("r", encoding="utf-8") as chat_file:
-                chat = json.load(chat_file)
+            if chat_path.is_symlink() or not chat_path.is_file():
+                continue
+            try:
+                with chat_path.open("r", encoding="utf-8") as chat_file:
+                    chat = json.load(chat_file)
+            except (OSError, UnicodeError, json.JSONDecodeError) as error:
+                app.logger.warning(
+                    "Skipping unreadable saved AI conversation %s: %s",
+                    chat_path.name,
+                    error,
+                )
+                continue
+            if (
+                not isinstance(chat, dict)
+                or not isinstance(chat.get("id"), str)
+                or not isinstance(chat.get("title"), str)
+            ):
+                app.logger.warning(
+                    "Skipping invalid saved AI conversation %s",
+                    chat_path.name,
+                )
+                continue
+            updated_at = chat.get("updated_at", "")
             chats.append({
                 "id": chat["id"],
                 "title": chat["title"],
-                "updated_at": chat.get("updated_at", ""),
+                "updated_at": updated_at if isinstance(updated_at, str) else "",
             })
         chats.sort(key=lambda chat: chat["updated_at"], reverse=True)
         return jsonify({"chats": chats})

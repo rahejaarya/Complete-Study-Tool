@@ -8,11 +8,11 @@ from datetime import date
 import ollama
 from ddgs import DDGS
 
-MODEL = "qwen3.5:9b"
+MODEL = "qwen3.5:2b"
 
-# Keep Cypher responsive on a 16 GB laptop while retaining enough context for a
-# useful multi-turn study conversation.
-CHAT_OPTIONS = {"temperature": 0.2, "num_predict": 3200, "num_ctx": 12288}
+# Use the locally installed 2B model for a quick first response while preserving
+# enough context for useful multi-turn study conversations.
+CHAT_OPTIONS = {"temperature": 0.2, "num_predict": 1800, "num_ctx": 12288}
 
 _GREETING_REPLIES = {
     "hi": "Hi! What would you like help studying today?",
