@@ -1,0 +1,18 @@
+{
+  "id": "2c719ca20241446c9e2b0e703cab9985",
+  "title": "vsdhj",
+  "created_at": "2026-10-22T00:05:08.384461+00:00",
+  "updated_at": "2026-10-22T00:05:34.035022+00:00",
+  "summary": "",
+  "summary_through": 0,
+  "messages": [
+    {
+      "role": "user",
+      "content": "hi"
+    },
+    {
+      "role": "assistant",
+      "content": "Hi! What would you like help studying today?"
+    }
+  ]
+}

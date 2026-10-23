@@ -92,12 +92,18 @@
         try {
             const response = await fetch("/api/resource-browser/search", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                credentials: "same-origin",
                 body: JSON.stringify({ query }),
                 signal: activeRequest.signal
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || "The search could not be completed.");
+            const data = await window.MeridianApi.read(
+                response,
+                "The search could not be completed."
+            );
 
             const searchedTopic = data.query;
             topicHeading.textContent = searchedTopic;
@@ -131,7 +137,11 @@
             activeSummaryRequest = new AbortController();
             fetch("/api/resource-browser/summary", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                credentials: "same-origin",
                 body: JSON.stringify({
                     query: searchedTopic,
                     web_results: data.web_results || [],
@@ -140,8 +150,10 @@
                 signal: activeSummaryRequest.signal
             })
                 .then(async (summaryResponse) => {
-                    const summaryData = await summaryResponse.json();
-                    if (!summaryResponse.ok) throw new Error(summaryData.error || "Overview unavailable.");
+                    const summaryData = await window.MeridianApi.read(
+                        summaryResponse,
+                        "Overview unavailable."
+                    );
                     if (topicHeading.textContent === searchedTopic) summary.textContent = summaryData.summary;
                 })
                 .catch((summaryError) => {
