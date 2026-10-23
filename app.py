@@ -1455,6 +1455,108 @@ def flashcard_library():
     return render_template("flashcard_library.html")
 
 
+@app.route("/quiz-generator")
+@login_required
+def quiz_generator():
+    return render_template("quiz_generator.html")
+
+
+@app.route("/quiz-library")
+@login_required
+def quiz_library():
+    return render_template("quiz_library.html")
+
+
+def quiz_decks_path():
+    return user_save_directory(session.get("user_id")) / "Quizzes" / "quizzes.json"
+
+
+def read_quizzes():
+    path = quiz_decks_path()
+    if not path.is_file():
+        return []
+    with path.open("r", encoding="utf-8") as file:
+        data = json.load(file)
+    return data.get("quizzes", []) if isinstance(data, dict) and isinstance(data.get("quizzes"), list) else []
+
+
+@app.route("/api/quizzes", methods=["GET", "POST"])
+@login_required
+def saved_quizzes_api():
+    try:
+        quizzes = read_quizzes()
+        if request.method == "GET":
+            return jsonify(quizzes)
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict):
+            return jsonify({"error": "Invalid quiz data."}), 400
+        title = data.get("title", "")
+        questions = data.get("questions")
+        if not isinstance(title, str) or not isinstance(questions, list) or not 1 <= len(questions) <= 50:
+            return jsonify({"error": "A quiz must have a title and 1 to 50 questions."}), 400
+        clean = []
+        for item in questions:
+            if not isinstance(item, dict):
+                return jsonify({"error": "Invalid question."}), 400
+            question, options, answer = item.get("question"), item.get("options"), item.get("answer")
+            if not isinstance(question, str) or not question.strip() or not isinstance(options, list) or len(options) != 4 or not all(isinstance(option, str) and option.strip() for option in options) or not isinstance(answer, str) or answer not in options:
+                return jsonify({"error": "Each MCQ needs a question, four options, and a correct answer."}), 400
+            clean.append({"question": question.strip()[:1000], "options": [option.strip()[:500] for option in options], "answer": answer.strip()})
+        now = datetime.now(timezone.utc).isoformat()
+        quiz = {"id": uuid.uuid4().hex, "title": title.strip()[:100] or "Untitled quiz", "questions": clean, "created_at": now}
+        quizzes.insert(0, quiz)
+        write_json_atomically(quiz_decks_path(), {"quizzes": quizzes[:500]})
+        return jsonify(quiz), 201
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not access saved quizzes")
+        return jsonify({"error": "Could not save or load quizzes."}), 500
+
+
+@app.route("/api/quizzes/<quiz_id>", methods=["GET", "DELETE"])
+@login_required
+def saved_quiz_api(quiz_id):
+    try:
+        quizzes = read_quizzes()
+        quiz = next((item for item in quizzes if item.get("id") == quiz_id), None)
+        if quiz is None:
+            return jsonify({"error": "Quiz not found."}), 404
+        if request.method == "GET":
+            return jsonify(quiz)
+        write_json_atomically(quiz_decks_path(), {"quizzes": [item for item in quizzes if item.get("id") != quiz_id]})
+        folders_dir = get_user_folders_dir()
+        if folders_dir:
+            for folder_path in folders_dir.iterdir():
+                if folder_path.is_symlink() or not folder_path.is_dir():
+                    continue
+                folder = read_folder_data(folder_path)
+                folder["items"] = [item for item in folder["items"] if not (item.get("kind") == "quiz" and item.get("quiz_id") == quiz_id)]
+                write_folder_data(folder_path, folder)
+        return jsonify({"success": True})
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not delete saved quiz")
+        return jsonify({"error": "Could not delete this quiz."}), 500
+
+
+@app.route("/api/quizzes/<quiz_id>/folders/<folder_id>", methods=["POST"])
+@login_required
+def add_quiz_to_folder(quiz_id, folder_id):
+    folder_path = find_saved_folder(folder_id)
+    if folder_path is None:
+        return jsonify({"error": "Choose a valid folder."}), 404
+    try:
+        quiz = next((item for item in read_quizzes() if item.get("id") == quiz_id), None)
+        if quiz is None:
+            return jsonify({"error": "Save the quiz before adding it to a folder."}), 404
+        folder = read_folder_data(folder_path)
+        if not any(item.get("kind") == "quiz" and item.get("quiz_id") == quiz_id for item in folder["items"]):
+            folder["items"].append({"kind": "quiz", "storage_id": uuid.uuid4().hex, "quiz_id": quiz_id, "title": quiz["title"], "question_count": len(quiz["questions"]), "uploaded_at": datetime.now(timezone.utc).isoformat()})
+            write_folder_data(folder_path, folder)
+        return jsonify({"success": True, "folder": folder["name"]})
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not add quiz to folder")
+        return jsonify({"error": "Could not add this quiz to the folder."}), 500
+
+
 @app.route("/api/flashcards", methods=["GET", "POST"])
 @login_required
 def saved_flashcards_api():
@@ -1599,6 +1701,50 @@ def generate_flashcards_api():
         return jsonify({
             "error": "Flashcards could not be generated. Check that the AI service is available, then try again."
         }), 503
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+
+
+@app.route("/api/quizzes/generate", methods=["POST"])
+@login_required
+def generate_quiz_api():
+    try:
+        count = int(request.form.get("count", "10"))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Choose a valid number of questions."}), 400
+    if not 1 <= count <= 50:
+        return jsonify({"error": "Choose between 1 and 50 questions."}), 400
+    temporary_path = None
+    try:
+        uploaded = request.files.get("file")
+        source_url = request.form.get("url", "").strip()
+        if uploaded and uploaded.filename:
+            filename = secure_filename(uploaded.filename)
+            extension = Path(filename).suffix.lower()
+            if extension not in {".pdf", ".docx", ".txt"}:
+                return jsonify({"error": "Use a PDF, DOCX, or TXT file."}), 400
+            with tempfile.NamedTemporaryFile(suffix=extension, delete=False) as temporary_file:
+                temporary_path = Path(temporary_file.name)
+                uploaded.save(temporary_file)
+            from static.flashcard_generator import extract_file_text
+            source_text = extract_file_text(temporary_path)
+            title = Path(filename).stem
+        elif source_url:
+            from static.quiz_generator import extract_url_text
+            source_text = extract_url_text(source_url)
+            title = urlparse(source_url).hostname or "Web source"
+        else:
+            return jsonify({"error": "Upload a file or enter a website or YouTube link."}), 400
+        from static.quiz_generator import generate_quiz
+        return jsonify({"title": title, "questions": generate_quiz(source_text, count)})
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    except requests.RequestException:
+        return jsonify({"error": "Could not read that link. Check the URL and try again."}), 400
+    except Exception:
+        app.logger.exception("Quiz generation failed")
+        return jsonify({"error": "The quiz could not be generated. Check that the AI service is available, then try again."}), 503
     finally:
         if temporary_path is not None:
             temporary_path.unlink(missing_ok=True)

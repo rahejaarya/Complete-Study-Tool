@@ -1,0 +1,27 @@
+.quiz-source-form { display: grid; grid-template-columns: minmax(240px, 1.1fr) auto minmax(220px, 1fr) minmax(150px, .45fr) auto; align-items: end; gap: 16px; }
+.quiz-source-form .flashcard-file-drop { min-height: 170px; }
+.quiz-source-divider { align-self: center; padding-bottom: 18px; color: var(--muted); font-size: .85rem; }
+.quiz-url-label, .quiz-count-label { display: grid; gap: 8px; color: var(--text); font-size: .9rem; font-weight: 750; }
+.quiz-url-label input, .quiz-count-label input { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 11px; background: var(--input-bg); color: var(--text); font: inherit; font-weight: 450; }
+.quiz-source-form .flashcard-submit { min-width: 170px; white-space: nowrap; }
+.quiz-question-card { display: grid; gap: 18px; margin: 28px 0 20px; padding: clamp(22px, 4vw, 36px); border: 1px solid var(--border-color); border-radius: 20px; background: color-mix(in srgb, var(--card-bg) 95%, var(--accent) 5%); }
+.quiz-question-card > p:first-child { margin: 0; color: var(--text); font-size: clamp(1.2rem, 2.5vw, 1.6rem); font-weight: 750; line-height: 1.45; }
+.quiz-options { display: grid; gap: 10px; }
+.quiz-option { min-height: 50px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--card-bg); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.quiz-option:hover:not(:disabled) { border-color: var(--accent); }
+.quiz-option.is-correct { border-color: #16804a; background: #edf9f1; color: #125b38; }
+.quiz-option.is-incorrect { border-color: #b42318; background: #fff1f0; color: #912018; }
+.quiz-option:disabled { cursor: default; }
+#quiz-feedback { min-height: 1.3em; margin: 0; color: var(--muted); font-size: .9rem; }
+.quiz-review .flashcard-controls { justify-content: space-between; }
+@media (max-width: 850px) {
+    .quiz-source-form { grid-template-columns: 1fr 1fr; }
+    .quiz-source-form .flashcard-file-drop { grid-column: 1 / -1; }
+    .quiz-source-divider { grid-column: 1 / -1; justify-self: center; padding: 0; }
+    .quiz-source-form .flashcard-submit { width: 100%; }
+}
+@media (max-width: 560px) {
+    .quiz-source-form { grid-template-columns: 1fr; }
+    .quiz-source-form .flashcard-file-drop, .quiz-source-divider { grid-column: 1; }
+    .quiz-review .flashcard-review-top { align-items: flex-start; flex-direction: column; }
+}

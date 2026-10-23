@@ -211,6 +211,15 @@
                         </span>
                         <span class="translator-launch-action">Open generator <span aria-hidden="true">→</span></span>
                     </a>
+                    <a class="translator-launch-card" href="{{ url_for('quiz_generator') }}">
+                        <span class="translator-launch-icon" aria-hidden="true">✓</span>
+                        <span class="translator-launch-copy">
+                            <span class="resource-browser-eyebrow">STUDY TOOL</span>
+                            <strong>Quiz generator</strong>
+                            <span>Create multiple-choice quizzes from files, websites, or YouTube videos.</span>
+                        </span>
+                        <span class="translator-launch-action">Generate a quiz <span aria-hidden="true">→</span></span>
+                    </a>
                     {% endif %}
                 </div>
             </section>
@@ -1195,6 +1204,7 @@
                     const isFlashcardDeck =
                         item && item.kind === "flashcard_deck" &&
                         typeof item.deck_id === "string";
+                    const isQuiz = item && item.kind === "quiz" && typeof item.quiz_id === "string";
                     const isWhiteboard =
                         item && typeof item.notebook_id === "string" &&
                         (item.kind === "whiteboard" || item.file_type === "whiteboard");
@@ -1219,13 +1229,14 @@
                         "whiteboard": "BOARD",
                         "web link": "WEB",
                         "video link": "VID",
-                        "flashcard deck": "CARDS"
+                        "flashcard deck": "CARDS",
+                        "quiz": "QUIZ"
                     };
                     const fileType = item?.file_type || "";
                     icon.textContent =
                         iconLabels[fileType] ||
                         iconLabels[fileType.split("/")[0]] ||
-                        (isWhiteboard ? "BOARD" : isWebResource ? "WEB" : isFlashcardDeck ? "CARDS" : extension.toUpperCase().slice(0, 4) || "FILE");
+                        (isWhiteboard ? "BOARD" : isWebResource ? "WEB" : isFlashcardDeck ? "CARDS" : isQuiz ? "QUIZ" : extension.toUpperCase().slice(0, 4) || "FILE");
                     icon.setAttribute("aria-hidden", "true");
 
                     const title = document.createElement("span");
@@ -1290,6 +1301,8 @@
                         preview.textContent = item.original_filename || item.title || "Saved file";
                     } else if (isFlashcardDeck) {
                         preview.textContent = `${item.card_count || "Saved"} ${item.card_count === 1 ? "card" : "cards"} · Term and definition`;
+                    } else if (isQuiz) {
+                        preview.textContent = `${item.question_count || "Saved"} multiple-choice questions`;
                     }
 
                     const uploadDate = document.createElement("time");
@@ -1389,6 +1402,11 @@
                         const openLink = document.createElement("a");
                         openLink.href = `/flashcard-generator?deck=${encodeURIComponent(item.deck_id)}`;
                         openLink.textContent = "Study deck";
+                        actions.append(openLink);
+                    } else if (isQuiz) {
+                        const openLink = document.createElement("a");
+                        openLink.href = `/quiz-generator?quiz=${encodeURIComponent(item.quiz_id)}`;
+                        openLink.textContent = "Take quiz";
                         actions.append(openLink);
                     }
 
