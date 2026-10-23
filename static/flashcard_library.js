@@ -15,9 +15,6 @@
             decks.forEach((deck) => {
                 const card = document.createElement("article");
                 card.className = "flashcard-library-card";
-                const icon = document.createElement("span");
-                icon.className = "flashcard-library-icon";
-                icon.textContent = "CARDS";
                 const title = document.createElement("h3");
                 title.textContent = deck.title || "Untitled flashcards";
                 const meta = document.createElement("p");
@@ -29,11 +26,11 @@
                 const actions = document.createElement("div");
                 actions.className = "flashcard-library-actions";
                 const open = document.createElement("a");
-                open.className = "flashcard-action";
+                open.className = "flashcard-action flashcard-library-study";
                 open.href = `/flashcard-generator?deck=${encodeURIComponent(deck.id)}`;
                 open.textContent = "Study deck";
                 const remove = document.createElement("button");
-                remove.className = "flashcard-action secondary";
+                remove.className = "flashcard-action secondary flashcard-library-delete";
                 remove.type = "button";
                 remove.textContent = "Delete";
                 remove.addEventListener("click", async () => {
@@ -51,7 +48,7 @@
                     }
                 });
                 actions.append(open, remove);
-                card.append(icon, title, meta, date, actions);
+                card.append(title, meta, date, actions);
                 grid.append(card);
             });
         } catch (loadError) {

@@ -95,12 +95,12 @@
                 <div class="flashcard-review-top">
                     <div><p class="flashcard-eyebrow">STUDY SESSION</p><h2 id="flashcard-review-heading">Review flashcards</h2><p class="flashcard-deck-subtitle" id="flashcard-deck-subtitle"></p></div>
                     <span class="flashcard-progress" id="flashcard-progress" aria-live="polite"></span>
+                    <button class="flashcard-action secondary flashcard-folder-top" id="flashcard-save-folder" type="button">＋ Add to folder</button>
                 </div>
                 <div class="flashcard-toolbar">
                     <div class="flashcard-modes" role="group" aria-label="Choose a study mode">
-                        <button class="flashcard-mode is-active" type="button" data-mode="practice" aria-pressed="true">Practice</button>
                         <button class="flashcard-mode" type="button" data-mode="learn" aria-pressed="false">Learn</button>
-                        <button class="flashcard-mode" type="button" data-mode="random" aria-pressed="false">Random</button>
+                        <button class="flashcard-mode is-active" type="button" data-mode="random" aria-pressed="true">Random</button>
                     </div>
                     <button class="flashcard-action secondary" id="flashcard-shuffle" type="button">↻ Shuffle deck</button>
                 </div>
@@ -117,13 +117,10 @@
                         <button class="flashcard-action secondary" id="flashcard-again" type="button">↻ Still learning</button>
                         <button class="flashcard-action" id="flashcard-known" type="button">✓ Got it</button>
                     </div>
-                    <button class="flashcard-action" id="flashcard-reveal" type="button">Show answer</button>
-                    <button class="flashcard-action secondary" id="flashcard-next" type="button">Next</button>
                 </div>
                 <p class="flashcard-session-score" id="flashcard-session-score" aria-live="polite"></p>
                 <div class="flashcard-saved-actions">
-                    <button class="flashcard-action" id="flashcard-save-deck" type="button">Save deck</button>
-                    <button class="flashcard-action secondary" id="flashcard-save-folder" type="button">Add to folder</button>
+                    <button class="flashcard-action" id="flashcard-save-deck" type="button" hidden>Save deck</button>
                     <span id="flashcard-save-status" role="status" aria-live="polite"></span>
                 </div>
                 <button class="flashcard-start-over" id="flashcard-edit-deck" type="button">← Edit this deck</button>

@@ -1,0 +1,32 @@
+{
+  "decks": [
+    {
+      "id": "f25541617c1b42ad985432defb6f8ab1",
+      "title": "A History of Western Society (from p406) (dragged)",
+      "cards": [
+        {
+          "term": "What political ideology emerged to oppose Metternich's revitalized conservatism?",
+          "definition": "Liberalism, nationalism, and socialism emerged to challenge conservatism."
+        },
+        {
+          "term": "Which movement challenged the certainties of the Enlightenment and fed popular nationalism?",
+          "definition": "Romanticism captured the intensity of the era by challenging Enlightenment certainties."
+        },
+        {
+          "term": "What was the main goal of the Quadruple Alliance after Napoleon's defeat?",
+          "definition": "The alliance aimed to rearm and hold France in line through a balance of power."
+        },
+        {
+          "term": "How did Metternich justify his defense of the monarchical status quo?",
+          "definition": "He believed that organized religion and authoritarian governments were necessary to protect society from radical change."
+        },
+        {
+          "term": "What specific decree was issued by the Holy Alliance in 1815 to repress liberal movements?",
+          "definition": "The Karlsbad Decrees clamped down on liberal nationalists in universities and the press."
+        }
+      ],
+      "created_at": "2026-10-23T06:34:36.113387+00:00",
+      "updated_at": "2026-10-23T06:34:36.113387+00:00"
+    }
+  ]
+}

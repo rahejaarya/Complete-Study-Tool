@@ -148,7 +148,7 @@ def generate_flashcards(file_path, count=20, focus="mixed"):
                     "role": "user",
                     "content": (
                         f"Create exactly {requested_count} short flashcards for focus: {focus}. "
-                        "Use fewer only if the source does not support more. "
+                        "The number of cards is required; do not return fewer or more. "
                         "Each answer must be one concise sentence. "
                         "Return only the required JSON structure.\n\n"
                         f"Do not repeat these questions:\n{already_created or '(none)'}\n\n"
@@ -213,10 +213,10 @@ def generate_flashcards(file_path, count=20, focus="mixed"):
             break
         validated_cards.extend(new_cards[:remaining])
 
-    if not validated_cards:
+    if len(validated_cards) != count:
         raise ValueError(
-            "The AI returned an incomplete response. Try again with a shorter file "
-            "or request fewer cards."
+            f"The study material supported {len(validated_cards)} of the {count} cards requested. "
+            "Try a longer file or choose a smaller number of cards."
         )
 
     return validated_cards

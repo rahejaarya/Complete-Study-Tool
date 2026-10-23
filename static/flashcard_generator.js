@@ -44,7 +44,7 @@
     let cards = [];
     let order = [];
     let currentIndex = 0;
-    let mode = "practice";
+    let mode = "random";
     let isFlipped = false;
     let knownCards = new Set();
     let currentDeckTitle = "";
@@ -110,7 +110,7 @@
         }
     }
 
-    function startDeck(newCards, title) {
+    function startDeck(newCards, title, { persist = true, deckId = null } = {}) {
         cards = newCards
             .filter((card) => card && card.term && card.definition)
             .map((card) => ({ term: String(card.term).trim(), definition: String(card.definition).trim() }))
@@ -121,10 +121,10 @@
         }
         order = cards.map((_, index) => index);
         currentIndex = 0;
-        mode = "practice";
+        mode = "random";
         knownCards = new Set();
         currentDeckTitle = title || "";
-        currentDeckId = null;
+        currentDeckId = deckId;
         saveStatus.textContent = "";
         saveButton.textContent = "Save deck";
         sessionScore.textContent = "";
@@ -139,6 +139,7 @@
         });
         renderCard();
         review.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (persist) persistDeck().catch((error) => { saveStatus.textContent = error.message; });
     }
 
     function renderCard() {
@@ -148,9 +149,9 @@
         answer.textContent = card.definition;
         progress.textContent = `${mode === "random" ? "Random · " : ""}Card ${currentIndex + 1} of ${cards.length}`;
         previousButton.disabled = currentIndex === 0;
-        nextButton.disabled = currentIndex === cards.length - 1;
+        if (nextButton) nextButton.disabled = currentIndex === cards.length - 1;
         cardButton.hidden = false;
-        revealButton.hidden = false;
+        revealButton.hidden = true;
         learnHint.hidden = mode !== "learn";
         practiceActions.hidden = mode !== "learn" || !isFlipped;
         setFlipped(false);
@@ -235,12 +236,9 @@
             showError("Add both a term and a definition to every card.");
             return;
         }
-        startDeck(draft, deckTitleInput.value.trim());
-        if (editingDeckId) {
-            currentDeckId = editingDeckId;
-            editingDeckId = null;
-            saveButton.textContent = "Save changes";
-        }
+        const deckId = editingDeckId;
+        editingDeckId = null;
+        startDeck(draft, deckTitleInput.value.trim(), { deckId });
     });
 
     cardButton.addEventListener("click", () => setFlipped(!isFlipped));
@@ -251,7 +249,7 @@
             renderCard();
         }
     });
-    nextButton.addEventListener("click", advance);
+    if (nextButton) nextButton.addEventListener("click", advance);
     document.getElementById("flashcard-known").addEventListener("click", () => {
         knownCards.add(order[currentIndex]);
         sessionScore.textContent = `${knownCards.size} of ${cards.length} cards marked learned.`;
@@ -371,6 +369,11 @@
                 const createResponse = await fetch("/api/saved-folders", { method: "PUT", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(folders) });
                 const createData = await createResponse.json();
                 if (!createResponse.ok) throw new Error(createData.error || "Could not create that folder.");
+                const refreshedResponse = await fetch("/api/saved-folders", { headers: { Accept: "application/json" } });
+                const refreshedFolders = await refreshedResponse.json();
+                if (!refreshedResponse.ok || !Array.isArray(refreshedFolders)) throw new Error("Folder was created but could not be loaded.");
+                const created = refreshedFolders.find((folder) => folder.id === folderId);
+                if (!created) throw new Error("Folder was created but could not be selected.");
             }
             if (!folderId) throw new Error("Choose a folder first.");
             const response = await fetch(`/api/flashcards/${encodeURIComponent(currentDeckId)}/folders/${encodeURIComponent(folderId)}`, { method: "POST", headers: { Accept: "application/json" } });
@@ -390,8 +393,7 @@
             .then(async (response) => {
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error || "Could not load this deck.");
-                startDeck(data.cards, data.title);
-                currentDeckId = data.id;
+                startDeck(data.cards, data.title, { persist: false, deckId: data.id });
                 saveButton.textContent = "Saved";
             })
             .catch((error) => showError(error.message));
