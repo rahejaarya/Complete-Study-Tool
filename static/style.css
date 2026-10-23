@@ -5030,12 +5030,24 @@ body.audio-route-open {
     background: var(--page-bg);
 }
 
-.persistent-now-playing {
+.persistent-media-hud {
     position: fixed;
     top: 16px;
     right: 22px;
     z-index: 10002;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    width: max-content;
+    max-width: calc(100vw - 32px);
+}
+
+.persistent-now-playing {
+    position: static;
+    min-width: 0;
     max-width: min(420px, calc(100vw - 32px));
+    flex: 1 1 300px;
     min-height: 42px;
     padding: 8px 10px 8px 13px;
     display: inline-flex;
@@ -5054,11 +5066,10 @@ body.audio-route-open {
 }
 
 .persistent-study-timer {
-    position: fixed;
-    top: 16px;
-    right: 22px;
-    z-index: 10002;
+    position: static;
+    min-width: 0;
     max-width: min(320px, calc(100vw - 32px));
+    flex: 0 1 320px;
     min-height: 46px;
     padding: 0;
     display: inline-flex;
@@ -5075,10 +5086,6 @@ body.audio-route-open {
 
 .persistent-study-timer[hidden] {
     display: none;
-}
-
-.persistent-study-timer.with-audio {
-    top: 66px;
 }
 
 .persistent-study-timer-readout {
@@ -5156,17 +5163,11 @@ body.audio-route-open {
         padding-inline: 10px;
     }
 
-    .persistent-now-playing {
+    .persistent-media-hud {
         top: auto;
         bottom: 12px;
         right: 12px;
         max-width: calc(100vw - 24px);
-    }
-
-    .persistent-study-timer,
-    .persistent-study-timer.with-audio {
-        top: 16px;
-        right: 12px;
     }
 }
 

@@ -14,6 +14,7 @@
     let nowPlayingText;
     let pauseButton;
     let stopButton;
+    let persistentHud;
     let timerHud;
     let timerReadout;
     let timerPauseButton;
@@ -41,11 +42,20 @@
         routeFrame = null;
         app.classList.remove("audio-route-background");
         document.body.classList.remove("audio-route-open");
-        nowPlaying?.remove();
+        persistentHud?.remove();
+        persistentHud = null;
         nowPlaying = null;
         timerHud?.remove();
         timerHud = null;
         document.title = originalTitle;
+    }
+
+    function createPersistentHud() {
+        if (persistentHud) return;
+        persistentHud = document.createElement("div");
+        persistentHud.className = "persistent-media-hud";
+        persistentHud.setAttribute("aria-label", "Active media and study timer");
+        document.body.append(persistentHud);
     }
 
     function updatePlayer(state = window.studyToolGetAudioState?.()) {
@@ -68,7 +78,6 @@
         if (!timerHud) return;
         state ||= { active: false, isRunning: false, phase: "Study", remaining: "00:00" };
         timerHud.hidden = !state.active;
-        timerHud.classList.toggle("with-audio", Boolean(nowPlaying && !nowPlaying.hidden));
         timerReadout.textContent = `${state.phase} · ${state.remaining}`;
         timerReadout.setAttribute("aria-label", `Open Time Management. ${state.phase}, ${state.remaining} remaining.`);
         timerPauseButton.textContent = state.isRunning ? "Pause" : "Resume";
@@ -91,7 +100,8 @@
         timerPauseButton.className = "persistent-now-playing-control";
         timerPauseButton.addEventListener("click", () => window.studyToolToggleTimerPause?.());
         timerHud.append(timerReadout, timerPauseButton);
-        document.body.append(timerHud);
+        createPersistentHud();
+        persistentHud.append(timerHud);
         updateTimerHud();
     }
 
@@ -117,7 +127,8 @@
         stopButton.textContent = "Stop";
         stopButton.addEventListener("click", () => window.studyToolStopActiveAudio?.());
         nowPlaying.append(dot, nowPlayingText, pauseButton, stopButton);
-        document.body.append(nowPlaying);
+        createPersistentHud();
+        persistentHud.append(nowPlaying);
         updatePlayer();
     }
 
