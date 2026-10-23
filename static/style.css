@@ -7416,10 +7416,10 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .main-content {
 }
 
 .logo-mark {
-    width: 78px;
-    height: 26px;
-    flex-basis: 78px;
-    border-radius: 0;
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+    border-radius: 10px;
 }
 
 .login-brand-mark img {
@@ -7428,15 +7428,15 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .main-content {
 }
 
 .login-brand-mark {
-    width: 54px;
-    height: 18px;
-    border-radius: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
 }
 
 .global-search-brand-mark {
-    width: 42px;
-    height: 14px;
-    flex: 0 0 42px;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
     border-radius: 0;
 }
 
@@ -7446,9 +7446,9 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .main-content {
 }
 
 body.sidebar-collapsed:not(.sidebar-hover-expanded) .logo-mark {
-    width: 48px;
-    height: 16px;
-    flex-basis: 48px;
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
 }
 
 @media (max-width: 760px) {
