@@ -57,6 +57,7 @@
     let activeTool = "pen";
     let drawingStroke = null;
     let pixelRatio = window.devicePixelRatio || 1;
+    let boardRenderToken = 0;
     let undoHistory = [];
     let redoHistory = [];
 
@@ -186,6 +187,13 @@
                 if (stroke.type === "fill") {
                     context.fillStyle = stroke.color || "#20242d";
                     context.fillRect(0, 0, canvas.width, canvas.height);
+                    return;
+                }
+                if (stroke.type === "region-fill" && Array.isArray(stroke.runs)) {
+                    context.fillStyle = stroke.color || "#20242d";
+                    const scaleX = canvas.width / (stroke.width || canvas.width);
+                    const scaleY = canvas.height / (stroke.height || canvas.height);
+                    stroke.runs.forEach(([y, x, length]) => context.fillRect(x * scaleX, y * scaleY, length * scaleX, scaleY));
                     return;
                 }
                 if (stroke.type === "text") {
@@ -427,23 +435,24 @@
         boardContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
         boardContext.fillStyle = currentFile()?.theme === "dark" ? darkPaperColor() : "#ffffff";
         boardContext.fillRect(0, 0, width, height);
-        currentStrokes().forEach((stroke) => {
-            if (stroke.type === "image" && stroke.data) {
-                const image = new Image();
-                image.onload = () => {
-                    if (currentFile()?.id === activeFileId) {
-                        boardContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-                        boardContext.drawImage(image, 0, 0, width, height);
-                    }
-                };
-                image.src = stroke.data;
-                return;
-            }
+        const strokes = currentStrokes();
+        boardRenderToken += 1;
+        const token = boardRenderToken;
+        const drawStroke = (stroke) => {
             if (stroke.type === "fill") {
                 boardContext.globalCompositeOperation = "source-over";
                 boardContext.globalAlpha = 1;
                 boardContext.fillStyle = stroke.color || "#20242d";
                 boardContext.fillRect(0, 0, width, height);
+                return;
+            }
+            if (stroke.type === "region-fill" && Array.isArray(stroke.runs)) {
+                boardContext.globalCompositeOperation = "source-over";
+                boardContext.globalAlpha = 1;
+                boardContext.fillStyle = stroke.color || "#20242d";
+                const scaleX = width / (stroke.width || width);
+                const scaleY = height / (stroke.height || height);
+                stroke.runs.forEach(([y, x, length]) => boardContext.fillRect(x * scaleX, y * scaleY, length * scaleX, scaleY));
                 return;
             }
             if (stroke.type === "text") {
@@ -483,7 +492,28 @@
             }
             boardContext.stroke();
             boardContext.globalAlpha = 1;
-        });
+        };
+        const drawFrom = (index) => {
+            if (token !== boardRenderToken || currentFile()?.id !== activeFileId) return;
+            for (let cursor = index; cursor < strokes.length; cursor += 1) {
+                const stroke = strokes[cursor];
+                if (stroke.type !== "image" || !stroke.data) {
+                    drawStroke(stroke);
+                    continue;
+                }
+                const image = new Image();
+                image.onload = () => {
+                    if (token !== boardRenderToken || currentFile()?.id !== activeFileId) return;
+                    boardContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+                    boardContext.drawImage(image, 0, 0, width, height);
+                    drawFrom(cursor + 1);
+                };
+                image.onerror = () => drawFrom(cursor + 1);
+                image.src = stroke.data;
+                return;
+            }
+        };
+        drawFrom(0);
         boardContext.globalAlpha = 1;
         boardContext.globalCompositeOperation = "source-over";
     }
@@ -513,6 +543,10 @@
         const width = boardCanvas.clientWidth;
         const height = boardCanvas.clientHeight;
         if (!width || !height) return;
+        if (width * height > 1_500_000) {
+            window.alert("The whiteboard is too large to fill safely at this size. Zoom out or resize the window and try again.");
+            return;
+        }
         const sourceCanvas = document.createElement("canvas");
         sourceCanvas.width = width;
         sourceCanvas.height = height;
@@ -535,25 +569,36 @@
             && Math.abs(pixels[index + 1] - target[1]) < 20
             && Math.abs(pixels[index + 2] - target[2]) < 20
             && Math.abs(pixels[index + 3] - target[3]) < 20;
-        const stack = [x, y];
-        const seen = new Uint8Array(width * height);
-        while (stack.length) {
-            const fy = stack.pop();
-            const fx = stack.pop();
-            if (fx < 0 || fy < 0 || fx >= width || fy >= height) continue;
-            const position = fy * width + fx;
-            if (seen[position]) continue;
-            seen[position] = 1;
-            const offset = position * 4;
-            if (!matches(offset)) continue;
-            pixels[offset] = replacement[0];
-            pixels[offset + 1] = replacement[1];
-            pixels[offset + 2] = replacement[2];
-            pixels[offset + 3] = replacement[3];
-            stack.push(fx - 1, fy, fx + 1, fy, fx, fy - 1, fx, fy + 1);
+        const visited = new Uint8Array(width * height);
+        const queue = new Int32Array(width * height);
+        let head = 0;
+        let tail = 0;
+        const seed = y * width + x;
+        queue[tail++] = seed;
+        visited[seed] = 1;
+        const matching = (position) => matches(position * 4);
+        while (head < tail) {
+            const position = queue[head++];
+            if (!matching(position)) continue;
+            const fx = position % width;
+            const fy = (position / width) | 0;
+            const neighbors = [fx > 0 ? position - 1 : -1, fx + 1 < width ? position + 1 : -1, fy > 0 ? position - width : -1, fy + 1 < height ? position + width : -1];
+            neighbors.forEach((next) => {
+                if (next >= 0 && !visited[next]) { visited[next] = 1; queue[tail++] = next; }
+            });
         }
-        sourceContext.putImageData(image, 0, 0);
-        currentStrokes().push({ type: "image", data: sourceCanvas.toDataURL("image/png") });
+        const runs = [];
+        for (let row = 0; row < height; row += 1) {
+            let runStart = -1;
+            for (let column = 0; column <= width; column += 1) {
+                const isFilled = column < width && visited[row * width + column] && matching(row * width + column);
+                if (isFilled && runStart < 0) runStart = column;
+                else if (!isFilled && runStart >= 0) { runs.push([row, runStart, column - runStart]); runStart = -1; }
+            }
+        }
+        if (!runs.length) return;
+        pushHistory();
+        currentStrokes().push({ type: "region-fill", color: activeColor, width, height, runs });
         saveBoardChange();
     }
 
@@ -669,9 +714,7 @@
         if (activeTool === "bucket") {
             drawBoard();
             const point = boardPoint(event);
-            const strokeCount = currentStrokes().length;
             fillBoardRegion(point);
-            if (currentStrokes().length > strokeCount) pushHistory();
             return;
         }
         if (activeTool === "text") {
