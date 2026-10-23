@@ -13,8 +13,6 @@
     const swap = document.getElementById("translator-swap");
     const copy = document.getElementById("translator-copy");
 
-    const API = "https://translate.argosopentech.com/translate";
-
     const languages = {
     en: "English",
     es: "Spanish",
@@ -27,7 +25,45 @@
     ko: "Korean",
     ar: "Arabic",
     hi: "Hindi",
-    ru: "Russian"
+    ru: "Russian",
+    bn: "Bengali",
+    pa: "Punjabi",
+    ur: "Urdu",
+    vi: "Vietnamese",
+    th: "Thai",
+    id: "Indonesian",
+    ms: "Malay",
+    tl: "Filipino",
+    tr: "Turkish",
+    nl: "Dutch",
+    pl: "Polish",
+    uk: "Ukrainian",
+    cs: "Czech",
+    el: "Greek",
+    he: "Hebrew",
+    fa: "Persian",
+    sw: "Swahili",
+    ro: "Romanian",
+    hu: "Hungarian",
+    sv: "Swedish",
+    da: "Danish",
+    no: "Norwegian",
+    fi: "Finnish",
+    bg: "Bulgarian",
+    hr: "Croatian",
+    sk: "Slovak",
+    sr: "Serbian",
+    ta: "Tamil",
+    te: "Telugu",
+    mr: "Marathi",
+    gu: "Gujarati",
+    kn: "Kannada",
+    ml: "Malayalam",
+    ne: "Nepali",
+    si: "Sinhala",
+    my: "Burmese",
+    km: "Khmer",
+    lo: "Lao"
     };
 
     const languagePatterns = [
@@ -37,11 +73,25 @@
         { code: "pt", pattern: /[ãõáàâçéêíóôú]/i },
         { code: "it", pattern: /[àèéìíîòóù]/i },
         { code: "ru", pattern: /[\u0400-\u04FF]/ },
+        { code: "ur", pattern: /[ٹڈڑںھہے]/ },
+        { code: "fa", pattern: /[پچژگکی]/ },
         { code: "ar", pattern: /[\u0600-\u06FF]/ },
         { code: "hi", pattern: /[\u0900-\u097F]/ },
         { code: "zh", pattern: /[\u4E00-\u9FFF]/ },
         { code: "ja", pattern: /[\u3040-\u30FF]/ },
-        { code: "ko", pattern: /[\uAC00-\uD7AF]/ }
+        { code: "ko", pattern: /[\uAC00-\uD7AF]/ },
+        { code: "bn", pattern: /[\u0980-\u09FF]/ },
+        { code: "pa", pattern: /[\u0A00-\u0A7F]/ },
+        { code: "gu", pattern: /[\u0A80-\u0AFF]/ },
+        { code: "ta", pattern: /[\u0B80-\u0BFF]/ },
+        { code: "te", pattern: /[\u0C00-\u0C7F]/ },
+        { code: "kn", pattern: /[\u0C80-\u0CFF]/ },
+        { code: "ml", pattern: /[\u0D00-\u0D7F]/ },
+        { code: "si", pattern: /[\u0D80-\u0DFF]/ },
+        { code: "th", pattern: /[\u0E00-\u0E7F]/ },
+        { code: "lo", pattern: /[\u0E80-\u0EFF]/ },
+        { code: "my", pattern: /[\u1000-\u109F]/ },
+        { code: "km", pattern: /[\u1780-\u17FF]/ }
     ];
 
     function detectLanguage(text) {
