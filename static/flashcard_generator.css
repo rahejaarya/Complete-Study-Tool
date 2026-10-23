@@ -1,6 +1,11 @@
 .flashcard-page [hidden] { display: none !important; }
 
 .flashcard-page {
+    --accent: var(--purple, #7665d8);
+    --card-bg: var(--white, #fff);
+    --surface: var(--white, #fff);
+    --border-color: var(--border, #e9e6ef);
+    --input-bg: var(--control-bg, #fbfaff);
     width: min(1120px, 100%);
     margin: 0 auto;
     padding: 32px;
