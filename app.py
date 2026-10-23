@@ -1436,6 +1436,118 @@ def flashcard_generator():
     return render_template("flashcard_generator.html")
 
 
+def flashcard_decks_path():
+    return user_save_directory(session.get("user_id")) / "Flashcards" / "decks.json"
+
+
+def read_flashcard_decks():
+    path = flashcard_decks_path()
+    if not path.is_file():
+        return []
+    with path.open("r", encoding="utf-8") as file:
+        data = json.load(file)
+    return data.get("decks", []) if isinstance(data, dict) and isinstance(data.get("decks"), list) else []
+
+
+@app.route("/flashcard-library")
+@login_required
+def flashcard_library():
+    return render_template("flashcard_library.html")
+
+
+@app.route("/api/flashcards", methods=["GET", "POST"])
+@login_required
+def saved_flashcards_api():
+    path = flashcard_decks_path()
+    try:
+        decks = read_flashcard_decks()
+        if request.method == "GET":
+            return jsonify(decks)
+        data = request.get_json(silent=True)
+        title = data.get("title", "").strip() if isinstance(data, dict) and isinstance(data.get("title", ""), str) else ""
+        cards = data.get("cards") if isinstance(data, dict) else None
+        if not isinstance(cards, list) or not 1 <= len(cards) <= 500:
+            return jsonify({"error": "A deck must contain between 1 and 500 cards."}), 400
+        clean_cards = []
+        for card in cards:
+            if not isinstance(card, dict):
+                return jsonify({"error": "Invalid flashcard."}), 400
+            term, definition = card.get("term"), card.get("definition")
+            if not isinstance(term, str) or not isinstance(definition, str) or not term.strip() or not definition.strip() or len(term) > 240 or len(definition) > 1200:
+                return jsonify({"error": "Each card needs a term and definition."}), 400
+            clean_cards.append({"term": term.strip(), "definition": definition.strip()})
+        now = datetime.now(timezone.utc).isoformat()
+        deck = {"id": uuid.uuid4().hex, "title": title[:60] or "Untitled flashcards", "cards": clean_cards, "created_at": now, "updated_at": now}
+        decks.insert(0, deck)
+        write_json_atomically(path, {"decks": decks[:500]})
+        return jsonify(deck), 201
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not access saved flashcards")
+        return jsonify({"error": "Could not save or load flashcards."}), 500
+
+
+@app.route("/api/flashcards/<deck_id>", methods=["GET", "PUT", "DELETE"])
+@login_required
+def saved_flashcard_api(deck_id):
+    try:
+        decks = read_flashcard_decks()
+        deck = next((item for item in decks if item.get("id") == deck_id), None)
+        if deck is None:
+            return jsonify({"error": "Flashcard deck not found."}), 404
+        if request.method == "GET":
+            return jsonify(deck)
+        if request.method == "PUT":
+            data = request.get_json(silent=True)
+            cards = data.get("cards") if isinstance(data, dict) else None
+            title = data.get("title", "").strip() if isinstance(data, dict) and isinstance(data.get("title", ""), str) else ""
+            if not isinstance(cards, list) or not 1 <= len(cards) <= 500:
+                return jsonify({"error": "A deck must contain between 1 and 500 cards."}), 400
+            clean_cards = []
+            for card in cards:
+                if not isinstance(card, dict):
+                    return jsonify({"error": "Invalid flashcard."}), 400
+                term, definition = card.get("term"), card.get("definition")
+                if not isinstance(term, str) or not isinstance(definition, str) or not term.strip() or not definition.strip() or len(term) > 240 or len(definition) > 1200:
+                    return jsonify({"error": "Each card needs a term and definition."}), 400
+                clean_cards.append({"term": term.strip(), "definition": definition.strip()})
+            deck.update({"title": title[:60] or "Untitled flashcards", "cards": clean_cards, "updated_at": datetime.now(timezone.utc).isoformat()})
+            write_json_atomically(flashcard_decks_path(), {"decks": decks})
+            return jsonify(deck)
+        write_json_atomically(flashcard_decks_path(), {"decks": [item for item in decks if item.get("id") != deck_id]})
+        folders_dir = get_user_folders_dir()
+        if folders_dir:
+            for folder_path in folders_dir.iterdir():
+                if folder_path.is_symlink() or not folder_path.is_dir():
+                    continue
+                folder = read_folder_data(folder_path)
+                folder["items"] = [item for item in folder["items"] if not (item.get("kind") == "flashcard_deck" and item.get("deck_id") == deck_id)]
+                write_folder_data(folder_path, folder)
+        return jsonify({"success": True})
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not delete saved flashcard")
+        return jsonify({"error": "Could not delete this deck."}), 500
+
+
+@app.route("/api/flashcards/<deck_id>/folders/<folder_id>", methods=["POST"])
+@login_required
+def add_flashcard_to_folder(deck_id, folder_id):
+    folder_path = find_saved_folder(folder_id)
+    if folder_path is None:
+        return jsonify({"error": "Choose a valid folder."}), 404
+    try:
+        deck = next((item for item in read_flashcard_decks() if item.get("id") == deck_id), None)
+        if deck is None:
+            return jsonify({"error": "Save the deck before adding it to a folder."}), 404
+        folder = read_folder_data(folder_path)
+        if not any(item.get("kind") == "flashcard_deck" and item.get("deck_id") == deck_id for item in folder["items"]):
+            folder["items"].append({"kind": "flashcard_deck", "storage_id": uuid.uuid4().hex, "deck_id": deck_id, "title": deck["title"], "card_count": len(deck["cards"]), "uploaded_at": datetime.now(timezone.utc).isoformat()})
+            write_folder_data(folder_path, folder)
+        return jsonify({"success": True, "folder": folder["name"]})
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not add flashcard deck to folder")
+        return jsonify({"error": "Could not add this deck to the folder."}), 500
+
+
 @app.route("/api/flashcards/generate", methods=["POST"])
 @login_required
 def generate_flashcards_api():

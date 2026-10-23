@@ -1,0 +1,46 @@
+{% from "_app_icon.html" import app_icon %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include "_favicon.html" %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Flashcards - Meridian</title>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='flashcard_library.js', v='1') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='flashcard_generator.css', v='4') }}">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            {% include "_sidebar_header.html" %}
+            <nav class="navigation" id="primary-navigation">
+                <a href="{{ url_for('home') }}" class="nav-link"><span class="nav-icon">⌂</span>Dashboard</a>
+                <a href="{{ url_for('resources') }}" class="nav-link active" aria-current="page"><span class="nav-icon">{{ app_icon("resources") }}</span>Study Resources</a>
+                <a href="{{ url_for('noise_songs') }}" class="nav-link"><span class="nav-icon">♫</span>Noise &amp; Songs</a>
+                <a href="{{ url_for('time_management') }}" class="nav-link"><span class="nav-icon">◷</span>Time Management</a>
+                <a href="{{ url_for('support') }}" class="nav-link"><span class="nav-icon">♡</span>Student Support</a>
+                {% include "_ai_nav.html" %}
+            </nav>
+            <div class="sidebar-bottom">
+                <a href="{{ url_for('settings') }}" class="nav-link"><span class="nav-icon">⚙</span>Settings</a>
+                <a href="{{ url_for('support') }}" class="nav-link"><span class="nav-icon">?</span>Help</a>
+            </div>
+        </aside>
+        <main class="main-content flashcard-page">
+            <header class="topbar">
+                <div class="welcome"><div class="welcome-icon" aria-hidden="true">▤</div><div><h1>My flashcards</h1><p>Your saved study sets, ready whenever you are.</p></div></div>
+                <a class="resource-browser-back" href="{{ url_for('flashcard_generator') }}">＋ Create a deck</a>
+            </header>
+            <section class="flashcard-library-panel">
+                <div class="flashcard-library-heading"><div><p class="flashcard-eyebrow">YOUR STUDY SETS</p><h2>Saved flashcards</h2></div><span id="flashcard-library-count" class="flashcard-count-badge">Loading…</span></div>
+                <p id="flashcard-library-error" class="flashcard-error" role="alert" hidden></p>
+                <div id="flashcard-library-grid" class="flashcard-library-grid" aria-live="polite"></div>
+                <div id="flashcard-library-empty" class="flashcard-library-empty" hidden><span aria-hidden="true">▤</span><h3>Your library is ready for its first deck</h3><p>Generate cards from a study file or make your own set, then save it here.</p><a class="flashcard-submit" href="{{ url_for('flashcard_generator') }}">Create your first deck <span aria-hidden="true">→</span></a></div>
+            </section>
+        </main>
+    </div>
+    {% include "_mobile_navigation.html" %}
+</body>
+</html>

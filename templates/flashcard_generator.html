@@ -7,9 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flashcard Studio - Meridian</title>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
-    <script src="{{ url_for('static', filename='flashcard_generator.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='flashcard_generator.js', v='3') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='flashcard_generator.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='flashcard_generator.css', v='3') }}">
 </head>
 <body>
     <div class="app">
@@ -35,33 +35,60 @@
                     <div class="welcome-icon" aria-hidden="true">▤</div>
                     <div><h1>Flashcard Studio</h1><p>Make a deck, flip through it, and see what you know.</p></div>
                 </div>
-                <a class="resource-browser-back" href="{{ url_for('resources') }}">← Study Resources</a>
+                <div class="flashcard-header-links"><a class="resource-browser-back" href="{{ url_for('flashcard_library') }}">My flashcards</a><a class="resource-browser-back" href="{{ url_for('resources') }}">← Study Resources</a></div>
             </header>
 
             <section class="flashcard-builder" aria-labelledby="flashcard-heading">
                 <div class="flashcard-intro">
                     <p class="flashcard-eyebrow">YOUR STUDY SET</p>
                     <h2 id="flashcard-heading">Build your flashcards</h2>
-                    <p>Add a term on the front and its definition on the back. Choose as many cards as you need.</p>
+                    <p>Turn a study file into cards in seconds, or build a set yourself.</p>
                 </div>
-                <form id="flashcard-form" class="flashcard-form">
-                    <label class="flashcard-deck-name" for="flashcard-deck-title">Deck name <span>optional</span>
-                        <input id="flashcard-deck-title" type="text" maxlength="60" placeholder="e.g. Biology · Cell structure">
+                <div class="flashcard-source-tabs" role="group" aria-label="Choose how to make your deck">
+                    <button class="flashcard-source-tab is-active" type="button" data-source="file" aria-pressed="true"><span aria-hidden="true">▤</span> Generate from a file</button>
+                    <button class="flashcard-source-tab" type="button" data-source="manual" aria-pressed="false"><span aria-hidden="true">＋</span> Write cards myself</button>
+                </div>
+                <form id="flashcard-upload-form" class="flashcard-upload-form">
+                    <label class="flashcard-file-drop" for="flashcard-file">
+                        <span class="flashcard-file-icon" aria-hidden="true">↑</span>
+                        <strong>Choose your study material</strong>
+                        <span class="flashcard-file-name" id="flashcard-file-name">Drop a file here or browse your device</span>
+                        <span class="flashcard-help">PDF, DOCX, or TXT · Up to 10 MB</span>
+                        <input id="flashcard-file" name="file" type="file" accept=".pdf,.docx,.txt" required>
                     </label>
-                    <label class="flashcard-count-field" for="flashcard-count">Number of cards
-                        <input id="flashcard-count" type="number" min="1" max="100" value="5" inputmode="numeric" required>
-                    </label>
-                    <div class="flashcard-editor-heading">
-                        <div><h3>Your cards</h3><p>Keep each answer short and easy to review.</p></div>
-                        <span id="flashcard-card-count" class="flashcard-count-badge">5 cards</span>
-                    </div>
-                    <div class="flashcard-card-editor" id="flashcard-card-editor"></div>
-                    <p class="flashcard-error" id="flashcard-error" role="alert" hidden></p>
-                    <div class="flashcard-builder-actions">
-                        <button class="flashcard-action secondary" id="flashcard-add-card" type="button">＋ Add a card</button>
-                        <button class="flashcard-submit" id="flashcard-submit" type="submit">Create my deck <span aria-hidden="true">→</span></button>
+                    <div class="flashcard-upload-options">
+                        <label for="flashcard-ai-count">Number of cards
+                            <input id="flashcard-ai-count" name="count" type="number" min="1" max="50" value="20" inputmode="numeric" required>
+                        </label>
+                        <label for="flashcard-focus">Focus
+                            <select id="flashcard-focus" name="focus">
+                                <option value="mixed">Mixed review</option>
+                                <option value="definitions">Definitions</option>
+                                <option value="key concepts">Key concepts</option>
+                                <option value="exam revision">Exam revision</option>
+                            </select>
+                        </label>
+                        <button class="flashcard-submit" id="flashcard-generate" type="submit">Generate flashcards <span aria-hidden="true">→</span></button>
                     </div>
                 </form>
+                <form id="flashcard-form" class="flashcard-form" hidden>
+                    <label class="flashcard-deck-name" for="flashcard-deck-title"><span class="flashcard-field-title">Deck name <small>optional</small></span>
+                        <input id="flashcard-deck-title" type="text" maxlength="60" placeholder="e.g. Biology · Cell structure">
+                    </label>
+                    <div class="flashcard-editor-heading">
+                        <div><h3>Your cards</h3><p>Start with one card. Add more as you go.</p></div>
+                        <span id="flashcard-card-count" class="flashcard-count-badge">1 card</span>
+                    </div>
+                    <div class="flashcard-card-editor" id="flashcard-card-editor"></div>
+                    <div class="flashcard-builder-actions">
+                        <button class="flashcard-action secondary" id="flashcard-add-card" type="button"><span class="flashcard-add-icon" aria-hidden="true">＋</span> Add another card</button>
+                        <button class="flashcard-submit" type="submit">Create my deck <span aria-hidden="true">→</span></button>
+                    </div>
+                </form>
+                <p class="flashcard-error" id="flashcard-error" role="alert" hidden></p>
+                <div class="flashcard-loading" id="flashcard-loading" role="status" aria-live="polite" hidden>
+                    <span class="flashcard-spinner" aria-hidden="true"></span><span>Reading your material and building your cards…</span>
+                </div>
             </section>
 
             <section class="flashcard-review" id="flashcard-review" aria-labelledby="flashcard-review-heading" hidden>
@@ -72,35 +99,45 @@
                 <div class="flashcard-toolbar">
                     <div class="flashcard-modes" role="group" aria-label="Choose a study mode">
                         <button class="flashcard-mode is-active" type="button" data-mode="practice" aria-pressed="true">Practice</button>
-                        <button class="flashcard-mode" type="button" data-mode="quiz" aria-pressed="false">Quiz</button>
+                        <button class="flashcard-mode" type="button" data-mode="learn" aria-pressed="false">Learn</button>
                         <button class="flashcard-mode" type="button" data-mode="random" aria-pressed="false">Random</button>
                     </div>
                     <button class="flashcard-action secondary" id="flashcard-shuffle" type="button">↻ Shuffle deck</button>
                 </div>
                 <button class="flashcard-card" id="flashcard-card" type="button" aria-label="Flashcard. Click to flip and reveal the answer.">
                     <span class="flashcard-card-inner" id="flashcard-card-inner">
-                        <span class="flashcard-face flashcard-front"><span class="flashcard-face-label">QUESTION</span><strong id="flashcard-question"></strong><span class="flashcard-tap-hint">Click or press Space to flip</span></span>
-                        <span class="flashcard-face flashcard-back"><span class="flashcard-face-label">ANSWER</span><span id="flashcard-answer"></span></span>
+                        <span class="flashcard-face flashcard-front"><span class="flashcard-face-label">TERM</span><strong id="flashcard-question"></strong><span class="flashcard-tap-hint">Click or press Space to flip</span></span>
+                        <span class="flashcard-face flashcard-back"><span class="flashcard-face-label">DEFINITION</span><span id="flashcard-answer"></span></span>
                     </span>
                 </button>
-                <div class="flashcard-quiz" id="flashcard-quiz" hidden>
-                    <h3 class="flashcard-quiz-question" id="flashcard-quiz-question"></h3>
-                    <p class="flashcard-quiz-prompt">Choose the correct answer</p>
-                    <div class="flashcard-quiz-options" id="flashcard-quiz-options"></div>
-                    <p class="flashcard-quiz-feedback" id="flashcard-quiz-feedback" role="status" aria-live="polite"></p>
-                </div>
+                <p class="flashcard-learn-hint" id="flashcard-learn-hint" hidden>Flip the card, then mark it as learned or send it to the end of your review stack.</p>
                 <div class="flashcard-controls">
                     <button class="flashcard-action secondary" id="flashcard-previous" type="button">Previous</button>
                     <div class="flashcard-practice-actions" id="flashcard-practice-actions">
-                        <button class="flashcard-action secondary" id="flashcard-again" type="button">↻ Practice again</button>
+                        <button class="flashcard-action secondary" id="flashcard-again" type="button">↻ Still learning</button>
                         <button class="flashcard-action" id="flashcard-known" type="button">✓ Got it</button>
                     </div>
                     <button class="flashcard-action" id="flashcard-reveal" type="button">Show answer</button>
                     <button class="flashcard-action secondary" id="flashcard-next" type="button">Next</button>
                 </div>
                 <p class="flashcard-session-score" id="flashcard-session-score" aria-live="polite"></p>
+                <div class="flashcard-saved-actions">
+                    <button class="flashcard-action" id="flashcard-save-deck" type="button">Save deck</button>
+                    <button class="flashcard-action secondary" id="flashcard-save-folder" type="button">Add to folder</button>
+                    <span id="flashcard-save-status" role="status" aria-live="polite"></span>
+                </div>
                 <button class="flashcard-start-over" id="flashcard-edit-deck" type="button">← Edit this deck</button>
             </section>
+            <dialog class="flashcard-folder-dialog" id="flashcard-folder-dialog" aria-labelledby="flashcard-folder-title">
+                <form method="dialog" id="flashcard-folder-form">
+                    <h2 id="flashcard-folder-title">Add deck to a folder</h2>
+                    <label for="flashcard-folder-select">Choose a folder</label>
+                    <select id="flashcard-folder-select"></select>
+                    <div class="flashcard-new-folder"><label for="flashcard-new-folder">Or create a folder</label><input id="flashcard-new-folder" maxlength="100" placeholder="Folder name"></div>
+                    <p class="flashcard-error" id="flashcard-folder-error" role="alert" hidden></p>
+                    <div class="flashcard-folder-dialog-actions"><button class="flashcard-action secondary" value="cancel">Cancel</button><button class="flashcard-action" id="flashcard-folder-confirm" type="button">Add to folder</button></div>
+                </form>
+            </dialog>
         </main>
     </div>
     {% include "_mobile_navigation.html" %}

@@ -8,4 +8,6 @@ ollama>=0.4,<1.0
 ddgs>=9.0,<10.0
 # Document readers used by the flashcard generator.
 pypdf>=5.0,<7.0
+# Optional CFF Type 1 font decoding support for PDF text extraction.
+fonttools>=4.0,<5.0
 python-docx>=1.1,<2.0
