@@ -41,7 +41,7 @@
                             {% if profile_picture_url %}
                             <img src="{{ profile_picture_url }}" alt="">
                             {% else %}
-                            <span>{{ session.get("username", "A")[0]|upper }}</span>
+                            <span aria-hidden="true">☀</span>
                             {% endif %}
                             <span class="profile-picture-edit-indicator" aria-hidden="true">
                                 <svg viewBox="0 0 20 20" fill="none" focusable="false">
@@ -52,6 +52,12 @@
                         </label>
                     </form>
                 </div>
+                {% if profile_picture_url %}
+                <form method="POST" action="{{ url_for('settings') }}" class="profile-picture-remove-form">
+                    <input type="hidden" name="action" value="remove_profile_picture">
+                    <button type="submit" class="profile-picture-remove">Remove profile picture</button>
+                </form>
+                {% endif %}
                 <h2>{{ username }}</h2>
                 <p class="user-role">Student Account</p>
                 <form method="POST" action="{{ url_for('settings') }}" class="settings-form account-username-form">

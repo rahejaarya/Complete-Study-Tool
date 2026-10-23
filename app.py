@@ -1265,6 +1265,18 @@ def settings():
                                 )
                                 error = "Your profile picture could not be saved. Please try again."
 
+        elif action == "remove_profile_picture":
+            try:
+                user_profile_picture_path(user_id).unlink(missing_ok=True)
+                success = "Profile picture removed. Your default avatar is restored."
+            except OSError as picture_error:
+                app.logger.exception(
+                    "Could not remove profile picture for user %s: %s",
+                    user_id,
+                    picture_error,
+                )
+                error = "Your profile picture could not be removed. Please try again."
+
         elif action == "change_username":
             new_username = request.form.get("new_username", "").strip()
             current_password = request.form.get("username_current_password", "")
