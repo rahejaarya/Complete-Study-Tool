@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
-<body>
+<body{% if library_mode %} class="library-mode"{% endif %}>
 
     <div class="app">
 
@@ -713,9 +713,58 @@
 
                 if (feedback) {
                     feedback.textContent =
-                        "Unable to save folders. Please try again.";
+                        error.message || "Unable to save folders. Please try again.";
                 }
 
+                return false;
+            }
+        }
+
+        function uniqueFolderName() {
+            const existingNames = new Set(
+                folders.map(folder => folder.name.trim().toLocaleLowerCase())
+            );
+            let name = "New folder";
+            let suffix = 2;
+            while (existingNames.has(name.toLocaleLowerCase())) {
+                name = `New folder ${suffix}`;
+                suffix += 1;
+            }
+            return name;
+        }
+
+        async function updateFolderItem(folder, item, updates) {
+            const itemId = item.storage_id || item.file_id || item.notebook_id;
+            if (!itemId) {
+                if (feedback) feedback.textContent = "This saved item cannot be updated.";
+                return false;
+            }
+            try {
+                const response = await fetch(
+                    `/api/saved-folders/${encodeURIComponent(folder.id)}` +
+                    `/items/${encodeURIComponent(itemId)}`,
+                    {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Accept": "application/json"
+                        },
+                        credentials: "same-origin",
+                        body: JSON.stringify(updates)
+                    }
+                );
+                const result = await window.MeridianApi.read(
+                    response,
+                    "Could not update this saved item."
+                );
+                Object.assign(item, result.item);
+                if (feedback) feedback.textContent = "";
+                render();
+                return true;
+            } catch (error) {
+                console.error("Could not update saved folder item:", error);
+                if (feedback) feedback.textContent =
+                    error.message || "Could not update this saved item.";
                 return false;
             }
         }
@@ -879,24 +928,25 @@
 
 
         function createFolder() {
-            const folder = {
-                id: (crypto.randomUUID
-                    ? crypto.randomUUID()
-                    : `${Date.now()}-${Math.random().toString(36).slice(2)}`),
-                name: "Folder",
-                items: []
-            };
-
-            folders.push(folder);
-            
-            saveFolders().then(success => {
-                if (!success) {
-                    folders.pop();
-                    render();
-                    return;
+            showFolderDialog({
+                title: "Create folder",
+                message: "Give your new folder a name.",
+                inputValue: uniqueFolderName(),
+                confirmText: "Create folder",
+                onConfirm: name => {
+                    const folder = {
+                        id: (crypto.randomUUID
+                            ? crypto.randomUUID()
+                            : `${Date.now()}-${Math.random().toString(36).slice(2)}`),
+                        name,
+                        items: []
+                    };
+                    folders.push(folder);
+                    saveFolders().then(success => {
+                        if (!success) folders.pop();
+                        render();
+                    });
                 }
-
-                render();
             });
         }
 
@@ -1110,7 +1160,10 @@
                             ? notebooks.find(notebook => notebook.id === item.notebook_id)
                             : null;
                     const card = document.createElement("article");
-                    card.className = "folder-file-card";
+                    const itemSize = ["small", "medium", "large"].includes(item?.display_size)
+                        ? item.display_size
+                        : "medium";
+                    card.className = `folder-file-card folder-file-card-${itemSize}`;
 
                     const icon = document.createElement("span");
                     icon.className = "folder-file-icon";
@@ -1137,8 +1190,64 @@
                     const title = document.createElement("span");
                     title.className = "folder-file-name";
                     title.textContent =
+                        item?.custom_title ||
                         linkedNotebook?.name ||
                         item?.original_filename || item?.title || item?.filename || "Saved content";
+
+                    const preview = document.createElement("div");
+                    preview.className = "folder-file-preview";
+                    if (linkedNotebook?.kind === "whiteboard") {
+                        const canvas = document.createElement("canvas");
+                        canvas.width = 640;
+                        canvas.height = 360;
+                        canvas.setAttribute("aria-label", `Preview of ${linkedNotebook.name}`);
+                        const context = canvas.getContext("2d");
+                        if (context) {
+                            context.fillStyle = "#fff";
+                            context.fillRect(0, 0, canvas.width, canvas.height);
+                            (linkedNotebook.whiteboard?.strokes || []).forEach(stroke => {
+                                if (stroke.type === "text") {
+                                    context.fillStyle = stroke.color || "#20242d";
+                                    context.font = `${Math.max(12, (Number(stroke.size) || 20) * 1.5)}px Arial`;
+                                    context.fillText(
+                                        String(stroke.text || "").slice(0, 100),
+                                        (Number(stroke.x) || 0) * canvas.width,
+                                        (Number(stroke.y) || 0) * canvas.height
+                                    );
+                                    return;
+                                }
+                                const points = Array.isArray(stroke.points) ? stroke.points : [];
+                                if (!points.length) return;
+                                context.beginPath();
+                                context.moveTo(
+                                    (Number(points[0].x) || 0) * canvas.width,
+                                    (Number(points[0].y) || 0) * canvas.height
+                                );
+                                points.slice(1).forEach(point => context.lineTo(
+                                    (Number(point.x) || 0) * canvas.width,
+                                    (Number(point.y) || 0) * canvas.height
+                                ));
+                                context.strokeStyle = stroke.color || "#20242d";
+                                context.lineWidth = Math.max(2, (Number(stroke.size) || 5) * 1.5);
+                                context.lineCap = "round";
+                                context.lineJoin = "round";
+                                context.stroke();
+                            });
+                        }
+                        preview.append(canvas);
+                    } else if (linkedNotebook && linkedNotebook.kind !== "whiteboard") {
+                        const parsedContent = new DOMParser().parseFromString(
+                            String(linkedNotebook.content || ""),
+                            "text/html"
+                        );
+                        preview.textContent =
+                            parsedContent.body.textContent.trim().slice(0, 360) ||
+                            "This note is empty.";
+                    } else if (isWebResource) {
+                        preview.textContent = item.description || item.url;
+                    } else if (isUploadedFile) {
+                        preview.textContent = item.original_filename || item.title || "Saved file";
+                    }
 
                     const uploadDate = document.createElement("time");
                     uploadDate.className = "folder-file-meta";
@@ -1162,6 +1271,46 @@
 
                     const actions = document.createElement("div");
                     actions.className = "folder-file-actions";
+                    const renameButton = document.createElement("button");
+                    renameButton.type = "button";
+                    renameButton.textContent = "Rename";
+                    renameButton.addEventListener("click", () => {
+                        showFolderDialog({
+                            title: "Rename saved item",
+                            message: "This changes the name shown in this folder only.",
+                            inputValue: item.custom_title ||
+                                linkedNotebook?.name ||
+                                item?.original_filename || item?.title || item?.filename ||
+                                "Saved content",
+                            confirmText: "Save name",
+                            onConfirm: name => updateFolderItem(
+                                activeFolder,
+                                item,
+                                { custom_title: name }
+                            )
+                        });
+                    });
+                    const sizeSelect = document.createElement("select");
+                    sizeSelect.className = "folder-item-size";
+                    sizeSelect.setAttribute("aria-label", `Display size for ${title.textContent}`);
+                    [
+                        ["small", "Small"],
+                        ["medium", "Medium"],
+                        ["large", "Large"]
+                    ].forEach(([value, label]) => {
+                        const option = document.createElement("option");
+                        option.value = value;
+                        option.textContent = label;
+                        sizeSelect.append(option);
+                    });
+                    sizeSelect.value = itemSize;
+                    sizeSelect.addEventListener("change", () => {
+                        updateFolderItem(
+                            activeFolder,
+                            item,
+                            { display_size: sizeSelect.value }
+                        );
+                    });
                     if (isUploadedFile) {
                         const fileUrl =
                             `/api/saved-folders/${encodeURIComponent(activeFolder.id)}` +
@@ -1201,7 +1350,12 @@
                         actions.append(openLink);
                     }
 
-                    card.append(icon, title, uploadDate, actions);
+                    actions.prepend(renameButton);
+                    card.append(icon, title);
+                    if (preview.textContent || preview.childElementCount) {
+                        card.append(preview);
+                    }
+                    card.append(uploadDate, sizeSelect, actions);
                     grid.append(card);
                 });
 

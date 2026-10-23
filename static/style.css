@@ -5236,8 +5236,14 @@ body.audio-route-open {
     background: var(--control-bg);
 }
 
-.recommendation-panel > div:nth-child(2) {
+.recommendation-panel > div:first-child {
+    min-width: 0;
     flex: 1;
+}
+
+.recommendation-panel #load-recommendations {
+    flex: 0 0 auto;
+    margin-left: auto;
 }
 
 .recommendation-panel p:last-child {
@@ -5567,6 +5573,151 @@ body.audio-route-open {
     display: none;
 }
 
+body.library-mode .sidebar,
+body.library-mode .mobile-navigation {
+    display: none !important;
+}
+
+body.library-mode .app {
+    min-height: 100vh;
+}
+
+body.library-mode .main-content {
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 28px clamp(20px, 4vw, 64px) 48px;
+}
+
+body.library-mode .topbar,
+body.library-mode .resources-dashboard {
+    width: 100%;
+    max-width: none;
+}
+
+body.library-mode .resources-workspace-grid {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+body.library-mode .resources-folder-panel {
+    min-height: calc(100vh - 160px);
+}
+
+body.library-mode .resources-folder-panel .folder-grid.folder-files-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.folder-file-card-small {
+    grid-column: span 2;
+}
+
+.folder-file-card-medium {
+    grid-column: span 3;
+}
+
+.folder-file-card-large {
+    grid-column: span 6;
+}
+
+.folder-file-preview {
+    width: 100%;
+    max-height: 280px;
+    overflow: auto;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--soft-surface);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.folder-file-preview:empty {
+    display: none;
+}
+
+.folder-file-preview canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    background: #fff;
+}
+
+.folder-item-size {
+    width: 100%;
+    min-height: 36px;
+    padding: 6px 9px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--white);
+    color: var(--text);
+}
+
+.folder-file-actions button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 9px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--white);
+    color: var(--purple);
+    cursor: pointer;
+}
+
+.folder-file-actions button:hover {
+    background: var(--nav-hover);
+}
+
+@media (max-width: 1000px) {
+    body.library-mode .resources-folder-panel .folder-grid.folder-files-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .folder-file-card-small,
+    .folder-file-card-medium {
+        grid-column: span 2;
+    }
+
+    .folder-file-card-large {
+        grid-column: span 4;
+    }
+}
+
+@media (max-width: 600px) {
+    body.library-mode .main-content {
+        padding: 20px 14px 32px;
+    }
+
+    body.library-mode .resources-folder-panel .folder-grid.folder-files-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .folder-file-card-small {
+        grid-column: span 1;
+    }
+
+    .folder-file-card-medium,
+    .folder-file-card-large {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 360px) {
+    body.library-mode .resources-folder-panel .folder-grid.folder-files-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .folder-file-card-small,
+    .folder-file-card-medium,
+    .folder-file-card-large {
+        grid-column: span 1;
+    }
+}
+
 .guide-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -5606,7 +5757,7 @@ body.audio-route-open {
     .sound-hero-orbit span:nth-child(3) { top: 62px; left: 67px; }
     .activity-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .recommendation-panel { align-items: flex-start; flex-wrap: wrap; }
-    .recommendation-panel .text-button { margin-left: 45px; }
+    .recommendation-panel .text-button { margin-left: auto; }
     .sound-library { grid-template-columns: 1fr; }
     .add-song-form,
     .custom-song-source-field { grid-template-columns: 1fr; }

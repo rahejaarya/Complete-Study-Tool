@@ -2314,6 +2314,70 @@ def save_saved_folders():
         return jsonify({"error": "Could not save folders."}), 500
 
 
+@app.route(
+    "/api/saved-folders/<folder_id>/items/<item_id>",
+    methods=["PATCH"],
+)
+@login_required
+def update_saved_folder_item(folder_id, item_id):
+    """Update a folder-specific display name or card size without changing its source."""
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", item_id):
+        return jsonify({"error": "Saved item not found."}), 404
+
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict) or not data:
+        return jsonify({"error": "Choose a valid item update."}), 400
+
+    updates = {}
+    if "custom_title" in data:
+        custom_title = data["custom_title"]
+        if (
+            not isinstance(custom_title, str)
+            or not custom_title.strip()
+            or len(custom_title.strip()) > 240
+            or any(ord(char) < 32 for char in custom_title)
+        ):
+            return jsonify({"error": "Item names must be 1 to 240 characters."}), 400
+        updates["custom_title"] = custom_title.strip()
+
+    if "display_size" in data:
+        display_size = data["display_size"]
+        if display_size not in {"small", "medium", "large"}:
+            return jsonify({"error": "Choose a valid item size."}), 400
+        updates["display_size"] = display_size
+
+    if not updates or set(data) != set(updates):
+        return jsonify({"error": "Choose a valid item update."}), 400
+
+    try:
+        folder_path = find_saved_folder(folder_id)
+        if folder_path is None:
+            return jsonify({"error": "Folder not found."}), 404
+
+        folder = read_folder_data(folder_path)
+        item = next(
+            (
+                candidate for candidate in folder["items"]
+                if isinstance(candidate, dict)
+                and item_id in {
+                    candidate.get("storage_id"),
+                    candidate.get("file_id"),
+                    candidate.get("notebook_id"),
+                }
+            ),
+            None,
+        )
+        if item is None:
+            return jsonify({"error": "Saved item not found."}), 404
+
+        item.update(updates)
+        write_folder_data(folder_path, folder)
+        return jsonify({"item": item})
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not update a saved folder item")
+        return jsonify({"error": "Could not update this saved item."}), 500
+
+
 @app.route("/api/saved-folders/<folder_id>/files", methods=["POST"])
 @login_required
 def upload_saved_folder_file(folder_id):
