@@ -6,6 +6,8 @@
     const app = document.querySelector(".app");
     if (!app) return;
 
+    const originalUrl = new URL(location.href);
+    const originalTitle = document.title;
     let routeFrame;
     let routeLayer;
     let nowPlaying;
@@ -22,6 +24,28 @@
         } catch {
             return false;
         }
+    }
+
+    function isOriginalPage(rawUrl) {
+        try {
+            const target = new URL(rawUrl, location.href);
+            return target.origin === originalUrl.origin && target.pathname === originalUrl.pathname;
+        } catch {
+            return false;
+        }
+    }
+
+    function closeRouteLayer() {
+        routeLayer?.remove();
+        routeLayer = null;
+        routeFrame = null;
+        app.classList.remove("audio-route-background");
+        document.body.classList.remove("audio-route-open");
+        nowPlaying?.remove();
+        nowPlaying = null;
+        timerHud?.remove();
+        timerHud = null;
+        document.title = originalTitle;
     }
 
     function updatePlayer(state = window.studyToolGetAudioState?.()) {
@@ -95,6 +119,13 @@
 
     function routeTo(url, addHistory = true) {
         if (!isInternalUrl(url)) return;
+        if (isOriginalPage(url)) {
+            if (routeLayer) {
+                if (addHistory) history.pushState({ studyToolAudioRoute: true }, "", url);
+                closeRouteLayer();
+            }
+            return;
+        }
         if (!routeLayer) {
             routeLayer = document.createElement("div");
             routeLayer.className = "persistent-audio-route-layer";
@@ -114,6 +145,7 @@
     }
 
     function handleFrameLoad() {
+        if (!routeFrame) return;
         let frameDocument;
         let frameUrl;
         try {
@@ -153,16 +185,7 @@
         if (event.state?.studyToolAudioRoute) {
             routeTo(location.href, false);
         } else if (routeLayer) {
-            routeLayer.remove();
-            routeLayer = null;
-            routeFrame = null;
-            app.classList.remove("audio-route-background");
-            document.body.classList.remove("audio-route-open");
-            nowPlaying?.remove();
-            nowPlaying = null;
-            timerHud?.remove();
-            timerHud = null;
-            document.title = document.querySelector("title")?.textContent || "Meridian";
+            closeRouteLayer();
         }
     });
 })();

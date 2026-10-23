@@ -124,17 +124,6 @@
             margin-bottom: 20px;
             font-size: 14px;
         }
-        .demo {
-            margin: 22px 0 0;
-            padding: 12px 14px;
-            border-radius: 9px;
-            background: #f8f9fa;
-            color: #5f6368;
-            border: 1px solid #e8eaed;
-            text-align: center;
-            font-size: 13px;
-        }
-        .demo strong { color: #3c4043; }
         .account-link {
             display: block;
             margin-top: 20px;
@@ -183,7 +172,6 @@
         </form>
 
         <a class="account-link" href="{{ url_for('signup', next=request.args.get('next', '')) }}">Create an account</a>
-        <p class="demo">Demo credentials: <strong>admin</strong> / <strong>admin123</strong></p>
     </div>
 </body>
 </html>
