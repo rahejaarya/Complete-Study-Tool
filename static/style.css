@@ -8816,6 +8816,8 @@ body.notes-workspace-body { overflow: hidden; }
 .workspace-document.is-dark .workspace-text-toolbar button,
 .workspace-document.is-dark .workspace-board-toolbar button,
 .workspace-document.is-dark .workspace-document-actions button { border-color: var(--workspace-dark-border); background: var(--workspace-dark-control); color: var(--workspace-dark-text); }
+.workspace-document.is-dark .workspace-note-swatches button { border-color: var(--workspace-dark-control); background: var(--swatch); }
+.workspace-document.is-dark .board-color-group button { border-color: #fff; background: var(--ink); }
 
 @media (max-width: 900px) {
     .workspace-topbar { grid-template-columns: auto 1fr auto; gap: 12px; }

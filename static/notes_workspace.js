@@ -643,6 +643,10 @@
     window.addEventListener("resize", () => {
         if (currentFile()?.kind === "whiteboard") resizeCanvas();
     });
+    window.addEventListener("studytool:theme-loaded", () => {
+        renderFiles();
+        if (currentFile()?.kind === "whiteboard") drawBoard();
+    });
 
     async function load() {
         try {
