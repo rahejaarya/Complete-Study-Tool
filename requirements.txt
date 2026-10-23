@@ -6,6 +6,3 @@ requests>=2.31,<3.0
 ollama>=0.4,<1.0
 # DuckDuckGo search client used to find educational videos and web resources.
 ddgs>=9.0,<10.0
-# Optional study-file text extraction for the library assistant.
-pypdf>=5.0,<6.0
-python-docx>=1.1,<2.0

@@ -78,6 +78,7 @@
         if (!timerHud) return;
         state ||= { active: false, isRunning: false, phase: "Study", remaining: "00:00" };
         timerHud.hidden = !state.active;
+        routeFrame?.contentDocument?.body?.classList.toggle("persistent-study-timer-active", state.active);
         timerReadout.textContent = `${state.phase} · ${state.remaining}`;
         timerReadout.setAttribute("aria-label", `Open Time Management. ${state.phase}, ${state.remaining} remaining.`);
         timerPauseButton.textContent = state.isRunning ? "Pause" : "Resume";
@@ -171,6 +172,7 @@
         }
         if (!frameDocument) return;
         persistentHud?.classList.toggle("is-noise-songs", new URL(frameUrl).pathname === "/noise-songs");
+        frameDocument.body?.classList.toggle("persistent-study-timer-active", Boolean(window.studyToolGetTimerState?.().active));
         if (history.state?.studyToolAudioRoute && frameUrl !== location.href) {
             history.replaceState({ studyToolAudioRoute: true }, "", frameUrl);
         }
