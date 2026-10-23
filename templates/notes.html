@@ -1,4 +1,3 @@
-{% from "_app_icon.html" import app_icon %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,109 +6,113 @@
     <title>Notes - Meridian</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='dashboard_notebooks.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='notes_workspace.js') }}" defer></script>
 </head>
-<body>
-    <!-- Standalone notebook page uses the shared app navigation and notebook editor. -->
+<body class="notes-workspace-body">
     <div class="app">
-        <aside class="sidebar">
-            {% include "_sidebar_header.html" %}
-
-            <nav class="navigation" id="primary-navigation">
-                <a href="{{ url_for('home') }}" class="nav-link">
-                    <span class="nav-icon">⌂</span>
-                    Dashboard
-                </a>
-
-                <a href="{{ url_for('resources') }}" class="nav-link">
-                    <span class="nav-icon">{{ app_icon("resources") }}</span>
-                    Study Resources
-                </a>
-
-                <a href="{{ url_for('noise_songs') }}" class="nav-link">
-                    <span class="nav-icon">♫</span>
-                    Noise &amp; Songs
-                </a>
-
-                <a href="{{ url_for('time_management') }}" class="nav-link">
-                    <span class="nav-icon">◷</span>
-                    Time Management
-                </a>
-
-                <a href="{{ url_for('support') }}" class="nav-link">
-                    <span class="nav-icon">♡</span>
-                    Student Support
-                </a>
-
-                {% include "_ai_nav.html" %}
-            </nav>
-
-            <div class="sidebar-bottom">
-                <a href="{{ url_for('settings') }}" class="nav-link">
-                    <span class="nav-icon">⚙</span>
-                    Settings
-                </a>
-                <a href="{{ url_for('support') }}" class="nav-link">
-                    <span class="nav-icon">?</span>
-                    Help
-                </a>
-            </div>
-        </aside>
-
         <main class="main-content">
-            <!-- Constrain the standalone notebook editor workspace. -->
-            <div class="notes-page">
-                <div class="notes-page-shell">
-                    <header class="notes-page-header">
-                        <h1>Your Notes Workspace</h1>
-                    </header>
+            <div class="notes-workspace" id="notes-workspace">
+                <header class="workspace-topbar">
+                    <a class="workspace-home" href="{{ url_for('home') }}" aria-label="Back to dashboard">← <span>Dashboard</span></a>
+                    <nav class="workspace-kind-tabs" role="tablist" aria-label="File type">
+                        <button type="button" data-workspace-kind="notes" role="tab" aria-selected="true">Notes</button>
+                        <button type="button" data-workspace-kind="whiteboard" role="tab" aria-selected="false">Whiteboard</button>
+                    </nav>
+                    <button type="button" class="workspace-new-file" id="workspace-new-file">＋ <span>New note</span></button>
+                </header>
 
-                    <section class="main-card notebook-card notes-page-card" id="notes-card" aria-labelledby="notebook-heading">
-                        <div class="card-header">
-                            <div>
-                                <h2 id="notebook-heading">Notebook &amp; Notes</h2>
-                            </div>
-                            <button
-                                class="card-arrow notebook-toggle"
-                                id="notebook-toggle"
-                                type="button"
-                                aria-expanded="false"
-                                aria-controls="notebook-expanded"
-                                aria-label="Open notebooks">↗</button>
+                <div class="workspace-layout">
+                    <section class="workspace-stage" aria-label="Workspace">
+                        <div class="workspace-library" id="workspace-library">
+                            <header class="workspace-library-header">
+                                <h1 id="workspace-library-title">Your notes</h1>
+                                <span class="workspace-library-count" id="workspace-library-count"></span>
+                            </header>
+                            <div class="workspace-file-grid" id="workspace-file-list" role="listbox" aria-label="Saved files"></div>
+                            <div class="workspace-library-empty-state" id="workspace-library-empty" hidden><span aria-hidden="true">✎</span><p id="workspace-empty-copy">No files here yet.</p><button type="button" id="workspace-empty-create" aria-label="Create a new file">＋</button></div>
                         </div>
 
-                        <div class="notebook-expanded" id="notebook-expanded" hidden>
-                            <aside class="notebook-sidebar" aria-label="Your notebooks">
-                                <div class="notebook-sidebar-heading">
-                                    <h3>Notebooks</h3>
-                                    <button class="notebook-add" id="notebook-add" type="button" disabled aria-label="Add notebook">+</button>
+                        <article class="workspace-document" id="workspace-document" hidden>
+                            <header class="workspace-document-header">
+                                <button type="button" class="workspace-all-files" id="workspace-all-files">← All files</button>
+                                <div class="workspace-document-title-wrap">
+                                    <input id="workspace-document-title" type="text" maxlength="80" aria-label="File name" placeholder="Untitled note">
                                 </div>
-                                <div class="notebook-list" id="notebook-list" role="group" aria-label="Select a notebook"></div>
-                            </aside>
-                            <div class="notebook-editor">
-                                <label class="notebook-name-label" for="notebook-name">Notebook name</label>
-                                <input
-                                    class="notebook-name"
-                                    id="notebook-name"
-                                    type="text"
-                                    maxlength="80"
-                                    autocomplete="off"
-                                    disabled>
-                                <label class="notebook-content-label" for="notebook-content">Notes</label>
-                                <textarea
-                                    class="notebook-textarea notebook-content"
-                                    id="notebook-content"
-                                    maxlength="200000"
-                                    placeholder="Start writing in this notebook..."
-                                    disabled></textarea>
-                            </div>
-                        </div>
-                        <p class="notebook-save-status" id="notebook-save-status" aria-live="polite">Loading notebooks…</p>
+                                <div class="workspace-document-actions">
+                                    <button type="button" class="workspace-theme-toggle" id="workspace-theme-toggle" role="switch" aria-checked="false" aria-label="Dark mode">
+                                        <span class="workspace-theme-switch-track" aria-hidden="true"><span></span></span>
+                                        <span class="workspace-theme-label">Light mode</span>
+                                    </button>
+                                    <button type="button" class="workspace-delete-file" id="workspace-delete-file" aria-label="Delete this file" title="Move to bin"></button>
+                                </div>
+                            </header>
+
+                            <section class="workspace-editor-panel" id="workspace-notes-panel" aria-label="Notes editor" hidden>
+                                <div class="workspace-text-toolbar" role="toolbar" aria-label="Text formatting">
+                                    <div class="workspace-font-picker" data-font-picker>
+                                        <button type="button" class="workspace-font-picker-toggle" data-font-picker-toggle aria-haspopup="listbox" aria-expanded="false" aria-label="Choose font">Arial <span aria-hidden="true">▾</span></button>
+                                        <div class="workspace-font-picker-menu" data-font-picker-menu role="listbox" aria-label="Fonts" hidden></div>
+                                    </div>
+                                    <select data-note-format="fontSize" aria-label="Text size"><option value="10">10</option><option value="12">12</option><option value="14">14</option><option value="16" selected>16</option><option value="18">18</option><option value="24">24</option><option value="32">32</option><option value="48">48</option></select>
+                                    <button type="button" data-note-command="bold" aria-label="Bold"><b>B</b></button>
+                                    <button type="button" data-note-command="italic" aria-label="Italic"><i>I</i></button>
+                                    <button type="button" data-note-command="underline" aria-label="Underline"><u>U</u></button>
+                                    <button type="button" data-note-command="insertUnorderedList" aria-label="Bulleted list">• List</button>
+                                    <div class="workspace-note-swatches" role="group" aria-label="Text color">
+                                        <button type="button" data-note-color="#20242d" aria-label="Dark text"></button><button type="button" data-note-color="#c53d3d" aria-label="Red text"></button><button type="button" data-note-color="#2874c8" aria-label="Blue text"></button><button type="button" data-note-color="#25834a" aria-label="Green text"></button>
+                                    </div>
+                                    <div class="workspace-note-swatches workspace-note-highlights" role="group" aria-label="Text highlight">
+                                        <button type="button" data-note-highlight="#fff09a" aria-label="Yellow highlight"></button><button type="button" data-note-highlight="#b9f3c8" aria-label="Green highlight"></button><button type="button" data-note-highlight="#bde3ff" aria-label="Blue highlight"></button>
+                                    </div>
+                                    <button type="button" data-note-command="removeFormat" aria-label="Clear formatting">Clear</button>
+                                </div>
+                                <div class="workspace-note-content" id="workspace-note-content" contenteditable="true" role="textbox" aria-label="Note contents" aria-multiline="true" data-placeholder="Start writing your notes..."></div>
+                                <footer class="workspace-note-footer"><span id="workspace-word-count">0 words</span></footer>
+                            </section>
+
+                            <section class="workspace-editor-panel workspace-board-panel" id="workspace-board-panel" aria-label="Whiteboard" hidden>
+                                <div class="workspace-board-toolbar" role="toolbar" aria-label="Whiteboard tools">
+                                    <div class="board-tool-group" aria-label="Drawing tools">
+                                        <button type="button" data-board-tool="pen" aria-pressed="true" title="Pen">✎ <span>Pen</span></button>
+                                        <button type="button" data-board-tool="pencil" aria-pressed="false" title="Pencil">⌁ <span>Pencil</span></button>
+                                        <button type="button" data-board-tool="marker" aria-pressed="false" title="Marker">▰ <span>Marker</span></button>
+                                        <button type="button" data-board-tool="highlighter" aria-pressed="false" title="Highlighter">▱ <span>Highlight</span></button>
+                                        <button type="button" data-board-tool="eraser" aria-pressed="false" title="Eraser">◩ <span>Eraser</span></button>
+                                        <button type="button" data-board-tool="text" aria-pressed="false" title="Add text">T <span>Text</span></button>
+                                    </div>
+                                    <div class="board-color-group" role="group" aria-label="Ink color">
+                                        <button type="button" data-board-color="#20242d" aria-label="Black ink" title="Black"></button>
+                                        <button type="button" data-board-color="#d64747" aria-label="Red ink" title="Red"></button>
+                                        <button type="button" data-board-color="#2874c8" aria-label="Blue ink" title="Blue"></button>
+                                        <button type="button" data-board-color="#26834a" aria-label="Green ink" title="Green"></button>
+                                        <button type="button" data-board-color="#8b55bc" aria-label="Purple ink" title="Purple"></button>
+                                        <button type="button" data-board-color="#e28b25" aria-label="Orange ink" title="Orange"></button>
+                                    </div>
+                                    <label class="board-size-control"><span id="board-size-label">Size</span><input type="range" id="board-size" min="2" max="48" value="5" aria-label="Pen or eraser size"></label>
+                                    <div class="board-history-group" role="group" aria-label="Board history">
+                                        <button type="button" id="board-undo" aria-label="Undo">↶</button>
+                                        <button type="button" id="board-redo" aria-label="Redo">↷</button>
+                                        <button type="button" id="board-clear">Clear board</button>
+                                    </div>
+                                </div>
+                                <div class="workspace-board-wrap"><canvas id="workspace-board" aria-label="Whiteboard canvas"></canvas></div>
+                            </section>
+                        </article>
                     </section>
                 </div>
             </div>
         </main>
     </div>
-
+    <dialog class="workspace-confirm-dialog" id="workspace-delete-dialog" aria-labelledby="workspace-delete-title">
+        <form method="dialog" id="workspace-delete-form">
+            <h2 id="workspace-delete-title">Move this file to the bin?</h2>
+            <p id="workspace-delete-message"></p>
+            <label class="workspace-confirm-remember"><input type="checkbox" id="workspace-delete-remember"> Don’t ask me again</label>
+            <div class="workspace-confirm-actions">
+                <button type="submit" value="cancel" class="workspace-confirm-cancel">Cancel</button>
+                <button type="submit" value="delete" class="workspace-confirm-delete">Delete</button>
+            </div>
+        </form>
+    </dialog>
 </body>
 </html>

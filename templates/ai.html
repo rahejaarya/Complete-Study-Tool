@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
-<body>
+<body class="ai-page">
 
     <div class="app">
 
@@ -98,29 +98,20 @@
                         <!-- Input island -->
                         <div id="ai-prompt-container" class="search-box" style="
                             width: 100% !important;
-                            max-width: 850px !important;
+                            max-width: 800px !important;
                             min-width: 0;
                             box-sizing: border-box;
                             margin: 0 auto;
                             flex-shrink: 0;
                         ">
-                            <span class="search-icon">✦</span>
+                            <span class="search-icon" aria-hidden="true">◌</span>
 
-                            <input 
+                            <textarea
                                 id="ai-input"
-                                type="text" 
+                                rows="1"
                                 placeholder="Ask me anything..."
-                                style="
-                                    border: none;
-                                    background: transparent;
-                                    width: 100%;
-                                    min-width: 0;
-                                    flex: 1;
-                                    outline: none;
-                                    font-size: 14px;
-                                    color: var(--text);
-                                "
-                            >
+                                aria-label="Message Cypher"
+                            ></textarea>
 
                             <button id="ai-send" type="button">
                                 Send
@@ -138,37 +129,7 @@
         </main>
 
     </div>
-
-
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-navigation">
-
-        <a href="{{ url_for('home') }}" class="mobile-link">
-            <span>▦</span>
-            <small>Home</small>
-        </a>
-
-        <a href="{{ url_for('resources') }}" class="mobile-link">
-            <span>📚</span>
-            <small>Resources</small>
-        </a>
-
-        <a href="{{ url_for('noise_songs') }}" class="mobile-link">
-            <span>♫</span>
-            <small>Sounds</small>
-        </a>
-
-        <a href="{{ url_for('time_management') }}" class="mobile-link">
-            <span>✓</span>
-            <small>Schedule</small>
-        </a>
-
-        <a href="{{ url_for('support') }}" class="mobile-link">
-            <span>♡</span>
-            <small>Support</small>
-        </a>
-
-    </nav>
+    {% include "_mobile_navigation.html" %}
 
     <dialog id="chat-dialog" class="chat-dialog" aria-labelledby="chat-dialog-title">
         <form id="chat-dialog-form">
@@ -210,6 +171,9 @@ const chatDialogConfirm = document.getElementById("chat-dialog-confirm");
 let currentChatId = null;
 let isSendingMessage = false;
 let chatDialogAction = null;
+let chatFollowsLatest = true;
+let activeChatRequest = null;
+let latestScrollFrame = 0;
 
 
 /*
@@ -225,6 +189,24 @@ function formatAIResponse(text) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+
+    // Convert common LaTex into readable school notation. The source text was
+    // escaped above, so only these controlled HTML tags are introduced here.
+    text = text.replace(/\$([^$\n]+)\$/g, "$1");
+    text = text.replace(/\\+\[|\\+\]|\\+\(|\\+\)/g, "");
+    text = text.replace(/\\+left|\\+right/g, "");
+    text = text.replace(/\\+quad/g, "&emsp;");
+    text = text.replace(/\\+,/g, " ");
+    text = text.replace(/\\+times/g, "×");
+    text = text.replace(/\\+div/g, "÷");
+    text = text.replace(/\\+frac\{([^{}]+)\}\{([^{}]+)\}/g,
+        '<span class="math-fraction"><span>$1</span><span>$2</span></span>');
+    text = text.replace(/\\+boxed\{([^{}]+)\}/g,
+        '<span class="math-boxed">$1</span>');
+    text = text.replace(/([A-Za-z0-9)])\^\{([^{}]+)\}/g, "$1<sup>$2</sup>");
+    text = text.replace(/([A-Za-z0-9)])\^(-?\d+)/g, "$1<sup>$2</sup>");
+    text = text.replace(/[{}]/g, "");
+    text = text.replace(/\\+/g, "");
 
 
     // Headings
@@ -307,7 +289,23 @@ function insertChatEntry(entry, beforeElement = null) {
 }
 
 function scrollChatToLatest() {
-    chatMessages.lastElementChild?.scrollIntoView({ block: "end" });
+    if (!chatFollowsLatest) return;
+
+    if (latestScrollFrame) return;
+    latestScrollFrame = requestAnimationFrame(() => {
+        latestScrollFrame = 0;
+        const lastMessage = chatMessages.lastElementChild;
+        if (!lastMessage || !chatFollowsLatest) return;
+
+        const composerHeight = aiPromptContainer?.getBoundingClientRect().height || 0;
+        const visibleBottom = window.innerHeight - composerHeight - 40;
+        const messageBottom = lastMessage.getBoundingClientRect().bottom;
+        window.scrollTo({
+            // Never pull the reader back up to follow a short streamed update.
+            top: Math.max(window.scrollY, window.scrollY + messageBottom - visibleBottom),
+            behavior: "auto"
+        });
+    });
 }
 
 function addMessage(message, sender) {
@@ -329,6 +327,36 @@ function addMessage(message, sender) {
     }
 
     messageDiv.appendChild(bubble);
+
+    if (sender === "ai") {
+        const copyButton = document.createElement("button");
+        copyButton.type = "button";
+        copyButton.className = "chat-copy-button";
+        copyButton.textContent = "⧉";
+        copyButton.title = "Copy response";
+        copyButton.setAttribute("aria-label", "Copy this response");
+        copyButton.hidden = message === "Thinking...";
+        copyButton.addEventListener("click", async () => {
+            const textToCopy = bubble.innerText;
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                copyButton.textContent = "✓";
+                copyButton.setAttribute("aria-label", "Response copied");
+                window.setTimeout(() => {
+                    copyButton.textContent = "⧉";
+                    copyButton.setAttribute("aria-label", "Copy this response");
+                }, 1400);
+            } catch (error) {
+                copyButton.setAttribute("aria-label", "Could not copy response");
+                window.setTimeout(() => {
+                    copyButton.setAttribute("aria-label", "Copy this response");
+                }, 1800);
+            }
+        });
+        bubble.copyButton = copyButton;
+        messageDiv.appendChild(copyButton);
+    }
+
     insertChatEntry(messageDiv);
 
     chatMessages.style.display = "flex";
@@ -339,6 +367,62 @@ function addMessage(message, sender) {
     updateScrollBottomButton();
 
     return bubble;
+}
+
+function addGraphCard(graph) {
+    const card = document.createElement("section");
+    card.className = "ai-graph-card";
+    const heading = document.createElement("h3");
+    heading.textContent = `Graph: ${graph.expression}`;
+    const canvas = document.createElement("canvas");
+    canvas.width = 680;
+    canvas.height = 320;
+    canvas.setAttribute("role", "img");
+    canvas.setAttribute("aria-label", `Graph of ${graph.expression}`);
+    card.append(heading, canvas);
+    insertChatEntry(card);
+
+    const context = canvas.getContext("2d");
+    const pad = { left: 46, right: 18, top: 18, bottom: 34 };
+    const width = canvas.width - pad.left - pad.right;
+    const height = canvas.height - pad.top - pad.bottom;
+    const valid = graph.points.filter((point) => Array.isArray(point));
+    const yLimit = Math.max(1, ...valid.map(([, y]) => Math.abs(y)) * 1.1);
+    const xToCanvas = (x) => pad.left + ((x - graph.x_min) / (graph.x_max - graph.x_min)) * width;
+    const yToCanvas = (y) => pad.top + ((yLimit - y) / (2 * yLimit)) * height;
+    const colors = getComputedStyle(document.body);
+    context.fillStyle = colors.getPropertyValue("--white").trim() || "#fff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.strokeStyle = colors.getPropertyValue("--border").trim() || "#d7dce5";
+    for (let step = 0; step <= 4; step += 1) {
+        const x = pad.left + (width * step) / 4;
+        const y = pad.top + (height * step) / 4;
+        context.beginPath(); context.moveTo(x, pad.top); context.lineTo(x, pad.top + height); context.stroke();
+        context.beginPath(); context.moveTo(pad.left, y); context.lineTo(pad.left + width, y); context.stroke();
+    }
+    context.strokeStyle = colors.getPropertyValue("--muted").trim() || "#667085";
+    context.lineWidth = 1.5;
+    if (graph.x_min <= 0 && graph.x_max >= 0) {
+        const x = xToCanvas(0); context.beginPath(); context.moveTo(x, pad.top); context.lineTo(x, pad.top + height); context.stroke();
+    }
+    const y = yToCanvas(0); context.beginPath(); context.moveTo(pad.left, y); context.lineTo(pad.left + width, y); context.stroke();
+    context.strokeStyle = colors.getPropertyValue("--purple").trim() || "#6657d8";
+    context.lineWidth = 2.5;
+    let previous = null;
+    for (const point of graph.points) {
+        if (!Array.isArray(point) || Math.abs(point[1]) > yLimit * 1.2) { previous = null; continue; }
+        context.beginPath();
+        context.moveTo(xToCanvas((previous || point)[0]), yToCanvas((previous || point)[1]));
+        context.lineTo(xToCanvas(point[0]), yToCanvas(point[1]));
+        context.stroke();
+        previous = point;
+    }
+    context.fillStyle = colors.getPropertyValue("--muted").trim() || "#667085";
+    context.font = "12px system-ui";
+    context.fillText(`${graph.x_min}`, pad.left, canvas.height - 12);
+    context.fillText(`${graph.x_max}`, pad.left + width - 24, canvas.height - 12);
+    context.fillText(`${yLimit.toPrecision(3)}`, 4, pad.top + 10);
+    context.fillText(`${(-yLimit).toPrecision(3)}`, 4, pad.top + height);
 }
 
 function addMemoryWarning(message) {
@@ -413,6 +497,7 @@ function addResourceCard(resource, afterElement = null) {
 
 
 function clearConversationView() {
+    chatFollowsLatest = true;
     chatMessages.replaceChildren();
     updateScrollBottomButton();
     chatMessages.style.display = "none";
@@ -575,6 +660,7 @@ async function openSavedChat(chatId) {
     }
 
     const { chat } = await response.json();
+    chatFollowsLatest = true;
     currentChatId = chat.id;
     clearConversationView();
 
@@ -721,7 +807,11 @@ async function sendMessage() {
     }
 
     isSendingMessage = true;
-    aiSend.disabled = true;
+    activeChatRequest = new AbortController();
+    aiSend.disabled = false;
+    aiSend.classList.add("is-stop");
+    aiSend.textContent = "Stop";
+    aiSend.setAttribute("aria-label", "Stop generating response");
     newChatButton.disabled = true;
     loadChatList();
 
@@ -737,16 +827,14 @@ async function sendMessage() {
 
     // Clear input
     aiInput.value = "";
-
-
-    // Disable send button
-    aiSend.textContent = "Thinking...";
+    resizeAiInput();
 
 
     // Show temporary thinking message
     const thinkingBubble =
         addMessage("Thinking...", "ai");
     let lastResourceAnchor = thinkingBubble.parentElement;
+    let fullResponse = "";
 
     try {
 
@@ -761,7 +849,8 @@ async function sendMessage() {
             body: JSON.stringify({
                 message: message,
                 chat_id: currentChatId
-            })
+            }),
+            signal: activeChatRequest.signal
 
 
         });
@@ -773,8 +862,6 @@ async function sendMessage() {
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-
-        let fullResponse = "";
 
         let buffer = "";
 
@@ -825,6 +912,10 @@ async function sendMessage() {
 
                 }
 
+                else if (event.type === "graph" && event.graph) {
+                    addGraphCard(event.graph);
+                }
+
                 else if (event.type === "done") {
 
                     console.log("AI response complete.");
@@ -841,19 +932,26 @@ async function sendMessage() {
         }
 
     } catch (error) {
-
-        console.error(error);
-
-        thinkingBubble.textContent =
-            "AI Error: " + error.message;
+        if (error.name === "AbortError") {
+            if (!fullResponse) thinkingBubble.textContent = "Response stopped.";
+        } else {
+            console.error(error);
+            thinkingBubble.textContent = "AI Error: " + error.message;
+        }
 
     } finally {
 
-        aiSend.disabled = false;
+        if (fullResponse && thinkingBubble.copyButton) {
+            thinkingBubble.copyButton.hidden = false;
+        }
 
+        aiSend.disabled = false;
+        aiSend.classList.remove("is-stop");
         aiSend.textContent = "Send";
+        aiSend.setAttribute("aria-label", "Send message to Cypher");
 
         isSendingMessage = false;
+        activeChatRequest = null;
         newChatButton.disabled = false;
         await loadChatList();
 
@@ -862,6 +960,11 @@ async function sendMessage() {
     }
 
 }
+
+
+aiSend.addEventListener("click", () => {
+    if (isSendingMessage) activeChatRequest?.abort();
+});
 
 
 aiSend.addEventListener(
@@ -874,7 +977,7 @@ aiInput.addEventListener(
     "keydown",
     function(event) {
 
-        if (event.key === "Enter") {
+        if (event.key === "Enter" && !event.shiftKey) {
 
             event.preventDefault();
 
@@ -884,6 +987,16 @@ aiInput.addEventListener(
 
     }
 );
+
+function resizeAiInput() {
+    aiInput.style.height = "auto";
+    const maxHeight = parseFloat(getComputedStyle(aiInput).lineHeight) * 3;
+    aiInput.style.height = `${Math.min(aiInput.scrollHeight, maxHeight)}px`;
+    aiInput.style.overflowY = aiInput.scrollHeight > maxHeight ? "auto" : "hidden";
+}
+
+aiInput.addEventListener("input", resizeAiInput);
+resizeAiInput();
 
 const aiChatsToggle =
     document.getElementById("ai-chats-toggle");
@@ -961,13 +1074,14 @@ function positionCypherChat() {
 
     const mainRect = mainContent.getBoundingClientRect();
 
-    // Match the first script's width and centering behavior.
-    const chatWidth = Math.min(850, mainRect.width - 40);
-    const inputWidth = chatWidth;
+    // Keep the conversation readable, while giving the composer the full
+    // available line along the bottom of the main page area.
+    const chatWidth = Math.min(980, mainRect.width - 40);
+    const inputWidth = Math.max(0, mainRect.width - 48);
     const chatLeft = mainRect.left + (mainRect.width / 2);
 
     chatLayout.style.width = `${chatWidth}px`;
-    chatLayout.style.maxWidth = "850px";
+    chatLayout.style.maxWidth = "980px";
     chatLayout.style.boxSizing = "border-box";
 
     if (activeChat) {
@@ -995,8 +1109,8 @@ function positionCypherChat() {
             margin: "0"
         });
 
-        // Keep the final messages visible above the input.
-        chatMessages.style.paddingBottom = "120px";
+        // Reserve enough room for the final message above the fixed composer.
+        chatMessages.style.paddingBottom = `${aiPromptContainer.offsetHeight + 56}px`;
 
     } else {
         // Center the greeting and input before the first message.
@@ -1016,7 +1130,7 @@ function positionCypherChat() {
             transform: "none",
             width: "100%",
             minWidth: "0",
-            maxWidth: "850px",
+            maxWidth: "100%",
             boxSizing: "border-box",
             zIndex: "",
             margin: "0 auto"
@@ -1029,11 +1143,6 @@ function positionCypherChat() {
 
 positionCypherChat();
 window.addEventListener("resize", positionCypherChat);
-
-function scrollChatToLatest() {
-    chatMessages.lastElementChild?.scrollIntoView({ block: "end" });
-}
-
 
 /* Scroll-to-bottom button */
 const scrollBottomButton = document.createElement("button");
@@ -1053,25 +1162,25 @@ const scrollBottomStyles = document.createElement("style");
 scrollBottomStyles.textContent = `
     #chat-scroll-bottom {
         position: fixed;
-        right: 28px;
-        bottom: 100px;
-        width: 44px;
-        height: 44px;
+        right: 22px;
+        top: 50%;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
-        border: 1px solid var(--border, #444);
-        background: var(--surface, #222);
-        color: var(--text, #fff);
-        font-size: 24px;
+        border: 1px solid var(--border, #d8dbe7);
+        background: var(--white, #fff);
+        color: var(--purple, #635bdb);
+        font-size: 23px;
         line-height: 1;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         z-index: 1100;
-        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.18);
+        box-shadow: 0 6px 22px rgba(34, 38, 60, 0.2);
         opacity: 0;
         visibility: hidden;
-        transform: translateY(8px);
+        transform: translateY(calc(-50% + 8px));
         transition:
             opacity 0.2s ease,
             transform 0.2s ease,
@@ -1081,7 +1190,7 @@ scrollBottomStyles.textContent = `
     #chat-scroll-bottom.visible {
         opacity: 1;
         visibility: visible;
-        transform: translateY(0);
+        transform: translateY(-50%);
     }
 
     #chat-scroll-bottom:hover {
@@ -1095,13 +1204,67 @@ scrollBottomStyles.textContent = `
 
     @media (max-width: 600px) {
         #chat-scroll-bottom {
-            right: 16px;
-            bottom: 100px;
+            right: 12px;
+            top: 50%;
         }
     }
 `;
 
 document.head.appendChild(scrollBottomStyles);
+
+/* Prevent page bounce at the boundary and pause auto-follow on upward input. */
+document.documentElement.style.overscrollBehaviorY = "none";
+window.addEventListener("wheel", (event) => {
+    if (!aiDashboard.classList.contains("has-active-chat")) return;
+    if (event.deltaY < 0) {
+        chatFollowsLatest = false;
+    } else if (event.deltaY > 0) {
+        requestAnimationFrame(() => {
+            const atPageBottom = window.scrollY + window.innerHeight
+                >= document.documentElement.scrollHeight - 4;
+            if (atPageBottom) {
+                chatFollowsLatest = true;
+                scrollChatToLatest();
+            }
+        });
+    }
+}, { passive: true });
+
+let lastTouchY = null;
+window.addEventListener("touchstart", (event) => {
+    lastTouchY = event.touches[0]?.clientY ?? null;
+}, { passive: true });
+window.addEventListener("touchmove", (event) => {
+    const touchY = event.touches[0]?.clientY;
+    if (lastTouchY !== null && touchY !== undefined && touchY > lastTouchY) {
+        chatFollowsLatest = false;
+    }
+    lastTouchY = touchY ?? null;
+}, { passive: true });
+window.addEventListener("touchend", () => {
+    lastTouchY = null;
+    requestAnimationFrame(() => {
+        if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4) {
+            chatFollowsLatest = true;
+        }
+    });
+}, { passive: true });
+
+window.addEventListener("keydown", (event) => {
+    if (!aiDashboard.classList.contains("has-active-chat")) return;
+    if (["ArrowUp", "PageUp", "Home"].includes(event.key)) {
+        chatFollowsLatest = false;
+    } else if (["ArrowDown", "PageDown", "End"].includes(event.key)) {
+        requestAnimationFrame(() => {
+            const atPageBottom = window.scrollY + window.innerHeight
+                >= document.documentElement.scrollHeight - 4;
+            if (atPageBottom) {
+                chatFollowsLatest = true;
+                scrollChatToLatest();
+            }
+        });
+    }
+}, { passive: true });
 
 /* Show the button when the latest message is below the viewport */
 function updateScrollBottomButton() {
@@ -1117,8 +1280,10 @@ function updateScrollBottomButton() {
 
     const lastMessageRect = lastMessage.getBoundingClientRect();
 
-    const isScrolledUp =
-        lastMessageRect.bottom > window.innerHeight + 40;
+    const composerHeight = aiPromptContainer?.getBoundingClientRect().height || 0;
+    const visibleBottom = window.innerHeight - composerHeight - 40;
+    const distanceFromLatest = lastMessageRect.bottom - visibleBottom;
+    const isScrolledUp = distanceFromLatest > 40;
 
     scrollBottomButton.hidden = false;
     scrollBottomButton.classList.toggle("visible", isScrolledUp);
@@ -1126,14 +1291,17 @@ function updateScrollBottomButton() {
 
 /* Clicking the arrow takes the user to the very end */
 scrollBottomButton.addEventListener("click", () => {
+    chatFollowsLatest = true;
     const lastMessage = chatMessages.lastElementChild;
+    if (!lastMessage) return;
 
-    if (lastMessage) {
-        lastMessage.scrollIntoView({
-            behavior: "smooth",
-            block: "end"
-        });
-    }
+    const composerHeight = aiPromptContainer?.getBoundingClientRect().height || 0;
+    const visibleBottom = window.innerHeight - composerHeight - 40;
+    const distanceFromLatest = lastMessage.getBoundingClientRect().bottom - visibleBottom;
+    window.scrollTo({
+        top: window.scrollY + distanceFromLatest,
+        behavior: "auto"
+    });
 });
 
 /* Detect scrolling in either the page or the chat */

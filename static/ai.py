@@ -1,4 +1,6 @@
+import ast
 import json
+import math
 import re
 from urllib.parse import parse_qs, urlsplit
 from datetime import date
@@ -7,6 +9,10 @@ import ollama
 from ddgs import DDGS
 
 MODEL = "qwen3.5:9b"
+
+# Keep Cypher responsive on a 16 GB laptop while retaining enough context for a
+# useful multi-turn study conversation.
+CHAT_OPTIONS = {"temperature": 0.2, "num_predict": 3200, "num_ctx": 12288}
 
 _GREETING_REPLIES = {
     "hi": "Hi! What would you like help studying today?",
@@ -39,18 +45,18 @@ _THANKS = {"thanks", "thank you", "thanks a lot", "many thanks"}
 
 _PERSONAL_REPLIES = {
     "who are you": (
-        "I'm Meridian's AI study assistant. I can explain concepts, summarize "
+        "I'm Cypher, Meridian's AI study assistant. I can explain concepts, summarize "
         "material, work through problems, and find study resources."
     ),
     "what are you": (
-        "I'm Meridian's AI study assistant, here to help explain concepts, "
+        "I'm Cypher, Meridian's AI study assistant, here to help explain concepts, "
         "summarize material, and support your studying."
     ),
-    "what is your name": "I'm Meridian's AI study assistant.",
-    "whats your name": "I'm Meridian's AI study assistant.",
-    "what's your name": "I'm Meridian's AI study assistant.",
+    "what is your name": "I'm Cypher, Meridian's AI study assistant.",
+    "whats your name": "I'm Cypher, Meridian's AI study assistant.",
+    "what's your name": "I'm Cypher, Meridian's AI study assistant.",
     "tell me about yourself": (
-        "I'm Meridian's AI study assistant. I can explain concepts, summarize "
+        "I'm Cypher, Meridian's AI study assistant. I can explain concepts, summarize "
         "material, work through problems, and find study resources."
     ),
     "what do you do": (
@@ -74,10 +80,10 @@ _PERSONAL_REPLIES = {
         "with your questions and studying."
     ),
     "how old are you": (
-        "I don't have an age or personal life; I'm Meridian's AI study assistant."
+        "I don't have an age or personal life; I'm Cypher, Meridian's AI study assistant."
     ),
     "where are you from": (
-        "I don't have a hometown or personal life; I'm the AI assistant in Meridian."
+        "I don't have a hometown or personal life; I'm Cypher, the AI assistant in Meridian."
     ),
     "how are you": (
         "I'm here and ready to help. What are you working on today?"
@@ -146,6 +152,184 @@ MAX_HISTORY_MESSAGES = 20
 MAX_HISTORY_CHARS = 12000
 MAX_HISTORY_ENTRY_CHARS = 4000
 
+_SAFE_MATH_FUNCTIONS = {
+    "abs": abs,
+    "ceil": math.ceil,
+    "cos": math.cos,
+    "exp": math.exp,
+    "floor": math.floor,
+    "log": math.log,
+    "log10": math.log10,
+    "sin": math.sin,
+    "sqrt": math.sqrt,
+    "tan": math.tan,
+}
+_SAFE_MATH_CONSTANTS = {"pi": math.pi, "e": math.e}
+_MEMORY_WORTHY_RE = re.compile(
+    r"\b(?:remember|my (?:name|grade|school|goal|preference)|"
+    r"i(?:'m| am) (?:in|a) |i (?:prefer|like|learn|study|struggle|want))\b",
+    re.IGNORECASE,
+)
+
+
+def _safe_numeric_expression(expression, variables=None):
+    """Evaluate a short, allow-listed numerical expression without eval()."""
+    if not expression or len(expression) > 160:
+        return None
+
+    variables = variables or {}
+    try:
+        tree = ast.parse(expression, mode="eval")
+    except SyntaxError:
+        return None
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Constant):
+            if not isinstance(node.value, (int, float)) or isinstance(node.value, bool):
+                return None
+        elif isinstance(node, ast.Name):
+            if (
+                node.id not in _SAFE_MATH_FUNCTIONS
+                and node.id not in _SAFE_MATH_CONSTANTS
+                and node.id not in variables
+            ):
+                return None
+        elif isinstance(node, ast.Call):
+            if not isinstance(node.func, ast.Name) or node.func.id not in _SAFE_MATH_FUNCTIONS:
+                return None
+            if node.keywords:
+                return None
+        elif isinstance(node, ast.BinOp):
+            if not isinstance(node.op, (ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Pow, ast.Mod)):
+                return None
+        elif isinstance(node, ast.UnaryOp):
+            if not isinstance(node.op, (ast.UAdd, ast.USub)):
+                return None
+        elif isinstance(node, (ast.Expression, ast.Load, ast.operator, ast.unaryop)):
+            continue
+        else:
+            return None
+
+    def evaluate(node):
+        if isinstance(node, ast.Constant):
+            return node.value
+        if isinstance(node, ast.Name):
+            return variables[node.id] if node.id in variables else _SAFE_MATH_CONSTANTS[node.id]
+        if isinstance(node, ast.UnaryOp):
+            operand = evaluate(node.operand)
+            return operand if isinstance(node.op, ast.UAdd) else -operand
+        if isinstance(node, ast.BinOp):
+            left, right = evaluate(node.left), evaluate(node.right)
+            if isinstance(node.op, ast.Add): return left + right
+            if isinstance(node.op, ast.Sub): return left - right
+            if isinstance(node.op, ast.Mult): return left * right
+            if isinstance(node.op, ast.Div): return left / right
+            if isinstance(node.op, ast.Mod): return left % right
+            if abs(right) > 1000: raise ValueError("Exponent is too large")
+            return left ** right
+        if isinstance(node, ast.Call):
+            return _SAFE_MATH_FUNCTIONS[node.func.id](*[evaluate(arg) for arg in node.args])
+        raise ValueError("Unsupported expression")
+
+    try:
+        value = evaluate(tree.body)
+    except (ArithmeticError, OverflowError, ValueError, TypeError, ZeroDivisionError):
+        return None
+
+    if not isinstance(value, (int, float)) or isinstance(value, bool) or not math.isfinite(value):
+        return None
+    return value
+
+
+def calculate_math_or_science(message):
+    """Return a verified result for common numerical and school-science requests."""
+    normalized = message.lower().replace("×", "*").replace("÷", "/").replace("−", "-")
+
+    kinetic = re.search(
+        r"kinetic energy.*?(\d+(?:\.\d+)?)\s*kg.*?(?:at|velocity(?:\s+of)?|speed(?:\s+of)?)\s*"
+        r"(\d+(?:\.\d+)?)\s*(?:m/s|meters?\s*(?:per|/)\s*second)",
+        normalized,
+    )
+    if kinetic:
+        mass, velocity = map(float, kinetic.groups())
+        result = 0.5 * mass * velocity ** 2
+        return f"Verified calculation: kinetic energy = ½mv² = ½ × {mass:g} kg × ({velocity:g} m/s)² = {result:g} J."
+
+    kmh = re.search(r"(\d+(?:\.\d+)?)\s*km/?h\s*(?:to|in)\s*m/?s", normalized)
+    if kmh:
+        value = float(kmh.group(1)) / 3.6
+        return f"Verified conversion: {float(kmh.group(1)):g} km/h = {value:g} m/s."
+
+    celsius = re.search(r"(\d+(?:\.\d+)?)\s*°?c\s*(?:to|in)\s*°?f", normalized)
+    if celsius:
+        value = float(celsius.group(1)) * 9 / 5 + 32
+        return f"Verified conversion: {float(celsius.group(1)):g} °C = {value:g} °F."
+
+    expression = re.sub(
+        r"^\s*(?:calculate|evaluate|solve|what is|what's|find)\s+", "", normalized
+    ).strip(" ?.!")
+    expression = expression.replace("^", "**")
+    if re.fullmatch(r"[0-9a-z_+\-*/%().,\s]+", expression or "") and re.search(r"\d", expression or ""):
+        value = _safe_numeric_expression(expression)
+        if value is not None:
+            return f"Verified calculation: {expression} = {value:.12g}."
+    return ""
+
+
+def create_graph_data(message):
+    """Return safe point data for a one-variable Cartesian graph request."""
+    match = re.search(
+        r"\b(?:graph|plot|draw)(?:\s+(?:the|a))?(?:\s+(?:function|equation))?\s*"
+        r"(?:y\s*=\s*)?(.+)",
+        message,
+        re.IGNORECASE,
+    )
+    if not match:
+        return None
+
+    expression = match.group(1).strip().strip("`$ .?!")
+    range_match = re.search(
+        r"\s+from\s+(-?\d+(?:\.\d+)?)\s+to\s+(-?\d+(?:\.\d+)?)\s*$",
+        expression,
+        re.IGNORECASE,
+    )
+    x_min, x_max = -10.0, 10.0
+    if range_match:
+        x_min, x_max = map(float, range_match.groups())
+        expression = expression[:range_match.start()].strip()
+    expression = (
+        re.sub(r"^y\s*=\s*", "", expression, flags=re.IGNORECASE)
+        .translate(str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹", "0123456789"))
+        .replace("^", "**")
+    )
+    if (
+        "x" not in expression.lower()
+        or len(expression) > 120
+        or not re.fullmatch(r"[0-9a-z_+\-*/%().,\s]+", expression)
+        or not x_min < x_max
+        or x_max - x_min > 100
+    ):
+        return None
+
+    points = []
+    for index in range(241):
+        x_value = x_min + (x_max - x_min) * index / 240
+        y_value = _safe_numeric_expression(expression, {"x": x_value})
+        points.append([round(x_value, 8), round(y_value, 8)] if y_value is not None and abs(y_value) <= 1_000_000 else None)
+    if not any(point is not None for point in points):
+        return None
+    return {
+        "expression": f"y = {expression.replace('**', '^')}",
+        "x_min": x_min,
+        "x_max": x_max,
+        "points": points,
+    }
+
+
+def should_update_user_memory(message):
+    """Avoid an extra model request unless a user shares a useful preference or fact."""
+    return bool(_MEMORY_WORTHY_RE.search(message))
+
 
 def _normalize_message(message):
     without_punctuation = re.sub(r"[^\w\s']", " ", message.lower().strip())
@@ -180,91 +364,14 @@ def conversational_reply(message):
     return None
 
 def should_search_web(message, conversation_history=None, conversation_summary=""):
-    """Decide whether a message genuinely needs internet research."""
-    if conversational_reply(message):
+    """Use fast, predictable rules so ordinary questions reach Cypher immediately."""
+    if conversational_reply(message) or calculate_math_or_science(message):
         return False
-
-    context = ""
-    if conversation_summary:
-        context += conversation_summary[-1000:] + "\n"
-
-    for entry in reversed(conversation_history or []):
-        if isinstance(entry, dict) and entry.get("role") in {"user", "assistant"}:
-            content = entry.get("content")
-            if isinstance(content, str) and content.strip():
-                context += f"{entry['role']}: {content[:400]}\n"
-                if len(context) > 1800:
-                    break
-
-    prompt = f"""
-Decide whether the user's latest message requires an internet search.
-
-Return exactly SEARCH or NO_SEARCH. No explanation.
-
-Choose SEARCH when:
-- The user explicitly wants you to search, look up, or find something online.
-- They request links, videos, articles, websites, or other resources.
-- They ask about current events, recent developments, or information that may
-  have changed.
-- They ask about obscure internet creators, niche video series, specific mods,
-  lesser-known people, or other facts you cannot confidently answer from
-  general knowledge.
-- Their question needs specific external evidence or verification.
-
-Choose NO_SEARCH when:
-- They ask a basic question you can answer reliably from general knowledge.
-- They ask for a simple explanation of a familiar topic.
-- They are greeting you, chatting, or asking about your capabilities.
-- They are correcting a typo, clarifying something, or discussing the
-  conversation without requesting outside information.
-- They ask whether you CAN search the web but are not asking you to perform
-  a search right now.
-
-Understand the intended meaning, not just literal words. Correct obvious
-typos mentally. For example, "can you search the wbe?" is a question about
-your capabilities, not a request to search for the words "wbe".
-"Who created the VERITY series by ThatMob?" needs a web search because
-it concerns a specific, potentially obscure internet series.
-
-Conversation context:
-{context[-1800:]}
-
-Latest user message:
-{message}
-"""
-
-    try:
-        response = ollama.chat(
-            model=MODEL,
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You are a web-search intent classifier. Follow the "
-                        "classification rules and output only SEARCH or NO_SEARCH."
-                    ),
-                },
-                {"role": "user", "content": prompt},
-            ],
-            think=False,
-            stream=False,
-        )
-
-        decision = response["message"]["content"].strip().upper()
-        decision = re.sub(r"<think>.*?</think>", "", decision, flags=re.DOTALL)
-        decision = decision.strip()
-
-        return decision.startswith("SEARCH") and not decision.startswith("NO_SEARCH")
-
-    except Exception as e:
-        print(f"[AI WEB] Intent classification error: {e}", flush=True)
-
-        # Safe fallback: search for explicit online research or current information.
-        return bool(
-            _WEB_SEARCH_REQUEST_RE.search(message)
-            or _CURRENT_INFO_REQUEST_RE.search(message)
-            or _RESOURCE_REQUEST_RE.search(message)
-        )
+    return bool(
+        _WEB_SEARCH_REQUEST_RE.search(message)
+        or _CURRENT_INFO_REQUEST_RE.search(message)
+        or _RESOURCE_REQUEST_RE.search(message)
+    )
 
 def should_recommend_resources(message):
     if conversational_reply(message):
@@ -477,7 +584,11 @@ def ask_ai(
         yield reply
         return
 
-    needs_web_research = should_search_web(
+    calculation_result = calculate_math_or_science(user_input)
+
+    # Resource cards are already search results prepared by the route, so avoid
+    # performing a second identical search before generating the answer.
+    needs_web_research = not tool_results and should_search_web(
         user_input,
         conversation_history,
         conversation_summary,
@@ -523,7 +634,7 @@ def ask_ai(
             flush=True,
         )
 
-    system_prompt = """You are Meridian's helpful AI study assistant.
+    system_prompt = """You are Cypher, Meridian's helpful AI study assistant.
 
 Answer the user's actual question directly and naturally. Be accurate, supportive,
 and clear. Do not repeat the question or add irrelevant background.
@@ -536,6 +647,20 @@ Match the length to the request:
   to answer correctly.
 - Expand only when the user asks for detail or the subject genuinely requires it.
 - Follow explicit requests for a particular length or format. Never add filler.
+- For a requested word count, silently plan the complete response before writing.
+  Reserve space for every requested point and a complete conclusion, then keep
+  the entire answer within the requested count. Do not start a final sentence or
+  point unless there is room to finish it. Aim for the requested count (within
+  about 5%) and check the complete draft's length before returning it. Never stop
+  mid-sentence. If the user asks for an exact count, target that exact number
+  rather than treating it as a maximum.
+
+Write school math in plain notation, such as x^2, x - 2, and (a + b) / c.
+Do not use LaTex commands or delimiters such as \\frac, \\[, \\(, or $...$.
+
+When a verified calculator result is provided below, use that exact result.
+Show the relevant formula or arithmetic in a student-friendly way, preserve
+units, and do not replace it with a guessed calculation.
 
 Use the preceding conversation to resolve references such as "that," "it," or
 "what you said earlier." If the user asks you to continue, pick up from the
@@ -630,6 +755,9 @@ than assuming the user must supply a title."""
     if web_context:
         system_prompt += "\n\nWeb research:\n" + web_context
 
+    if calculation_result:
+        system_prompt += "\n\nCalculator result:\n" + calculation_result
+
     memory_facts = user_memory.get("facts", []) if isinstance(user_memory, dict) else []
     explicit_facts = (
         user_memory.get("explicit_facts", [])
@@ -681,6 +809,7 @@ than assuming the user must supply a title."""
             messages=messages,
             think=False,
             stream=True,
+            options=CHAT_OPTIONS,
         )
 
         for chunk in response:

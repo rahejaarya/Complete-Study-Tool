@@ -31,7 +31,6 @@
     const cards = Array.from(document.querySelectorAll("[data-sound]"));
     const activityButtons = Array.from(document.querySelectorAll("[data-activity]"));
     const recommendationCopy = document.getElementById("recommendation-copy");
-    const selectedActivityLabel = document.getElementById("selected-activity-label");
     const loadRecommendationsButton = document.getElementById("load-recommendations");
     const audioStatus = document.getElementById("audio-status");
     const nowPlayingIndicator = document.getElementById("now-playing-indicator");
@@ -342,7 +341,6 @@
     // Show the recommended mix and mark the selected study activity.
     function updateRecommendations(activityId) {
         const recommendation = recommendations[activityId];
-        selectedActivityLabel.textContent = `Selected: ${recommendation.label}`;
         recommendationCopy.textContent = recommendation.sounds.map((sound) => soundLabels[sound]).join(", ");
         activityButtons.forEach((button) => {
             const isSelected = button.dataset.activity === activityId;

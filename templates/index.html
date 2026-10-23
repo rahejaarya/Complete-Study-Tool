@@ -73,9 +73,9 @@
 
 
         <!-- Main content area where the dashboard and page-specific content are rendered. -->
-        <main class="main-content">
+        <main class="main-content dashboard-main-content">
 
-            <!-- Top bar with the welcome message, global search, and logout action. -->
+            <!-- Top bar with the welcome message and global search. -->
             <header class="topbar dashboard-topbar">
 
 
@@ -93,35 +93,23 @@
                         </div>
                     </div>
                     <label class="global-search-trigger" for="global-search-open" title="Search all features (⌘K or Ctrl+K)">
+                    {# I removed the logo from the search bar bc it looked ass #}
+                    {#
                         <span class="global-search-brand-mark" aria-hidden="true">
                             <img src="{{ url_for('static', filename='meridian-logo.png') }}" alt="">
                         </span>
+                        #}
                         <input id="global-search-open" type="search" placeholder="Search features..." readonly aria-haspopup="dialog" aria-controls="global-search-dialog" aria-expanded="false">
                         <kbd>⌘/Ctrl K</kbd>
                     </label>
                 </div>
-
-                <div style="display: flex; gap: 12px; align-items: center;">
-                    <a class="appearance-button" href="{{ url_for('logout') }}">
-                        <span aria-hidden="true">↩</span>
-                        Logout
-                    </a>
-                </div>
-
             </header>
 
 
             <!-- Dashboard section containing the primary study cards and quick actions. -->
             <section class="dashboard">
 
-                <!-- Hero card at the top of the dashboard to encourage the user to start studying. -->
-                <div class="main-card study-card">
-
-
-                    <h2>What are you working on?</h2>
-
-                   
-
+                <div class="dashboard-overview">
                     <a href="{{ url_for('resources') }}" class="feature-card study-resource-link">
                         <span class="feature-icon resources-icon" aria-hidden="true">{{ app_icon("resources") }}</span>
                         <span class="feature-content">
@@ -131,16 +119,7 @@
                         <span class="card-arrow" aria-hidden="true">→</span>
                     </a>
 
-                </div>
-
-
-                <!-- Quick-start shortcut cards for the most-used study tools. -->
-                <div class="section-heading">
-                    <h2>Quick Start</h2>
-                </div>
-
-
-                <div class="feature-grid">
+                    <div class="feature-grid dashboard-feature-grid">
 
                     <!-- AI Study Help -->
                     <a href="{{ url_for('ai_help') }}" style="text-decoration: none; color: inherit; display: block;">
@@ -241,65 +220,29 @@
                         </div>
                     </a>
 
-                </div>
+                    </div>
 
+                </div>
 
                 <!-- Secondary content cards for the notebook workspace and other lower-level tools. -->
                 <div class="lower-grid">
 
                     <!-- Notebook & Notes -->
-                    <section class="main-card notebook-card" id="notes-card" aria-labelledby="notebook-heading">
-                        <div class="card-header">
-                            <div>
-                                <h2 id="notebook-heading">Notebook &amp; Notes</h2>
-                            </div>
-                            <button
-                                class="card-arrow notebook-toggle"
-                                id="notebook-toggle"
-                                type="button"
-                                aria-expanded="false"
-                                aria-controls="notebook-expanded"
-                                aria-label="Open notebook page">↗</button>
+                    <section class="notebook-launcher-section" aria-label="Notes and whiteboards">
+                        <div class="dashboard-notebook-launchers" aria-label="Open notes tools">
+                            <a class="dashboard-notebook-launcher" href="{{ url_for('notes') }}?kind=notes">
+                                <span class="dashboard-notebook-launcher-icon" aria-hidden="true">✎</span>
+                                <span><strong>Notes</strong><small>Write and organize your notes</small></span>
+                                <span class="dashboard-notebook-open">Open notes</span>
+                            </a>
+                            <a class="dashboard-notebook-launcher is-board" href="{{ url_for('notes') }}?kind=whiteboard">
+                                <span class="dashboard-notebook-launcher-icon" aria-hidden="true">▤</span>
+                                <span><strong>Whiteboard</strong><small>Sketch ideas and diagrams</small></span>
+                                <span class="dashboard-notebook-open">Open whiteboard</span>
+                            </a>
                         </div>
 
-                        <label class="notebook-quick-label" for="notebook-quick-note">
-                            Quick note
-                        </label>
-                        <textarea
-                            class="notebook-textarea notebook-quick-note"
-                            id="notebook-quick-note"
-                            maxlength="20000"
-                            placeholder="Jot down a quick note..."
-                            aria-label="Quick note for the selected notebook"
-                            disabled></textarea>
-                        <p class="notebook-save-status" id="notebook-save-status" aria-live="polite">Loading notebooks…</p>
 
-                        <div class="notebook-expanded" id="notebook-expanded" hidden>
-                            <aside class="notebook-sidebar" aria-label="Your notebooks">
-                                <div class="notebook-sidebar-heading">
-                                    <h3>Notebooks</h3>
-                                    <button class="notebook-add" id="notebook-add" type="button" disabled aria-label="Add notebook">+</button>
-                                </div>
-                                <div class="notebook-list" id="notebook-list" role="group" aria-label="Select a notebook"></div>
-                            </aside>
-                            <div class="notebook-editor">
-                                <label class="notebook-name-label" for="notebook-name">Notebook name</label>
-                                <input
-                                    class="notebook-name"
-                                    id="notebook-name"
-                                    type="text"
-                                    maxlength="80"
-                                    autocomplete="off"
-                                    disabled>
-                                <label class="notebook-content-label" for="notebook-content">Notes</label>
-                                <textarea
-                                    class="notebook-textarea notebook-content"
-                                    id="notebook-content"
-                                    maxlength="200000"
-                                    placeholder="Start writing in this notebook..."
-                                    disabled></textarea>
-                            </div>
-                        </div>
                     </section>
 
                     <!-- Motivational Quote Slideshow -->
@@ -374,35 +317,9 @@
     </div>
 
     <script id="global-search-routes" type="application/json">{{ search_routes | tojson }}</script>
-    <script src="{{ url_for('static', filename='dashboard_notebooks.js') }}" defer></script>
 
     <!-- Mobile navigation keeps the same major app destinations available on smaller screens. -->
-    <nav class="mobile-navigation">
-        <a href="/" class="mobile-link active">
-            <span>⌂</span>
-            <small>Dashboard</small>
-        </a>
-        <a href="/resources" class="mobile-link">
-            <span>{{ app_icon("resources") }}</span>
-            <small>Study Resources</small>
-        </a>
-        <a href="/noise-songs" class="mobile-link">
-            <span>♫</span>
-            <small>Noise &amp; Songs</small>
-        </a>
-        <a href="/time-management" class="mobile-link">
-            <span>◷</span>
-            <small>Time Management</small>
-        </a>
-        <a href="/support" class="mobile-link">
-            <span>♡</span>
-            <small>Support</small>
-        </a>
-        <a href="/ai" class="mobile-link">
-            <span>{{ app_icon("assistant") }}</span>
-            <small>Cypher</small>
-        </a>
-    </nav>
+    {% include "_mobile_navigation.html" %}
 
     <!-- Load the nearest unfinished future event and keep its countdown current. -->
     <script>

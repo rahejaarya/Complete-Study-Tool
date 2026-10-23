@@ -21,8 +21,10 @@
     };
     const themeCards = Array.from(document.querySelectorAll("[data-theme-choice]"));
     const status = document.getElementById("appearance-status");
-    const applyButton = document.getElementById("apply-theme");
+    const applyRow = document.querySelector(".appearance-apply-row");
     let selectedTheme = document.documentElement.dataset.theme || "light-lavender";
+    let appliedTheme = selectedTheme;
+    let isSaving = false;
 
     // Keep the pressed state of each theme card synchronized with the selection.
     function updateSelection() {
@@ -31,28 +33,44 @@
         });
     }
 
+    function updateApplyRow() {
+        const hasUnappliedTheme = selectedTheme !== appliedTheme;
+        applyRow.dataset.theme = selectedTheme;
+        applyRow.hidden = !hasUnappliedTheme;
+    }
+
     // Preview a palette locally when its card is selected.
     themeCards.forEach((card) => {
         card.addEventListener("click", () => {
             selectedTheme = card.dataset.themeChoice;
-            status.textContent = `Previewing ${themeNames[selectedTheme]}. Select another preview or apply this theme.`;
+            status.textContent = selectedTheme === appliedTheme
+                ? `Previewing ${themeNames[selectedTheme]}. This is your current theme.`
+                : `Previewing ${themeNames[selectedTheme]}. Double-click to set this theme.`;
             updateSelection();
+            updateApplyRow();
         });
+
+        card.addEventListener("dblclick", applySelectedTheme);
     });
 
     // Reflect a theme loaded asynchronously by the shared theme bootstrapper.
     window.addEventListener("studytool:theme-loaded", (event) => {
         selectedTheme = event.detail.theme;
+        appliedTheme = selectedTheme;
         updateSelection();
+        updateApplyRow();
     });
 
     // Persist the chosen theme to the user's account and report the save result.
-    applyButton.addEventListener("click", async () => {
-        document.documentElement.dataset.theme = selectedTheme;
-        applyButton.disabled = true;
+    async function applySelectedTheme() {
+        if (selectedTheme === appliedTheme || isSaving) return;
+
+        const themeToApply = selectedTheme;
+        isSaving = true;
+        document.documentElement.dataset.theme = themeToApply;
         status.textContent = "Saving theme…";
         try {
-            window.localStorage.setItem(storageKey, selectedTheme);
+            window.localStorage.setItem(storageKey, themeToApply);
         } catch (error) {
             console.warn("Color theme could not be cached in browser storage.", error);
         }
@@ -60,19 +78,24 @@
             const response = await fetch("/api/preferences/theme", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ theme: selectedTheme })
+                body: JSON.stringify({ theme: themeToApply })
             });
             if (!response.ok) {
                 throw new Error(`Theme save failed with status ${response.status}.`);
             }
-            status.textContent = "";
+            appliedTheme = themeToApply;
+            status.textContent = selectedTheme === appliedTheme
+                ? ""
+                : `Previewing ${themeNames[selectedTheme]}. Double-click to set this theme.`;
         } catch (error) {
             status.textContent = "Theme could not be saved. Please try again.";
             console.error("Color theme could not be saved to the account.", error);
         } finally {
-            applyButton.disabled = false;
+            isSaving = false;
+            updateApplyRow();
         }
-    });
+    }
 
     updateSelection();
+    updateApplyRow();
 })();

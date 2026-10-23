@@ -32,9 +32,11 @@ try:
     from static.ai import (  # type: ignore[reportMissingImports]
         ask_ai,
         bound_conversation_history,
+        create_graph_data,
         find_resources,
         search_educational_videos,
         search_web,
+        should_update_user_memory,
         should_recommend_resources,
         study_search_terms,
         summarize_conversation,
@@ -45,9 +47,11 @@ except ModuleNotFoundError:  # pragma: no cover
     from app.static.ai import (  # type: ignore
         ask_ai,
         bound_conversation_history,
+        create_graph_data,
         find_resources,
         search_educational_videos,
         search_web,
+        should_update_user_memory,
         should_recommend_resources,
         study_search_terms,
         summarize_conversation,
@@ -586,8 +590,8 @@ def clean_notebook_data(data):
     """Validate notebook fields, unique IDs, and the selected active notebook."""
     notebooks = data.get("notebooks")
     active_id = data.get("active_id")
-    if not isinstance(notebooks, list) or not notebooks:
-        raise ValueError("Add at least one notebook.")
+    if not isinstance(notebooks, list):
+        raise ValueError("Notebooks must be a list.")
     if not isinstance(active_id, str):
         raise ValueError("Choose an active notebook.")
 
@@ -599,7 +603,9 @@ def clean_notebook_data(data):
         notebook_id = notebook.get("id")
         name = notebook.get("name")
         content = notebook.get("content")
-        quick_note = notebook.get("quick_note", "")
+        legacy_quick_note = notebook.get("quick_note", "")
+        whiteboard = notebook.get("whiteboard", {"strokes": []})
+        kind = notebook.get("kind", "notes")
         if (
             not isinstance(notebook_id, str)
             or not re.fullmatch(r"[A-Za-z0-9_-]{1,36}", notebook_id)
@@ -609,20 +615,36 @@ def clean_notebook_data(data):
             or len(name.strip()) > 80
             or not isinstance(content, str)
             or len(content) > 200_000
-            or not isinstance(quick_note, str)
-            or len(quick_note) > 20_000
+            or not isinstance(legacy_quick_note, str)
+            or len(legacy_quick_note) > 20_000
+            or not isinstance(whiteboard, dict)
+            or not isinstance(kind, str)
+            or kind not in {"notes", "whiteboard"}
+            or not isinstance(whiteboard.get("strokes", []), list)
+            or len(whiteboard.get("strokes", [])) > 5000
+            or len(json.dumps(whiteboard, ensure_ascii=False)) > 1_000_000
         ):
             raise ValueError("A notebook contains invalid fields.")
         seen_ids.add(notebook_id)
+        if legacy_quick_note and content.strip() in {"", "<br>", "<p><br></p>", "<div><br></div>"}:
+            content = legacy_quick_note
+        clean_name = name.strip()
+        if clean_name.lower() == "quick notes":
+            clean_name = "Notes"
         clean_notebooks.append({
             "id": notebook_id,
-            "name": name.strip(),
+            "name": clean_name,
             "content": content,
-            "quick_note": quick_note,
+            "whiteboard": whiteboard,
+            "kind": kind,
         })
 
-    if active_id not in seen_ids:
+    if active_id and active_id not in seen_ids:
         raise ValueError("The active notebook could not be found.")
+    if not clean_notebooks:
+        active_id = ""
+    elif not active_id:
+        active_id = clean_notebooks[0]["id"]
     return {"notebooks": clean_notebooks, "active_id": active_id}
 
 
@@ -644,22 +666,7 @@ def user_notebooks():
                     raise ValueError("Saved notebooks must be an object.")
                 return jsonify(clean_notebook_data(saved_data))
 
-            quick_notes_notebook = {
-                "id": uuid.uuid4().hex,
-                "name": "Quick Notes",
-                "content": "",
-                "quick_note": "",
-            }
-            first_notebook = {
-                "id": uuid.uuid4().hex,
-                "name": "My Notebook",
-                "content": "",
-                "quick_note": "",
-            }
-            data = {
-                "notebooks": [quick_notes_notebook, first_notebook],
-                "active_id": quick_notes_notebook["id"],
-            }
+            data = {"notebooks": [], "active_id": ""}
             write_json_atomically(notebooks_path, data)
             return jsonify(data)
         except (sqlite3.Error, OSError, json.JSONDecodeError, ValueError) as error:
@@ -841,6 +848,7 @@ def ai_chat():
         write_json_atomically(chat_path, chat)
 
         lookup_requested = should_recommend_resources(message)
+        graph_data = create_graph_data(message)
         resources = (
             find_resources(
                 message,
@@ -904,6 +912,9 @@ def ai_chat():
                     "resource": resource
                 }) + "\n"
 
+            if graph_data:
+                yield json.dumps({"type": "graph", "graph": graph_data}) + "\n"
+
             full_response = ""
             for chunk in ask_ai(
                 message,
@@ -926,24 +937,25 @@ def ai_chat():
                 })
                 chat["updated_at"] = datetime.now(timezone.utc).isoformat()
                 write_json_atomically(chat_path, chat)
-                try:
-                    current_memory = update_user_memory(
-                        current_memory,
-                        message,
-                        conversation_history=turn_context + [{
-                            "role": "assistant",
-                            "content": full_response,
-                        }],
-                        conversation_summary=conversation_summary,
-                        current_message_in_history=True,
-                    )
-                    write_json_atomically(user_dir / "memory", current_memory)
-                except Exception as memory_error:
-                    app.logger.exception("Could not update AI user memory: %s", memory_error)
-                    yield json.dumps({
-                        "type": "memory_error",
-                        "message": "The conversation was saved, but user memory could not be updated.",
-                    }) + "\n"
+                if should_update_user_memory(message):
+                    try:
+                        current_memory = update_user_memory(
+                            current_memory,
+                            message,
+                            conversation_history=turn_context + [{
+                                "role": "assistant",
+                                "content": full_response,
+                            }],
+                            conversation_summary=conversation_summary,
+                            current_message_in_history=True,
+                        )
+                        write_json_atomically(user_dir / "memory", current_memory)
+                    except Exception as memory_error:
+                        app.logger.exception("Could not update AI user memory: %s", memory_error)
+                        yield json.dumps({
+                            "type": "memory_error",
+                            "message": "The conversation was saved, but user memory could not be updated.",
+                        }) + "\n"
 
             yield json.dumps({
                 "type": "done"

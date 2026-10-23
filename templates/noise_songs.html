@@ -43,17 +43,8 @@
                     <span class="now-playing-dot" aria-hidden="true"></span>
                     <span class="now-playing-label" id="now-playing-label">Nothing playing</span>
                     <button class="now-playing-control" id="toggle-audio-pause" type="button" hidden>Pause</button>
-                </div>
-            </header>
 
-            <!-- Introduce the sound mixer and set the listening context for this page. -->
-            <section class="sound-hero">
-                <div>
-                    <h2>What are you working on?</h2>
-                    <p>Choose an activity and get a starting mix. Keep it soft, layer sounds together, and make the space yours.</p>
-                </div>
-                <div class="sound-hero-orbit" aria-hidden="true"><span></span><span></span><span></span></div>
-            </section>
+            </header>
 
             <!-- Activity buttons select a suggested mix without preventing manual choices. -->
             <section class="noise-section" aria-labelledby="activity-heading">
@@ -61,7 +52,6 @@
                     <div>
                         <h2 id="activity-heading">Find your focus sound</h2>
                     </div>
-                    <span id="selected-activity-label" class="sound-status" aria-live="polite">Selected: Learning something new</span>
                 </div>
                 <div class="activity-grid" role="list">
                     <button class="activity-chip active" type="button" data-activity="learning" aria-pressed="true">Learning something new</button>
@@ -250,32 +240,6 @@
 
     <!-- The ocean recording is loaded only when its card is played. -->
     <audio id="ocean-waves-audio" src="https://cdn.freesound.org/previews/456/456899_9518146-hq.mp3" preload="none" loop hidden></audio>
-    
-    <nav class="mobile-navigation">
-        <a href="/" class="mobile-link">
-            <span>⌂</span>
-            <small>Dashboard</small>
-        </a>
-        <a href="/resources" class="mobile-link">
-            <span>{{ app_icon("resources") }}</span>
-            <small>Study Resources</small>
-        </a>
-        <a href="/noise-songs" class="mobile-link active">
-            <span>♫</span>
-            <small>Noise &amp; Songs</small>
-        </a>
-        <a href="/time-management" class="mobile-link">
-            <span>◷</span>
-            <small>Time Management</small>
-        </a>
-        <a href="/support" class="mobile-link">
-            <span>♡</span>
-            <small>Support</small>
-        </a>
-        <a href="/ai" class="mobile-link">
-            <span>{{ app_icon("assistant") }}</span>
-            <small>Cypher</small>
-        </a>
-    </nav>
+    {% include "_mobile_navigation.html" %}
 </body>
 </html>

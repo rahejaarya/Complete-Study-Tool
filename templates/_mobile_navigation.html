@@ -1,0 +1,32 @@
+{% from "_app_icon.html" import app_icon %}
+{% set active_endpoint = request.endpoint %}
+<nav class="mobile-navigation" aria-label="Primary navigation">
+    <a href="{{ url_for('home') }}" class="mobile-link{% if active_endpoint == 'home' %} active{% endif %}"{% if active_endpoint == 'home' %} aria-current="page"{% endif %}>
+        <span>⌂</span>
+        <small>Dashboard</small>
+    </a>
+    <a href="{{ url_for('resources') }}" class="mobile-link{% if active_endpoint in ['resources', 'resource_browser'] %} active{% endif %}"{% if active_endpoint in ['resources', 'resource_browser'] %} aria-current="page"{% endif %}>
+        <span>{{ app_icon("resources") }}</span>
+        <small>Study Resources</small>
+    </a>
+    <a href="{{ url_for('noise_songs') }}" class="mobile-link{% if active_endpoint == 'noise_songs' %} active{% endif %}"{% if active_endpoint == 'noise_songs' %} aria-current="page"{% endif %}>
+        <span>♫</span>
+        <small>Noise &amp; Songs</small>
+    </a>
+    <a href="{{ url_for('time_management') }}" class="mobile-link{% if active_endpoint == 'time_management' %} active{% endif %}"{% if active_endpoint == 'time_management' %} aria-current="page"{% endif %}>
+        <span>◷</span>
+        <small>Time Management</small>
+    </a>
+    <a href="{{ url_for('support') }}" class="mobile-link{% if active_endpoint in ['support', 'support_topic'] %} active{% endif %}"{% if active_endpoint in ['support', 'support_topic'] %} aria-current="page"{% endif %}>
+        <span>♡</span>
+        <small>Student Support</small>
+    </a>
+    <a href="{{ url_for('notes') }}" class="mobile-link{% if active_endpoint == 'notes' %} active{% endif %}"{% if active_endpoint == 'notes' %} aria-current="page"{% endif %}>
+        <span>✎</span>
+        <small>Notes</small>
+    </a>
+    <a href="{{ url_for('ai_help') }}" class="mobile-link{% if active_endpoint == 'ai_help' %} active{% endif %}"{% if active_endpoint == 'ai_help' %} aria-current="page"{% endif %}>
+        <span>{{ app_icon("assistant") }}</span>
+        <small>Cypher</small>
+    </a>
+</nav>
