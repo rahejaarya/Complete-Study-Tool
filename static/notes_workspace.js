@@ -721,16 +721,6 @@
             fillBoardRegion(point);
             return;
         }
-        if (activeTool === "text") {
-            const text = window.prompt("Text to add to the board:");
-            if (text) {
-                pushHistory();
-                const point = boardPoint(event);
-                currentStrokes().push({ type: "text", text: text.slice(0, 500), x: point.x, y: point.y, color: activeColor, size: 24 });
-                saveBoardChange();
-            }
-            return;
-        }
         boardCanvas.setPointerCapture(event.pointerId);
         pushHistory();
         drawingStroke = {
