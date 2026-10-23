@@ -104,6 +104,60 @@ class SavedFolderUploadTests(unittest.TestCase):
         self.assertEqual(file_item["title"], "unsafe.txt")
         self.assertEqual(file_item["filename"], f"{file_item['file_id']}.txt")
 
+    def test_saved_item_can_be_renamed_and_resized_without_changing_file(self):
+        upload_response = self.client.post(
+            f"/api/saved-folders/{self.folder_id}/files",
+            data={"file": (io.BytesIO(b"study notes"), "notes.txt")},
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(upload_response.status_code, 201)
+        item = upload_response.get_json()["file"]
+
+        update_response = self.client.patch(
+            f"/api/saved-folders/{self.folder_id}/items/{item['file_id']}",
+            json={"custom_title": "Biology notes", "display_size": "large"},
+        )
+
+        self.assertEqual(update_response.status_code, 200)
+        self.assertEqual(update_response.get_json()["item"]["custom_title"], "Biology notes")
+        self.assertEqual(update_response.get_json()["item"]["display_size"], "large")
+        refreshed_item = self.client.get("/api/saved-folders").get_json()[0]["items"][0]
+        self.assertEqual(refreshed_item["title"], "notes.txt")
+        self.assertEqual(refreshed_item["custom_title"], "Biology notes")
+        file_response = self.client.get(
+            f"/api/saved-folders/{self.folder_id}/files/{item['file_id']}"
+        )
+        self.assertEqual(file_response.data, b"study notes")
+        file_response.close()
+
+    def test_item_update_rejects_invalid_size(self):
+        upload_response = self.client.post(
+            f"/api/saved-folders/{self.folder_id}/files",
+            data={"file": (io.BytesIO(b"study notes"), "notes.txt")},
+            content_type="multipart/form-data",
+        )
+        item = upload_response.get_json()["file"]
+
+        response = self.client.patch(
+            f"/api/saved-folders/{self.folder_id}/items/{item['file_id']}",
+            json={"display_size": "giant"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("size", response.get_json()["error"])
+
+    def test_folder_save_reports_duplicate_names(self):
+        response = self.client.put(
+            "/api/saved-folders",
+            json=[
+                {"id": str(uuid.uuid4()), "name": "New folder", "items": []},
+                {"id": str(uuid.uuid4()), "name": "new folder", "items": []},
+            ],
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("unique", response.get_json()["error"])
+
     def test_another_account_cannot_view_the_file(self):
         upload_response = self.client.post(
             f"/api/saved-folders/{self.folder_id}/files",
@@ -254,6 +308,9 @@ class SavedFolderUploadTests(unittest.TestCase):
         self.assertIn(b"Study Resources", response.data)
         self.assertNotIn(b"Open whiteboards", response.data)
         self.assertIn(b"Add existing note or whiteboard", response.data)
+        self.assertIn(b'class="library-mode"', response.data)
+        self.assertIn(b"folder-item-size", response.data)
+        self.assertIn(b"Rename saved item", response.data)
 
     def test_legacy_folder_layout_migrates_without_losing_contents(self):
         legacy_id = str(uuid.uuid4())
