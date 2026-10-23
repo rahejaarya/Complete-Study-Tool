@@ -45,20 +45,10 @@
 
                             <section class="workspace-editor-panel" id="workspace-notes-panel" aria-label="Notes editor" hidden>
                                 <div class="workspace-text-toolbar" role="toolbar" aria-label="Text formatting">
-                                    <select data-note-format="fontName" aria-label="Font">
-                                        <option value="Arial" style="font-family: Arial, sans-serif">Arial</option>
-                                        <option value="Verdana" style="font-family: Verdana, sans-serif">Verdana</option>
-                                        <option value="Trebuchet MS" style="font-family: 'Trebuchet MS', sans-serif">Trebuchet MS</option>
-                                        <option value="Georgia" style="font-family: Georgia, serif">Georgia</option>
-                                        <option value="Garamond" style="font-family: Garamond, serif">Garamond</option>
-                                        <option value="Palatino Linotype" style="font-family: 'Palatino Linotype', serif">Palatino Linotype</option>
-                                        <option value="Times New Roman" style="font-family: 'Times New Roman', serif">Times New Roman</option>
-                                        <option value="Courier New" style="font-family: 'Courier New', monospace">Courier New</option>
-                                        <option value="Lucida Console" style="font-family: 'Lucida Console', monospace">Lucida Console</option>
-                                        <option value="Comic Sans MS" style="font-family: 'Comic Sans MS', cursive">Comic Sans MS</option>
-                                        <option value="cursive" style="font-family: cursive">Cursive</option>
-                                        <option value="fantasy" style="font-family: fantasy">Fantasy</option>
-                                    </select>
+                                    <div class="workspace-font-picker" data-font-picker>
+                                        <button type="button" class="workspace-font-picker-toggle" data-font-picker-toggle aria-haspopup="listbox" aria-expanded="false" aria-label="Choose font">Arial <span aria-hidden="true">▾</span></button>
+                                        <div class="workspace-font-picker-menu" data-font-picker-menu role="listbox" aria-label="Fonts" hidden></div>
+                                    </div>
                                     <select data-note-format="fontSize" aria-label="Text size"><option value="10">10</option><option value="12">12</option><option value="14">14</option><option value="16" selected>16</option><option value="18">18</option><option value="24">24</option><option value="32">32</option><option value="48">48</option></select>
                                     <button type="button" data-note-command="bold" aria-label="Bold"><b>B</b></button>
                                     <button type="button" data-note-command="italic" aria-label="Italic"><i>I</i></button>

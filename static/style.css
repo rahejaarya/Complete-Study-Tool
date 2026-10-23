@@ -8724,6 +8724,13 @@ body.notes-workspace-body { overflow: hidden; }
 .workspace-text-toolbar button:hover,
 .workspace-board-toolbar button:hover { border-color: var(--accent-strong); }
 .workspace-text-toolbar select { cursor: pointer; }
+.workspace-font-picker { position: relative; z-index: 4; }
+.workspace-font-picker-toggle { min-width: 132px; text-align: left; }
+.workspace-font-picker-toggle span { float: right; margin-left: 12px; color: var(--muted); }
+.workspace-font-picker-menu { position: absolute; top: calc(100% + 5px); left: 0; z-index: 20; display: grid; width: min(250px, 76vw); max-height: min(370px, 58vh); padding: 5px; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--white); box-shadow: 0 12px 30px rgba(25, 30, 45, .18); }
+.workspace-font-picker-menu[hidden] { display: none; }
+.workspace-font-option { width: 100%; min-height: 34px; padding: 6px 10px; border: 0; border-radius: 6px; background: transparent; color: var(--text); text-align: left; font-size: 15px; cursor: pointer; }
+.workspace-font-option:hover, .workspace-font-option:focus-visible { outline: 0; background: var(--purple-light); }
 .workspace-note-content { flex: 1; min-height: 0; padding: clamp(24px, 4vw, 58px) clamp(24px, 7vw, 110px); overflow-y: auto; outline: 0; background: var(--white); color: var(--text); font-family: Arial, sans-serif; font-size: 17px; line-height: 1.75; overflow-wrap: anywhere; white-space: pre-wrap; }
 .workspace-note-content:empty::before { content: attr(data-placeholder); color: var(--muted); opacity: .68; pointer-events: none; }
 .workspace-note-content p { margin: 0 0 .8em; }

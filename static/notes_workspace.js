@@ -15,6 +15,37 @@
     const wordCount = document.getElementById("workspace-word-count");
     if (!list || !workspace || !noteEditor || !boardCanvas) return;
 
+    const noteFonts = [
+        ["Arial", "Arial, sans-serif"], ["Helvetica", "Helvetica, sans-serif"], ["Verdana", "Verdana, sans-serif"],
+        ["Tahoma", "Tahoma, sans-serif"], ["Trebuchet MS", "'Trebuchet MS', sans-serif"], ["Segoe UI", "'Segoe UI', sans-serif"],
+        ["Georgia", "Georgia, serif"], ["Times New Roman", "'Times New Roman', serif"], ["Garamond", "Garamond, serif"],
+        ["Palatino Linotype", "'Palatino Linotype', serif"], ["Book Antiqua", "'Book Antiqua', serif"], ["Baskerville", "Baskerville, serif"],
+        ["Bodoni 72", "'Bodoni 72', serif"], ["Didot", "Didot, serif"], ["Courier New", "'Courier New', monospace"],
+        ["Lucida Console", "'Lucida Console', monospace"], ["Consolas", "Consolas, monospace"], ["Monaco", "Monaco, monospace"],
+        ["Comic Sans MS", "'Comic Sans MS', cursive"], ["Chalkboard", "Chalkboard, cursive"], ["Marker Felt", "'Marker Felt', cursive"],
+        ["Bradley Hand", "'Bradley Hand', cursive"], ["Segoe Script", "'Segoe Script', cursive"], ["Brush Script MT", "'Brush Script MT', cursive"],
+        ["Papyrus", "Papyrus, fantasy"], ["Impact", "Impact, fantasy"], ["Copperplate", "Copperplate, fantasy"],
+        ["Cursive", "cursive"], ["Fantasy", "fantasy"], ["System UI", "system-ui, sans-serif"]
+    ];
+    const fontPicker = document.querySelector("[data-font-picker]");
+    const fontToggle = fontPicker?.querySelector("[data-font-picker-toggle]");
+    const fontMenu = fontPicker?.querySelector("[data-font-picker-menu]");
+    noteFonts.forEach(([name, family]) => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "workspace-font-option";
+        option.setAttribute("role", "option");
+        option.dataset.fontName = name;
+        option.style.fontFamily = family;
+        option.textContent = name;
+        fontMenu?.append(option);
+    });
+    fontToggle?.addEventListener("click", () => {
+        const open = fontMenu.hidden;
+        fontMenu.hidden = !open;
+        fontToggle.setAttribute("aria-expanded", String(open));
+    });
+
     let data;
     let activeKind = new URLSearchParams(window.location.search).get("kind") === "whiteboard" ? "whiteboard" : "notes";
     let activeFileId = null;
@@ -43,7 +74,7 @@
     function cleanHtml(value) {
         const parsed = new DOMParser().parseFromString(String(value || ""), "text/html");
         const allowed = new Set(["B", "STRONG", "I", "EM", "U", "UL", "OL", "LI", "P", "BR", "SPAN", "FONT"]);
-        const allowedFonts = ["Arial", "Georgia", "Times New Roman", "Verdana", "Trebuchet MS", "Tahoma", "Courier New", "Garamond", "Palatino Linotype", "Comic Sans MS", "Lucida Console", "cursive", "fantasy"];
+        const allowedFonts = [...noteFonts.map(([name]) => name), "system-ui"];
         parsed.body.querySelectorAll("*").forEach((node) => {
             if (!allowed.has(node.tagName)) {
                 node.replaceWith(...node.childNodes);
@@ -467,6 +498,16 @@
         if (event.target.closest("button")) event.preventDefault();
     });
     document.querySelector(".workspace-text-toolbar").addEventListener("click", (event) => {
+        const fontOption = event.target.closest("[data-font-name]");
+        if (fontOption) {
+            const fontName = fontOption.dataset.fontName;
+            applyTextCommand("fontName", fontName === "System UI" ? "system-ui" : fontName);
+            fontToggle.textContent = `${fontName} ▾`;
+            fontToggle.style.fontFamily = noteFonts.find(([name]) => name === fontName)?.[1] || "Arial, sans-serif";
+            fontMenu.hidden = true;
+            fontToggle.setAttribute("aria-expanded", "false");
+            return;
+        }
         const color = event.target.closest("[data-note-color]");
         if (color) {
             applyTextCommand("foreColor", color.dataset.noteColor);
