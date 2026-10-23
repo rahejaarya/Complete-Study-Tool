@@ -43,7 +43,7 @@
     function cleanHtml(value) {
         const parsed = new DOMParser().parseFromString(String(value || ""), "text/html");
         const allowed = new Set(["B", "STRONG", "I", "EM", "U", "UL", "OL", "LI", "P", "BR", "SPAN", "FONT"]);
-        const allowedFonts = ["Arial", "Georgia", "Times New Roman", "Verdana", "Trebuchet MS", "Tahoma", "Courier New", "Garamond", "Palatino Linotype", "Comic Sans MS"];
+        const allowedFonts = ["Arial", "Georgia", "Times New Roman", "Verdana", "Trebuchet MS", "Tahoma", "Courier New", "Garamond", "Palatino Linotype", "Comic Sans MS", "Lucida Console", "cursive", "fantasy"];
         parsed.body.querySelectorAll("*").forEach((node) => {
             if (!allowed.has(node.tagName)) {
                 node.replaceWith(...node.childNodes);

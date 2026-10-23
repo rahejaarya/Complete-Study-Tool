@@ -3,7 +3,7 @@
     <!-- Shared sidebar links for notes and the AI assistant's saved conversations. -->
     <a href="{{ url_for('notes') }}" class="nav-link{% if request.endpoint == 'notes' %} active{% endif %}"{% if request.endpoint == 'notes' %} aria-current="page"{% endif %}>
         <span class="nav-icon">✎</span>
-        Notes
+        Notes & Whiteboard
     </a>
     <div class="ai-nav-row{% if request.endpoint == 'ai_help' %} active{% endif %}">
     <!-- The dropdown toggle exposes the saved-chat list alongside the AI entry. -->

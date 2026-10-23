@@ -22,7 +22,9 @@
     const themeCards = Array.from(document.querySelectorAll("[data-theme-choice]"));
     const status = document.getElementById("appearance-status");
     const applyButton = document.getElementById("apply-theme");
+    const applyRow = applyButton.closest(".appearance-apply-row");
     let selectedTheme = document.documentElement.dataset.theme || "light-lavender";
+    let appliedTheme = selectedTheme;
 
     // Keep the pressed state of each theme card synchronized with the selection.
     function updateSelection() {
@@ -31,19 +33,30 @@
         });
     }
 
+    function updateApplyButton() {
+        const hasUnappliedTheme = selectedTheme !== appliedTheme;
+        applyRow.hidden = !hasUnappliedTheme;
+        applyButton.disabled = !hasUnappliedTheme;
+    }
+
     // Preview a palette locally when its card is selected.
     themeCards.forEach((card) => {
         card.addEventListener("click", () => {
             selectedTheme = card.dataset.themeChoice;
-            status.textContent = `Previewing ${themeNames[selectedTheme]}. Select another preview or apply this theme.`;
+            status.textContent = selectedTheme === appliedTheme
+                ? `Previewing ${themeNames[selectedTheme]}. This is your current theme.`
+                : `Previewing ${themeNames[selectedTheme]}. Apply to save this theme.`;
             updateSelection();
+            updateApplyButton();
         });
     });
 
     // Reflect a theme loaded asynchronously by the shared theme bootstrapper.
     window.addEventListener("studytool:theme-loaded", (event) => {
         selectedTheme = event.detail.theme;
+        appliedTheme = selectedTheme;
         updateSelection();
+        updateApplyButton();
     });
 
     // Persist the chosen theme to the user's account and report the save result.
@@ -65,14 +78,16 @@
             if (!response.ok) {
                 throw new Error(`Theme save failed with status ${response.status}.`);
             }
+            appliedTheme = selectedTheme;
             status.textContent = "";
         } catch (error) {
             status.textContent = "Theme could not be saved. Please try again.";
             console.error("Color theme could not be saved to the account.", error);
         } finally {
-            applyButton.disabled = false;
+            updateApplyButton();
         }
     });
 
     updateSelection();
+    updateApplyButton();
 })();
