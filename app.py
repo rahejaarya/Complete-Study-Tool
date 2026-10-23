@@ -702,10 +702,19 @@ def safe_next_url(target):
 def load_resources():
     """Load the bundled study-resource catalog when its JSON file exists."""
     json_path = os.path.join(app.root_path, "data", "resources.json")
-    if os.path.exists(json_path):
+    try:
         with open(json_path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return []
+            resources = json.load(f)
+    except FileNotFoundError:
+        return []
+    except (OSError, json.JSONDecodeError):
+        app.logger.exception("Could not load the bundled study resource catalog")
+        return []
+
+    if not isinstance(resources, list):
+        app.logger.error("Study resource catalog must contain a JSON list")
+        return []
+    return [resource for resource in resources if isinstance(resource, dict)]
 
 
 # -----------------------------------------------------------------------------
@@ -1312,9 +1321,15 @@ def resources():
         search_term = query.lower()
         filtered_resources = [
             item for item in all_resources
-            if search_term in item.get("title", "").lower()
-            or search_term in item.get("subject", "").lower()
-            or search_term in item.get("description", "").lower()
+            if any(
+                search_term in value.lower()
+                for value in (
+                    item.get("title"),
+                    item.get("subject"),
+                    item.get("description"),
+                )
+                if isinstance(value, str)
+            )
         ]
     else:
         filtered_resources = all_resources
