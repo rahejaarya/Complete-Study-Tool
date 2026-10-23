@@ -190,7 +190,7 @@
                     return;
                 }
                 if (stroke.type === "region-fill" && Array.isArray(stroke.runs)) {
-                    drawRegionFill(context, stroke, canvas.width, canvas.height);
+                    drawRegionFill(context, stroke, canvas.width, canvas.height, 1);
                     return;
                 }
                 if (stroke.type === "text") {
@@ -444,7 +444,7 @@
                 return;
             }
             if (stroke.type === "region-fill" && Array.isArray(stroke.runs)) {
-                drawRegionFill(boardContext, stroke, width, height);
+                drawRegionFill(boardContext, stroke, width, height, pixelRatio);
                 return;
             }
             if (stroke.type === "text") {
@@ -510,14 +510,15 @@
         boardContext.globalCompositeOperation = "source-over";
     }
 
-    function drawRegionFill(context, stroke, width, height) {
+    function drawRegionFill(context, stroke, width, height, outputPixelRatio) {
         const scaleX = width / (stroke.width || width);
         const scaleY = height / (stroke.height || height);
+        const overlap = 1 / Math.max(1, outputPixelRatio || 1);
         context.globalCompositeOperation = "source-over";
         context.globalAlpha = 1;
         context.fillStyle = stroke.color || "#20242d";
         stroke.runs.forEach(([y, x, length]) => {
-            context.fillRect(x * scaleX, y * scaleY, Math.max(1, length * scaleX), Math.max(1, scaleY));
+            context.fillRect(x * scaleX, y * scaleY - overlap / 2, Math.max(1, length * scaleX), Math.max(1, scaleY + overlap));
         });
     }
 
