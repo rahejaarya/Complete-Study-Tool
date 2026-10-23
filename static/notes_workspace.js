@@ -190,10 +190,7 @@
                     return;
                 }
                 if (stroke.type === "region-fill" && Array.isArray(stroke.runs)) {
-                    context.fillStyle = stroke.color || "#20242d";
-                    const scaleX = canvas.width / (stroke.width || canvas.width);
-                    const scaleY = canvas.height / (stroke.height || canvas.height);
-                    stroke.runs.forEach(([y, x, length]) => context.fillRect(x * scaleX, y * scaleY, length * scaleX, scaleY));
+                    drawRegionFill(context, stroke, canvas.width, canvas.height);
                     return;
                 }
                 if (stroke.type === "text") {
@@ -447,12 +444,7 @@
                 return;
             }
             if (stroke.type === "region-fill" && Array.isArray(stroke.runs)) {
-                boardContext.globalCompositeOperation = "source-over";
-                boardContext.globalAlpha = 1;
-                boardContext.fillStyle = stroke.color || "#20242d";
-                const scaleX = width / (stroke.width || width);
-                const scaleY = height / (stroke.height || height);
-                stroke.runs.forEach(([y, x, length]) => boardContext.fillRect(x * scaleX, y * scaleY, length * scaleX, scaleY));
+                drawRegionFill(boardContext, stroke, width, height);
                 return;
             }
             if (stroke.type === "text") {
@@ -516,6 +508,17 @@
         drawFrom(0);
         boardContext.globalAlpha = 1;
         boardContext.globalCompositeOperation = "source-over";
+    }
+
+    function drawRegionFill(context, stroke, width, height) {
+        const scaleX = width / (stroke.width || width);
+        const scaleY = height / (stroke.height || height);
+        context.globalCompositeOperation = "source-over";
+        context.globalAlpha = 1;
+        context.fillStyle = stroke.color || "#20242d";
+        stroke.runs.forEach(([y, x, length]) => {
+            context.fillRect(x * scaleX, y * scaleY, Math.max(1, length * scaleX), Math.max(1, scaleY));
+        });
     }
 
     function pushHistory() {
