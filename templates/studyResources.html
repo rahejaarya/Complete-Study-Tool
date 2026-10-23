@@ -10,6 +10,7 @@
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
     <script src="{{ url_for('static', filename='api_response.js') }}"></script>
     <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='study_assistant.js') }}" defer></script>
     {% if not library_mode %}
     <script src="{{ url_for('static', filename='saved_folder_picker.js') }}" defer></script>
     <script src="{{ url_for('static', filename='resource_browser.js') }}" defer></script>
@@ -114,6 +115,31 @@
                     <p class="resource-browser-error" id="resource-browser-error" role="alert" hidden></p>
                 </section>
                 {% endif %}
+
+                <section class="study-assistant-panel" aria-labelledby="study-assistant-title">
+                    <div class="study-assistant-heading">
+                        <div>
+                            <p class="resource-browser-eyebrow">CYPHER STUDY HELP</p>
+                            <h2 id="study-assistant-title">Ask about this topic</h2>
+                        </div>
+                        <button type="button" class="study-assistant-clear" id="study-assistant-clear">Clear chat</button>
+                    </div>
+                    {% if library_mode %}
+                    <label class="study-assistant-label" for="study-assistant-materials">Materials Cypher may use</label>
+                    <select id="study-assistant-materials" class="study-assistant-materials" multiple size="4" aria-describedby="study-assistant-material-note"></select>
+                    <p class="study-assistant-material-note" id="study-assistant-material-note">Only the checked materials are included. Open a folder to load its contents.</p>
+                    {% endif %}
+                    <div class="study-assistant-messages" id="study-assistant-messages" role="log" aria-live="polite" aria-relevant="additions">
+                        <p class="study-assistant-empty">Ask for an explanation, summary, examples, practice questions, or step-by-step help.</p>
+                    </div>
+                    <form class="study-assistant-form" id="study-assistant-form">
+                        <label class="sr-only" for="study-assistant-question">Question for Cypher</label>
+                        <textarea id="study-assistant-question" maxlength="4000" rows="2" required placeholder="Ask Cypher a study question…"></textarea>
+                        <button type="submit" id="study-assistant-submit">Ask Cypher</button>
+                    </form>
+                    <p class="study-assistant-status" id="study-assistant-status" role="status"></p>
+                    <button type="button" class="study-assistant-save" id="study-assistant-save" hidden>Save last answer as a note</button>
+                </section>
 
                 {% if not library_mode %}
                 <div class="resource-browser-loading" id="resource-browser-loading" role="status" aria-live="polite" hidden>
@@ -1175,6 +1201,7 @@
             grid.classList.toggle("folder-files-grid", Boolean(activeFolder));
 
             if (activeFolder) {
+                window.MeridianStudyAssistant?.setFolder(activeFolder.id, activeFolder.items);
                 activeFolder.items.forEach(item => {
                     const isUploadedFile =
                         item && item.kind === "file" &&
@@ -1411,6 +1438,7 @@ grid.append(add);
 
 backButton.addEventListener("click", () => {
 openFolderId = null;
+window.MeridianStudyAssistant?.setFolder(null, []);
 render();
 });
 

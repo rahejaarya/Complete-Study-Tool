@@ -8,6 +8,7 @@ import sqlite3
 import tempfile
 import uuid
 import requests
+from html.parser import HTMLParser
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from functools import wraps
@@ -1541,7 +1542,7 @@ def resource_browser_search():
 
 def _strip_study_html(value):
     """Convert notebook HTML into plain text for bounded AI context."""
-    class _NotebookTextParser(__import__("html.parser").parser.HTMLParser):
+    class _NotebookTextParser(HTMLParser):
         def __init__(self):
             super().__init__()
             self.parts = []
@@ -1634,8 +1635,8 @@ def study_assistant():
                 if not file_text.strip():
                     raise ValueError("No readable text was found in this file.")
                 context_sections.append(f"SOURCE: {title}\n{file_text}")
-            except (OSError, ValueError, json.JSONDecodeError) as error:
-                limitations.append(f"{title}: {error}")
+            except Exception:
+                limitations.append(f"{title}: The file could not be read by the study assistant.")
         elif item.get("kind") == "web":
             context_sections.append(
                 f"SOURCE: {title}\nURL: {item.get('url', '')}\n"

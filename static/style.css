@@ -10506,7 +10506,83 @@ body.notes-workspace-body { overflow: hidden; }
     opacity: 0.65;
 }
 
+/* Study Resources assistant */
+.study-assistant-panel {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 24px;
+    padding: 22px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--white);
+    box-shadow: 0 6px 20px var(--card-shadow);
+}
+
+.study-assistant-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.study-assistant-heading h2 { margin-top: 6px; font-size: 24px; }
+.study-assistant-clear,
+.study-assistant-save {
+    border: 0;
+    background: transparent;
+    color: var(--accent-strong);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+.study-assistant-messages {
+    max-height: 360px;
+    overflow-y: auto;
+    display: grid;
+    gap: 10px;
+    padding-right: 2px;
+}
+.study-assistant-empty,
+.study-assistant-status,
+.study-assistant-material-note { color: var(--muted); }
+.study-assistant-message {
+    max-width: 88%;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: var(--control-bg);
+    line-height: 1.55;
+}
+.study-assistant-message strong { display: block; margin-bottom: 4px; }
+.study-assistant-message.user { justify-self: end; background: var(--accent-soft, var(--control-bg)); }
+.study-assistant-message.assistant { white-space: pre-wrap; }
+.study-assistant-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+.study-assistant-form textarea {
+    min-height: 54px;
+    resize: vertical;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--control-bg);
+    color: var(--text);
+    font: inherit;
+}
+.study-assistant-form button {
+    min-width: 112px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--accent-strong);
+    color: var(--white);
+    font-weight: 750;
+    cursor: pointer;
+}
+.study-assistant-form button:disabled { cursor: wait; opacity: .65; }
+.study-assistant-materials { min-height: 96px; width: 100%; padding: 6px; border: 1px solid var(--border); border-radius: 10px; }
+.study-assistant-material-note { margin: 0; font-size: 13px; }
+
 @media (max-width: 520px) {
+    .study-assistant-form { grid-template-columns: 1fr; }
+    .study-assistant-form button { min-height: 44px; }
+    .study-assistant-message { max-width: 94%; }
     .folder-web-search-form,
     .folder-web-search-result {
         grid-template-columns: minmax(0, 1fr);
