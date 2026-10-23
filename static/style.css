@@ -9458,6 +9458,7 @@ body.notes-workspace-body { overflow: hidden; }
 .board-tool-group,.board-color-group,.board-history-group { display: flex; align-items: center; gap: 5px; }
 .board-tool-group { padding-right: 8px; border-right: 1px solid var(--border); }
 .board-tool-group button { display: inline-flex; align-items: center; gap: 5px; min-width: 38px; justify-content: center; padding-inline: 8px; }
+.board-bucket-icon { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: 0 0 auto; }
 .board-tool-group button[aria-pressed="true"] { border-color: var(--accent-strong); background: var(--purple-light); color: var(--text); }
 .board-color-group { gap: 8px; padding: 0 10px; border-right: 1px solid var(--border); }
 .board-color-group button { width: 23px; min-width: 23px; min-height: 23px; height: 23px; padding: 0; border: 2px solid #fff; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 1px #c7ccd5; }
