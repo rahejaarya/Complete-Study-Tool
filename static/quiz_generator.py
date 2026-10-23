@@ -11,6 +11,37 @@ import requests
 import ollama
 
 
+QUIZ_RESPONSE_FORMAT = {
+    "type": "object",
+    "properties": {
+        "questions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "question": {"type": "string"},
+                    "options": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "minItems": 4,
+                        "maxItems": 4,
+                    },
+                    "answer": {"type": "string"},
+                },
+                "required": ["question", "options", "answer"],
+                "additionalProperties": False,
+            },
+        },
+    },
+    "required": ["questions"],
+    "additionalProperties": False,
+}
+
+
+class QuizGenerationError(RuntimeError):
+    """The model could not produce the requested set of valid questions."""
+
+
 class _TextExtractor(HTMLParser):
     def __init__(self):
         super().__init__()
@@ -105,18 +136,27 @@ def generate_quiz(text, count):
                 {"role": "system", "content": "Write accurate student multiple-choice questions using only the source. Return JSON with a questions array. Every item has question, options (exactly four strings), and answer (exactly one option string)."},
                 {"role": "user", "content": f"Create exactly {amount} distinct MCQ questions. Do not repeat these questions:\n{prior or '(none)'}\nReturn JSON only. Source:\n{text[:24000]}"},
             ],
-            format="json", think=False, stream=False,
+            format=QUIZ_RESPONSE_FORMAT, think=False, stream=False,
             options={"temperature": 0.1, "num_predict": 1800, "num_ctx": 12288},
         )
         try:
             raw = json.loads(response["message"]["content"])
         except (KeyError, TypeError, json.JSONDecodeError):
             continue
-        for item in raw.get("questions", []) if isinstance(raw, dict) else []:
+        generated_questions = raw.get("questions") if isinstance(raw, dict) else None
+        if not isinstance(generated_questions, list):
+            continue
+        for item in generated_questions:
             if not isinstance(item, dict):
                 continue
             question, options, answer = item.get("question"), item.get("options"), item.get("answer")
-            if not isinstance(question, str) or not isinstance(options, list) or len(options) != 4 or not all(isinstance(x, str) for x in options) or not isinstance(answer, str):
+            if (
+                not isinstance(question, str)
+                or not isinstance(options, list)
+                or len(options) != 4
+                or not all(isinstance(option, str) and option.strip() for option in options)
+                or not isinstance(answer, str)
+            ):
                 continue
             options = [x.strip() for x in options]
             question, answer = question.strip(), answer.strip()
@@ -127,5 +167,8 @@ def generate_quiz(text, count):
                 if len(cards) == count:
                     break
     if len(cards) != count:
-        raise ValueError(f"The source supported {len(cards)} of the {count} questions requested. Try a longer source or choose a smaller number.")
+        raise QuizGenerationError(
+            f"The source supported {len(cards)} of the {count} questions requested. "
+            "Try a longer source or choose a smaller number."
+        )
     return cards

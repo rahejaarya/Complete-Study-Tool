@@ -3,42 +3,154 @@
 <html lang="en">
 <head>
     {% include "_favicon.html" %}
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Generator - Meridian</title>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
-    <script src="{{ url_for('static', filename='quiz_generator.js', v='1') }}" defer></script>
+    <script src="{{ url_for('static', filename='quiz_generator.js', v='2') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='flashcard_generator.css', v='6') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='quiz_generator.css', v='1') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='quiz_generator.css', v='2') }}">
 </head>
-<body><div class="app">
-    <aside class="sidebar">{% include "_sidebar_header.html" %}<nav class="navigation" id="primary-navigation">
-        <a href="{{ url_for('home') }}" class="nav-link"><span class="nav-icon">⌂</span>Dashboard</a>
-        <a href="{{ url_for('resources') }}" class="nav-link active" aria-current="page"><span class="nav-icon">{{ app_icon("resources") }}</span>Study Resources</a>
-        <a href="{{ url_for('noise_songs') }}" class="nav-link"><span class="nav-icon">♫</span>Noise &amp; Songs</a>
-        <a href="{{ url_for('time_management') }}" class="nav-link"><span class="nav-icon">◷</span>Time Management</a>
-        <a href="{{ url_for('support') }}" class="nav-link"><span class="nav-icon">♡</span>Student Support</a>{% include "_ai_nav.html" %}
-    </nav><div class="sidebar-bottom"><a href="{{ url_for('settings') }}" class="nav-link"><span class="nav-icon">⚙</span>Settings</a><a href="{{ url_for('support') }}" class="nav-link"><span class="nav-icon">?</span>Help</a></div></aside>
-    <main class="main-content flashcard-page quiz-page">
-        <header class="topbar"><div class="welcome"><div class="welcome-icon" aria-hidden="true">✓</div><div><h1>Quiz Generator</h1><p>Build a multiple-choice quiz from your study material.</p></div></div><div class="flashcard-header-links"><a class="resource-browser-back" href="{{ url_for('quiz_library') }}">My quizzes</a><a class="resource-browser-back" href="{{ url_for('resources') }}">← Study Resources</a></div></header>
-        <section id="quiz-builder" class="flashcard-builder">
-            <div class="flashcard-intro"><p class="flashcard-eyebrow">MCQ STUDY SET</p><h2>Create a quiz</h2><p>Upload a file, paste a website link, or use a YouTube video with English captions.</p></div>
-            <form id="quiz-source-form" class="quiz-source-form">
-                <label class="flashcard-file-drop" for="quiz-file"><span class="flashcard-file-icon" aria-hidden="true">↑</span><strong>Upload a study file</strong><span class="flashcard-file-name" id="quiz-file-name">Choose a PDF, DOCX, or TXT</span><span class="flashcard-help">Up to 10 MB</span><input id="quiz-file" name="file" type="file" accept=".pdf,.docx,.txt"></label>
-                <div class="quiz-source-divider"><span>or use a link</span></div>
-                <label class="quiz-url-label" for="quiz-url">Website or YouTube link<input id="quiz-url" name="url" type="url" placeholder="https://…" autocomplete="url"></label>
-                <label class="quiz-count-label" for="quiz-count">Number of questions<input id="quiz-count" name="count" type="number" min="1" max="50" value="10" required></label>
-                <button class="flashcard-submit" id="quiz-generate" type="submit">Generate quiz <span aria-hidden="true">→</span></button>
-            </form>
-            <p class="flashcard-error" id="quiz-error" role="alert" hidden></p>
-            <div class="flashcard-loading" id="quiz-loading" role="status" hidden><span class="flashcard-spinner" aria-hidden="true"></span><span>Reading your source and creating questions…</span></div>
-        </section>
-        <section id="quiz-review" class="flashcard-review quiz-review" hidden>
-            <div class="flashcard-review-top"><div><p class="flashcard-eyebrow">MULTIPLE CHOICE</p><h2 id="quiz-title"></h2><p id="quiz-progress" class="flashcard-deck-subtitle"></p></div><button class="flashcard-action secondary" id="quiz-add-folder" type="button">＋ Add to folder</button></div>
-            <article class="quiz-question-card"><p id="quiz-question"></p><div id="quiz-options" class="quiz-options"></div><p id="quiz-feedback" aria-live="polite"></p></article>
-            <div class="flashcard-controls"><button class="flashcard-action secondary" id="quiz-previous" type="button">Previous</button><button class="flashcard-action" id="quiz-next" type="button">Next</button></div>
-            <p class="flashcard-session-score" id="quiz-score" aria-live="polite"></p>
-            <dialog class="flashcard-folder-dialog" id="quiz-folder-dialog"><form method="dialog"><h2>Add quiz to a folder</h2><label for="quiz-folder-select">Choose a folder<select id="quiz-folder-select"></select></label><p class="flashcard-error" id="quiz-folder-error" role="alert" hidden></p><div class="flashcard-folder-dialog-actions"><button class="flashcard-action secondary" value="cancel">Cancel</button><button class="flashcard-action" id="quiz-folder-confirm" type="button">Add to folder</button></div></form></dialog>
-        </section>
-    </main>
-</div>{% include "_mobile_navigation.html" %}</body></html>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            {% include "_sidebar_header.html" %}
+            <nav class="navigation" id="primary-navigation">
+                <a href="{{ url_for('home') }}" class="nav-link"><span class="nav-icon">⌂</span>Dashboard</a>
+                <a href="{{ url_for('resources') }}" class="nav-link active" aria-current="page"><span class="nav-icon">{{ app_icon("resources") }}</span>Study Resources</a>
+                <a href="{{ url_for('noise_songs') }}" class="nav-link"><span class="nav-icon">♫</span>Noise &amp; Songs</a>
+                <a href="{{ url_for('time_management') }}" class="nav-link"><span class="nav-icon">◷</span>Time Management</a>
+                <a href="{{ url_for('support') }}" class="nav-link"><span class="nav-icon">♡</span>Student Support</a>
+                {% include "_ai_nav.html" %}
+            </nav>
+            <div class="sidebar-bottom">
+                <a href="{{ url_for('settings') }}" class="nav-link"><span class="nav-icon">⚙</span>Settings</a>
+                <a href="{{ url_for('support') }}" class="nav-link"><span class="nav-icon">?</span>Help</a>
+            </div>
+        </aside>
+
+        <main class="main-content flashcard-page quiz-page">
+            <header class="topbar">
+                <div class="welcome">
+                    <div class="welcome-icon" aria-hidden="true">✓</div>
+                    <div>
+                        <h1>Quiz Generator</h1>
+                        <p>Turn your study material into a multiple-choice quiz.</p>
+                    </div>
+                </div>
+                <div class="flashcard-header-links">
+                    <a class="resource-browser-back" href="{{ url_for('quiz_library') }}">My quizzes</a>
+                    <a class="resource-browser-back" href="{{ url_for('resources') }}">← Study Resources</a>
+                </div>
+            </header>
+
+            <section id="quiz-builder" class="flashcard-builder">
+                <div class="flashcard-intro">
+                    <p class="flashcard-eyebrow">MCQ STUDY SET</p>
+                    <h2 id="quiz-builder-heading">Create a quiz</h2>
+                    <p>Choose a study file or a link. We’ll build questions from that source.</p>
+                </div>
+
+                <form id="quiz-source-form" class="quiz-source-form">
+                    <div class="quiz-source-picker">
+                        <p class="quiz-section-label">1. Choose your source</p>
+                        <div class="quiz-source-switch" role="group" aria-label="Choose a source type">
+                            <button class="quiz-source-tab is-active" type="button" data-source="file" aria-pressed="true">
+                                <span class="quiz-source-tab-icon" aria-hidden="true">↑</span>
+                                <span><strong>Upload a file</strong><small>PDF, DOCX, or TXT</small></span>
+                            </button>
+                            <button class="quiz-source-tab" type="button" data-source="url" aria-pressed="false">
+                                <span class="quiz-source-tab-icon" aria-hidden="true">↗</span>
+                                <span><strong>Use a link</strong><small>Website or YouTube</small></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="quiz-source-panel" id="quiz-file-panel">
+                        <label class="flashcard-file-drop quiz-file-drop" for="quiz-file">
+                            <span class="flashcard-file-icon" aria-hidden="true">↑</span>
+                            <strong>Choose your study material</strong>
+                            <span class="flashcard-file-name" id="quiz-file-name">Drop a file here or browse your device</span>
+                            <span class="flashcard-help">PDF, DOCX, or TXT · Up to 10 MB</span>
+                            <input id="quiz-file" name="file" type="file" accept=".pdf,.docx,.txt">
+                        </label>
+                    </div>
+
+                    <div class="quiz-source-panel" id="quiz-url-panel" hidden>
+                        <label class="quiz-url-label" for="quiz-url">
+                            <span class="quiz-section-label">Paste a source link</span>
+                            <input id="quiz-url" name="url" type="url" placeholder="https://example.com/study-guide" autocomplete="url" disabled>
+                            <span class="quiz-field-help">YouTube quizzes need a video with available captions.</span>
+                        </label>
+                    </div>
+
+                    <div class="quiz-settings">
+                        <label class="quiz-count-label" for="quiz-count">
+                            <span class="quiz-section-label">2. Number of questions</span>
+                            <input id="quiz-count" name="count" type="number" min="1" max="50" value="10" inputmode="numeric" required>
+                            <span class="quiz-field-help">Choose between 1 and 50 questions.</span>
+                        </label>
+                        <button class="flashcard-submit" id="quiz-generate" type="submit">
+                            Generate quiz <span aria-hidden="true">→</span>
+                        </button>
+                    </div>
+                </form>
+
+                <p class="flashcard-error" id="quiz-error" role="alert" hidden></p>
+                <div class="flashcard-loading" id="quiz-loading" role="status" aria-live="polite" hidden>
+                    <span class="flashcard-spinner" aria-hidden="true"></span>
+                    <span>Reading your source and creating questions…</span>
+                </div>
+            </section>
+
+            <section id="quiz-review" class="flashcard-review quiz-review" aria-labelledby="quiz-title" hidden>
+                <div class="quiz-review-heading">
+                    <div>
+                        <p class="flashcard-eyebrow">MULTIPLE CHOICE</p>
+                        <h2 id="quiz-title"></h2>
+                        <p id="quiz-progress" class="flashcard-deck-subtitle" aria-live="polite"></p>
+                    </div>
+                    <button class="flashcard-action secondary" id="quiz-add-folder" type="button" disabled>＋ Add to folder</button>
+                </div>
+                <div class="quiz-progress-track" role="progressbar" aria-label="Quiz progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <span id="quiz-progress-bar"></span>
+                </div>
+                <article class="quiz-question-card">
+                    <div class="quiz-question-meta">
+                        <span id="quiz-question-number"></span>
+                        <span>Choose one answer</span>
+                    </div>
+                    <h3 id="quiz-question"></h3>
+                    <div id="quiz-options" class="quiz-options" role="group" aria-label="Answer choices"></div>
+                    <p id="quiz-feedback" class="quiz-feedback" aria-live="polite"></p>
+                </article>
+                <div class="quiz-review-controls">
+                    <button class="flashcard-action secondary" id="quiz-previous" type="button">← Previous</button>
+                    <p class="quiz-score" id="quiz-score" aria-live="polite"></p>
+                    <button class="flashcard-action" id="quiz-next" type="button">Next question →</button>
+                </div>
+                <div class="quiz-review-footer">
+                    <p id="quiz-save-status" role="status" aria-live="polite"></p>
+                    <button class="quiz-restart" id="quiz-save-retry" type="button" hidden>Retry saving</button>
+                    <button class="quiz-restart" id="quiz-restart" type="button" hidden>Start over</button>
+                </div>
+                <dialog class="flashcard-folder-dialog" id="quiz-folder-dialog" aria-labelledby="quiz-folder-title">
+                    <form method="dialog">
+                        <h2 id="quiz-folder-title">Add quiz to a folder</h2>
+                        <label for="quiz-folder-select">Choose a folder
+                            <select id="quiz-folder-select"></select>
+                        </label>
+                        <p class="flashcard-error" id="quiz-folder-error" role="alert" hidden></p>
+                        <div class="flashcard-folder-dialog-actions">
+                            <button class="flashcard-action secondary" value="cancel">Cancel</button>
+                            <button class="flashcard-action" id="quiz-folder-confirm" type="button">Add to folder</button>
+                        </div>
+                    </form>
+                </dialog>
+            </section>
+        </main>
+    </div>
+    {% include "_mobile_navigation.html" %}
+</body>
+</html>

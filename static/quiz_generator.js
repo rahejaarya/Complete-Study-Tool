@@ -1,104 +1,382 @@
 (() => {
     const sourceForm = document.getElementById("quiz-source-form");
     if (!sourceForm) return;
-    const file = document.getElementById("quiz-file");
-    const url = document.getElementById("quiz-url");
+
+    const fileInput = document.getElementById("quiz-file");
+    const fileName = document.getElementById("quiz-file-name");
+    const urlInput = document.getElementById("quiz-url");
     const error = document.getElementById("quiz-error");
     const loading = document.getElementById("quiz-loading");
-    const review = document.getElementById("quiz-review");
+    const submitButton = document.getElementById("quiz-generate");
     const builder = document.getElementById("quiz-builder");
+    const review = document.getElementById("quiz-review");
     const title = document.getElementById("quiz-title");
     const progress = document.getElementById("quiz-progress");
+    const progressTrack = document.querySelector(".quiz-progress-track");
+    const progressBar = document.getElementById("quiz-progress-bar");
+    const questionNumber = document.getElementById("quiz-question-number");
     const question = document.getElementById("quiz-question");
     const options = document.getElementById("quiz-options");
     const feedback = document.getElementById("quiz-feedback");
     const score = document.getElementById("quiz-score");
+    const nextButton = document.getElementById("quiz-next");
+    const previousButton = document.getElementById("quiz-previous");
+    const restartButton = document.getElementById("quiz-restart");
+    const saveRetryButton = document.getElementById("quiz-save-retry");
+    const saveStatus = document.getElementById("quiz-save-status");
+    const folderButton = document.getElementById("quiz-add-folder");
     const folderDialog = document.getElementById("quiz-folder-dialog");
     const folderSelect = document.getElementById("quiz-folder-select");
     const folderError = document.getElementById("quiz-folder-error");
+    const sourceTabs = [...document.querySelectorAll(".quiz-source-tab")];
+    const filePanel = document.getElementById("quiz-file-panel");
+    const urlPanel = document.getElementById("quiz-url-panel");
+
     let questions = [];
     let answers = [];
     let index = 0;
     let quizId = null;
+    let isComplete = false;
+    let selectedSource = "file";
 
-    file.addEventListener("change", () => {
-        document.getElementById("quiz-file-name").textContent = file.files[0]?.name || "Choose a PDF, DOCX, or TXT";
+    async function readResponse(response, fallbackMessage) {
+        let data;
+        try {
+            data = await response.json();
+        } catch {
+            throw new Error(fallbackMessage);
+        }
+        if (!response.ok) throw new Error(data.error || fallbackMessage);
+        return data;
+    }
+
+    function showError(message = "") {
+        error.textContent = message;
+        error.hidden = !message;
+    }
+
+    function selectSource(source) {
+        selectedSource = source;
+        const usingFile = source === "file";
+        filePanel.hidden = !usingFile;
+        urlPanel.hidden = usingFile;
+        fileInput.disabled = !usingFile;
+        urlInput.disabled = usingFile;
+        urlInput.required = !usingFile;
+        sourceTabs.forEach((button) => {
+            const active = button.dataset.source === source;
+            button.classList.toggle("is-active", active);
+            button.setAttribute("aria-pressed", String(active));
+        });
+        showError();
+    }
+
+    sourceTabs.forEach((button) => {
+        button.addEventListener("click", () => selectSource(button.dataset.source));
     });
 
+    fileInput.addEventListener("change", () => {
+        const selectedFile = fileInput.files[0];
+        fileName.textContent = selectedFile
+            ? `${selectedFile.name} · ${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`
+            : "Drop a file here or browse your device";
+        showError();
+    });
+
+    function normalizeQuestions(input) {
+        if (!Array.isArray(input) || !input.length) {
+            throw new Error("No questions were created from that source. Try another source.");
+        }
+
+        return input.map((item, itemIndex) => {
+            if (!item || typeof item !== "object" || Array.isArray(item)
+                || typeof item.question !== "string"
+                || !Array.isArray(item.options)
+                || item.options.length !== 4
+                || !item.options.every((option) => typeof option === "string" && option.trim())
+                || typeof item.answer !== "string") {
+                throw new Error(`Question ${itemIndex + 1} came back incomplete. Please try generating the quiz again.`);
+            }
+
+            const cleanedOptions = item.options.map((option) => option.trim());
+            const cleanQuestion = item.question.trim();
+            const cleanAnswer = item.answer.trim();
+            if (!cleanQuestion || new Set(cleanedOptions).size !== 4 || !cleanedOptions.includes(cleanAnswer)) {
+                throw new Error(`Question ${itemIndex + 1} has invalid answer choices. Please try again.`);
+            }
+            return {
+                question: cleanQuestion,
+                options: cleanedOptions,
+                answer: cleanAnswer,
+            };
+        });
+    }
+
+    function correctAnswerCount() {
+        return answers.reduce(
+            (total, answer, answerIndex) => total + (answer === questions[answerIndex]?.answer ? 1 : 0),
+            0,
+        );
+    }
+
+    function answeredCount() {
+        return answers.filter((answer) => answer !== null).length;
+    }
+
     function render() {
+        if (!questions.length) return;
         const item = questions[index];
+        const selectedAnswer = answers[index];
+        const percentage = Math.round(((index + 1) / questions.length) * 100);
+
         question.textContent = item.question;
+        questionNumber.textContent = `QUESTION ${String(index + 1).padStart(2, "0")}`;
         progress.textContent = `Question ${index + 1} of ${questions.length}`;
+        progressTrack.setAttribute("aria-valuenow", String(percentage));
+        progressBar.style.width = `${percentage}%`;
         options.replaceChildren();
-        item.options.forEach((option) => {
+
+        item.options.forEach((option, optionIndex) => {
             const button = document.createElement("button");
             button.type = "button";
             button.className = "quiz-option";
-            button.textContent = option;
-            if (answers[index]) {
+            button.setAttribute("aria-pressed", String(option === selectedAnswer));
+
+            const marker = document.createElement("span");
+            marker.className = "quiz-option-marker";
+            marker.setAttribute("aria-hidden", "true");
+            marker.textContent = String.fromCharCode(65 + optionIndex);
+            const label = document.createElement("span");
+            label.textContent = option;
+            button.append(marker, label);
+
+            if (selectedAnswer !== null) {
                 button.disabled = true;
                 if (option === item.answer) button.classList.add("is-correct");
-                if (option === answers[index] && option !== item.answer) button.classList.add("is-incorrect");
+                if (option === selectedAnswer && option !== item.answer) {
+                    button.classList.add("is-incorrect");
+                }
             }
+            if (isComplete) button.disabled = true;
+
             button.addEventListener("click", () => {
+                if (answers[index] !== null || isComplete) return;
                 answers[index] = option;
-                feedback.textContent = option === item.answer ? "Correct!" : `Not quite. Correct answer: ${item.answer}`;
                 render();
             });
             options.append(button);
         });
-        feedback.textContent = answers[index] ? (answers[index] === item.answer ? "Correct!" : `Not quite. Correct answer: ${item.answer}`) : "Choose one answer.";
-        document.getElementById("quiz-previous").disabled = index === 0;
-        const next = document.getElementById("quiz-next");
-        next.textContent = index === questions.length - 1 ? "Finish quiz" : "Next";
-        score.textContent = answers.filter((answer, i) => answer === questions[i].answer).length
-            ? `${answers.filter((answer, i) => answer === questions[i].answer).length} correct so far` : "";
+
+        feedback.classList.toggle("is-correct", selectedAnswer === item.answer);
+        feedback.classList.toggle("is-incorrect", selectedAnswer !== null && selectedAnswer !== item.answer);
+        feedback.textContent = selectedAnswer === null
+            ? "Choose one answer."
+            : selectedAnswer === item.answer
+                ? "Correct! Nice work."
+                : `Not quite. The correct answer is: ${item.answer}`;
+        previousButton.disabled = index === 0;
+        nextButton.disabled = isComplete;
+        nextButton.textContent = index === questions.length - 1 ? "Finish quiz" : "Next question →";
+        score.textContent = isComplete
+            ? `Quiz complete · ${correctAnswerCount()} of ${questions.length} correct · ${questions.length - answeredCount()} unanswered`
+            : `${answeredCount()} of ${questions.length} answered · ${correctAnswerCount()} correct`;
+    }
+
+    function finishQuiz() {
+        isComplete = true;
+        const correct = correctAnswerCount();
+        const answered = answeredCount();
+        const unanswered = questions.length - answered;
+        score.textContent = unanswered
+            ? `Quiz complete · ${correct} of ${questions.length} correct · ${unanswered} unanswered`
+            : `Quiz complete · ${correct} of ${questions.length} correct`;
+        nextButton.hidden = true;
+        restartButton.hidden = false;
+        render();
+    }
+
+    async function saveQuiz(quizTitle, quizQuestions) {
+        saveRetryButton.disabled = true;
+        saveRetryButton.hidden = true;
+        saveStatus.textContent = "Saving your quiz…";
+        const response = await fetch("/api/quizzes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({ title: quizTitle, questions: quizQuestions }),
+        });
+        const data = await readResponse(response, "The quiz was created, but could not be saved.");
+        if (typeof data.id !== "string" || !data.id) {
+            throw new Error("The quiz was created, but the save response was invalid.");
+        }
+        quizId = data.id;
+        folderButton.disabled = false;
+        saveStatus.textContent = "Quiz saved to My quizzes.";
+        saveRetryButton.hidden = true;
     }
 
     sourceForm.addEventListener("submit", async (event) => {
-        event.preventDefault(); error.hidden = true;
-        if (!file.files.length && !url.value.trim()) { error.textContent = "Choose a file or enter a link."; error.hidden = false; return; }
-        if (file.files.length && url.value.trim()) { error.textContent = "Use one source at a time: a file or a link."; error.hidden = false; return; }
-        const submit = document.getElementById("quiz-generate"); submit.disabled = true; loading.hidden = false;
+        event.preventDefault();
+        showError();
+
+        if (!sourceForm.reportValidity()) return;
+        if (selectedSource === "file") {
+            const selectedFile = fileInput.files[0];
+            if (!selectedFile) return showError("Choose a PDF, DOCX, or TXT file first.");
+            const extension = selectedFile.name.split(".").pop()?.toLowerCase();
+            if (!["pdf", "docx", "txt"].includes(extension)) {
+                return showError("Use a PDF, DOCX, or TXT file.");
+            }
+            if (selectedFile.size > 10 * 1024 * 1024) {
+                return showError("Files must be 10 MB or smaller.");
+            }
+        } else if (!urlInput.value.trim()) {
+            return showError("Enter a website or YouTube link.");
+        }
+
+        submitButton.disabled = true;
+        loading.hidden = false;
+        loading.querySelector("span:last-child").textContent = "Reading your source and creating questions…";
+
         try {
-            const response = await fetch("/api/quizzes/generate", { method: "POST", body: new FormData(sourceForm), headers: { Accept: "application/json" } });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || "Could not create the quiz.");
-            questions = data.questions; answers = Array(questions.length).fill(null); index = 0; title.textContent = data.title || "Study quiz";
-            const saved = await fetch("/api/quizzes", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify({ title: title.textContent, questions }) });
-            const savedData = await saved.json();
-            if (!saved.ok) throw new Error(savedData.error || "Quiz generated but could not be saved.");
-            quizId = savedData.id; builder.hidden = true; review.hidden = false; render();
-        } catch (err) { error.textContent = err.message; error.hidden = false; }
-        finally { submit.disabled = false; loading.hidden = true; }
+            const response = await fetch("/api/quizzes/generate", {
+                method: "POST",
+                body: new FormData(sourceForm),
+                headers: { Accept: "application/json" },
+            });
+            const data = await readResponse(response, "Could not create the quiz.");
+            const generatedQuestions = normalizeQuestions(data.questions);
+            const quizTitle = typeof data.title === "string" && data.title.trim()
+                ? data.title.trim()
+                : "Study quiz";
+
+            questions = generatedQuestions;
+            answers = Array(questions.length).fill(null);
+            index = 0;
+            quizId = null;
+            isComplete = false;
+            title.textContent = quizTitle;
+            builder.hidden = true;
+            review.hidden = false;
+            nextButton.hidden = false;
+            restartButton.hidden = true;
+            folderButton.disabled = true;
+            render();
+
+            try {
+                await saveQuiz(quizTitle, questions);
+            } catch (saveError) {
+                saveStatus.textContent = saveError.message;
+                saveRetryButton.hidden = false;
+                saveRetryButton.disabled = false;
+            }
+            review.scrollIntoView({ behavior: "smooth", block: "start" });
+        } catch (requestError) {
+            showError(requestError.message || "Could not create the quiz. Please try again.");
+        } finally {
+            submitButton.disabled = false;
+            loading.hidden = true;
+        }
     });
 
-    document.getElementById("quiz-previous").addEventListener("click", () => { if (index > 0) { index--; render(); } });
-    document.getElementById("quiz-next").addEventListener("click", () => {
-        if (index < questions.length - 1) { index++; render(); }
-        else { score.textContent = `Quiz complete · ${answers.filter((answer, i) => answer === questions[i].answer).length} of ${questions.length} correct`; }
+    previousButton.addEventListener("click", () => {
+        if (index > 0) {
+            index -= 1;
+            render();
+        }
     });
-    document.getElementById("quiz-add-folder").addEventListener("click", async () => {
+
+    nextButton.addEventListener("click", () => {
+        if (index < questions.length - 1) {
+            index += 1;
+            render();
+        } else {
+            finishQuiz();
+        }
+    });
+
+    restartButton.addEventListener("click", () => {
+        answers = Array(questions.length).fill(null);
+        index = 0;
+        isComplete = false;
+        nextButton.hidden = false;
+        restartButton.hidden = true;
+        render();
+    });
+
+    saveRetryButton.addEventListener("click", async () => {
+        if (!questions.length || quizId) return;
+        saveRetryButton.disabled = true;
+        try {
+            await saveQuiz(title.textContent, questions);
+        } catch (saveError) {
+            saveStatus.textContent = saveError.message;
+            saveRetryButton.hidden = false;
+        } finally {
+            saveRetryButton.disabled = false;
+        }
+    });
+
+    folderButton.addEventListener("click", async () => {
+        folderButton.disabled = true;
         folderError.hidden = true;
         try {
-            const response = await fetch("/api/saved-folders", { headers: { Accept: "application/json" } });
-            const folders = await response.json();
-            if (!response.ok || !Array.isArray(folders)) throw new Error("Could not load your folders.");
+            const response = await fetch("/api/saved-folders", {
+                headers: { Accept: "application/json" },
+            });
+            const folders = await readResponse(response, "Could not load your folders.");
+            if (!Array.isArray(folders)) throw new Error("Could not load your folders.");
             if (!folders.length) throw new Error("Create a folder in Study Resources first.");
-            folderSelect.replaceChildren(...folders.map((folder) => { const option = document.createElement("option"); option.value = folder.id; option.textContent = folder.name; return option; }));
+            folderSelect.replaceChildren(...folders.map((folder) => {
+                const option = document.createElement("option");
+                option.value = folder.id;
+                option.textContent = folder.name;
+                return option;
+            }));
             folderDialog.showModal();
-        } catch (err) { folderError.textContent = err.message; folderError.hidden = false; }
-    });
-    document.getElementById("quiz-folder-confirm").addEventListener("click", async () => {
-        try {
-            const response = await fetch(`/api/quizzes/${encodeURIComponent(quizId)}/folders/${encodeURIComponent(folderSelect.value)}`, { method: "POST", headers: { Accept: "application/json" } });
-            const data = await response.json(); if (!response.ok) throw new Error(data.error || "Could not add quiz to folder.");
-            folderDialog.close(); score.textContent = `Added to ${data.folder}`;
-        } catch (err) { folderError.textContent = err.message; folderError.hidden = false; }
+        } catch (folderLoadError) {
+            folderError.textContent = folderLoadError.message;
+            folderError.hidden = false;
+        } finally {
+            folderButton.disabled = !quizId;
+        }
     });
 
-    const requested = new URLSearchParams(location.search).get("quiz");
-    if (requested) fetch(`/api/quizzes/${encodeURIComponent(requested)}`, { headers: { Accept: "application/json" } })
-        .then(async (response) => { const data = await response.json(); if (!response.ok) throw new Error(data.error || "Could not load quiz."); quizId = data.id; questions = data.questions; answers = Array(questions.length).fill(null); index = 0; title.textContent = data.title; builder.hidden = true; review.hidden = false; render(); })
-        .catch((err) => { error.textContent = err.message; error.hidden = false; });
+    document.getElementById("quiz-folder-confirm").addEventListener("click", async () => {
+        folderError.hidden = true;
+        try {
+            if (!quizId || !folderSelect.value) throw new Error("Choose a folder first.");
+            const response = await fetch(
+                `/api/quizzes/${encodeURIComponent(quizId)}/folders/${encodeURIComponent(folderSelect.value)}`,
+                { method: "POST", headers: { Accept: "application/json" } },
+            );
+            const data = await readResponse(response, "Could not add quiz to folder.");
+            folderDialog.close();
+            saveStatus.textContent = `Added to ${data.folder}.`;
+        } catch (folderSaveError) {
+            folderError.textContent = folderSaveError.message;
+            folderError.hidden = false;
+        }
+    });
+
+    const requestedQuizId = new URLSearchParams(window.location.search).get("quiz");
+    if (requestedQuizId) {
+        fetch(`/api/quizzes/${encodeURIComponent(requestedQuizId)}`, {
+            headers: { Accept: "application/json" },
+        })
+            .then((response) => readResponse(response, "Could not load quiz."))
+            .then((data) => {
+                questions = normalizeQuestions(data.questions);
+                answers = Array(questions.length).fill(null);
+                index = 0;
+                quizId = data.id;
+                isComplete = false;
+                title.textContent = data.title || "Study quiz";
+                builder.hidden = true;
+                review.hidden = false;
+                folderButton.disabled = false;
+                saveStatus.textContent = "Saved quiz.";
+                render();
+            })
+            .catch((loadError) => showError(loadError.message));
+    }
 })();
