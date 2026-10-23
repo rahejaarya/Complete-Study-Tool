@@ -168,7 +168,7 @@
             canvas.width = 240;
             canvas.height = 310;
             const context = canvas.getContext("2d");
-            context.fillStyle = isDark ? "#222733" : "#fff";
+            context.fillStyle = isDark ? "#171717" : "#fff";
             context.fillRect(0, 0, canvas.width, canvas.height);
             (file.whiteboard?.strokes || []).forEach((stroke) => {
                 if (stroke.type === "text") {
@@ -408,7 +408,7 @@
         const width = boardCanvas.clientWidth;
         const height = boardCanvas.clientHeight;
         boardContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-        boardContext.fillStyle = currentFile()?.theme === "dark" ? "#222733" : "#ffffff";
+        boardContext.fillStyle = currentFile()?.theme === "dark" ? "#171717" : "#ffffff";
         boardContext.fillRect(0, 0, width, height);
         currentStrokes().forEach((stroke) => {
             if (stroke.type === "text") {
