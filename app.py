@@ -2439,6 +2439,72 @@ def create_saved_folder_whiteboard(folder_id):
         return jsonify({"error": "Could not create the whiteboard."}), 500
 
 
+@app.route("/api/saved-folders/<folder_id>/notebooks", methods=["POST"])
+@login_required
+def add_saved_folder_notebook(folder_id):
+    """Link an existing note or whiteboard to a folder without copying it."""
+    try:
+        folder_path = find_saved_folder(folder_id)
+        if folder_path is None:
+            return jsonify({"error": "Folder not found."}), 404
+
+        data = request.get_json(silent=True)
+        notebook_id = data.get("notebook_id") if isinstance(data, dict) else None
+        if (
+            not isinstance(notebook_id, str)
+            or not re.fullmatch(r"[A-Za-z0-9_-]{1,36}", notebook_id)
+        ):
+            return jsonify({"error": "Choose a valid note or whiteboard."}), 400
+
+        notebooks_path = (
+            user_save_directory(session["user_id"])
+            / "Notebooks"
+            / "notebooks.json"
+        )
+        if not notebooks_path.is_file():
+            return jsonify({"error": "Note or whiteboard not found."}), 404
+        with notebooks_path.open("r", encoding="utf-8") as file:
+            saved_notebooks = json.load(file)
+        if not isinstance(saved_notebooks, dict):
+            raise ValueError("Saved notebooks must be an object.")
+        notebook_data = clean_notebook_data(saved_notebooks)
+        notebook = next(
+            (
+                item for item in notebook_data["notebooks"]
+                if item["id"] == notebook_id
+            ),
+            None,
+        )
+        if notebook is None:
+            return jsonify({"error": "Note or whiteboard not found."}), 404
+
+        folder = read_folder_data(folder_path)
+        existing_item = next(
+            (
+                item for item in folder["items"]
+                if isinstance(item, dict)
+                and item.get("notebook_id") == notebook_id
+            ),
+            None,
+        )
+        if existing_item is not None:
+            return jsonify({"item": existing_item}), 200
+
+        item = {
+            "kind": "notebook",
+            "notebook_id": notebook["id"],
+            "title": notebook["name"],
+            "file_type": notebook["kind"],
+            "uploaded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        }
+        folder["items"].append(item)
+        write_folder_data(folder_path, folder)
+        return jsonify({"item": item}), 201
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not link a notebook to a saved folder")
+        return jsonify({"error": "Could not add this note or whiteboard."}), 500
+
+
 @app.route("/api/saved-folders/<folder_id>/web-resources", methods=["POST"])
 @login_required
 def save_saved_web_resource(folder_id):

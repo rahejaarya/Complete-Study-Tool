@@ -58,7 +58,22 @@
             preview.append(image, play);
             card.append(preview);
         }
-        card.append(heading, metadata, description);
+        const actions = document.createElement("div");
+        actions.className = "resource-browser-result-actions";
+        const saveButton = document.createElement("button");
+        saveButton.type = "button";
+        saveButton.className = "resource-browser-save-button";
+        saveButton.textContent = "Add to folder";
+        saveButton.addEventListener("click", () => {
+            if (window.MeridianSavedFolderPicker) {
+                void window.MeridianSavedFolderPicker.save(resource, type, saveButton);
+            } else {
+                console.error("Folder saving is unavailable on this page.");
+                saveButton.textContent = "Saving unavailable";
+            }
+        });
+        actions.append(saveButton);
+        card.append(heading, metadata, description, actions);
         return card;
     }
 

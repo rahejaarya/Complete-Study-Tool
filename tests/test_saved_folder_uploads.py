@@ -170,6 +170,62 @@ class SavedFolderUploadTests(unittest.TestCase):
         self.assertTrue((folder_path / "folder.json").is_file())
         self.assertFalse((folder_path / saved_item["storage_id"]).exists())
 
+    def test_existing_notes_can_be_linked_to_folders_without_copying_them(self):
+        notebook_id = uuid.uuid4().hex
+        notebook = {
+            "id": notebook_id,
+            "name": "Biology notes",
+            "content": "<p>Cell structure</p>",
+            "whiteboard": {"strokes": []},
+            "kind": "notes",
+        }
+        save_notebook = self.client.put(
+            "/api/notebooks",
+            json={"notebooks": [notebook], "active_id": notebook_id},
+        )
+        self.assertEqual(save_notebook.status_code, 200)
+
+        response = self.client.post(
+            f"/api/saved-folders/{self.folder_id}/notebooks",
+            json={"notebook_id": notebook_id},
+        )
+        self.assertEqual(response.status_code, 201)
+        item = response.get_json()["item"]
+        self.assertEqual(item["kind"], "notebook")
+        self.assertEqual(item["notebook_id"], notebook_id)
+        self.assertEqual(item["file_type"], "notes")
+
+        duplicate_response = self.client.post(
+            f"/api/saved-folders/{self.folder_id}/notebooks",
+            json={"notebook_id": notebook_id},
+        )
+        self.assertEqual(duplicate_response.status_code, 200)
+        folder = self.client.get("/api/saved-folders").get_json()[0]
+        self.assertEqual(len(folder["items"]), 1)
+
+        stored_notebooks = self.client.get("/api/notebooks").get_json()
+        self.assertEqual(stored_notebooks["notebooks"], [notebook])
+
+        renamed_notebook = {**notebook, "name": "Updated biology notes"}
+        update_notebook = self.client.put(
+            "/api/notebooks",
+            json={"notebooks": [renamed_notebook], "active_id": notebook_id},
+        )
+        self.assertEqual(update_notebook.status_code, 200)
+        self.assertEqual(
+            self.client.get("/api/saved-folders").get_json()[0]["items"][0]["notebook_id"],
+            notebook_id,
+        )
+
+    def test_library_page_has_study_resources_back_link_and_no_whiteboard_launch_card(self):
+        response = self.client.get("/resources?library=1")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'href="/resources">', response.data)
+        self.assertIn(b"Study Resources", response.data)
+        self.assertNotIn(b"Open whiteboards", response.data)
+        self.assertIn(b"Add existing note or whiteboard", response.data)
+
     def test_legacy_folder_layout_migrates_without_losing_contents(self):
         legacy_id = str(uuid.uuid4())
         legacy_path = (
@@ -290,11 +346,17 @@ class SavedFolderUploadTests(unittest.TestCase):
         self.assertEqual(response.content_type, "application/json")
 
     def test_study_resources_keeps_both_upload_choices(self):
-        response = self.client.get("/resources")
+        resource_page = self.client.get("/resources")
+        self.assertEqual(resource_page.status_code, 200)
+        self.assertIn(b"saved_folder_picker.js", resource_page.data)
+        self.assertIn(b"resource_browser.js", resource_page.data)
+
+        response = self.client.get("/resources?library=1")
 
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'data-action="computer-upload"', response.data)
         self.assertIn(b'data-action="web-search"', response.data)
+        self.assertIn(b'data-action="existing-notebook"', response.data)
         self.assertIn(b"api_response.js", response.data)
 
 

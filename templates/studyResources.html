@@ -10,7 +10,10 @@
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
     <script src="{{ url_for('static', filename='api_response.js') }}"></script>
     <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
-    {% if not library_mode %}<script src="{{ url_for('static', filename='resource_browser.js') }}" defer></script>{% endif %}
+    {% if not library_mode %}
+    <script src="{{ url_for('static', filename='saved_folder_picker.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='resource_browser.js') }}" defer></script>
+    {% endif %}
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
@@ -81,13 +84,16 @@
                     <div>
                         {% if library_mode %}
                         <h1>Your study library</h1>
-                        <p>Keep your folders, files, and whiteboards together.</p>
+                        <p>Keep your folders, resources, notes, and whiteboards together.</p>
                         {% else %}
                         <h1>What do you want to learn?</h1>
                         <p>Find free resources for any subject or topic.</p>
                         {% endif %}
                     </div>
                 </div>
+                {% if library_mode %}
+                <a class="resource-browser-back" href="{{ url_for('resources') }}">← Study Resources</a>
+                {% endif %}
 
             </header>
 
@@ -161,7 +167,8 @@
                                 <div class="folder-add-popup" id="folder-add-popup" role="menu" hidden>
                                     <button type="button" role="menuitem" data-action="computer-upload"><span class="folder-popup-icon">↑</span>Upload files</button>
                                     <button type="button" role="menuitem" data-action="whiteboard"><span class="folder-popup-icon">▤</span>New whiteboard</button>
-                                    <button type="button" role="menuitem" data-action="web-search"><span class="folder-popup-icon">⌕</span>Web Search</button>
+                                    <button type="button" role="menuitem" data-action="existing-notebook"><span class="folder-popup-icon">▤</span>Add existing note or whiteboard</button>
+                                    <button type="button" role="menuitem" data-action="web-search"><span class="folder-popup-icon">⌕</span>Browse videos &amp; resources</button>
                                 </div>
                             </div>
                         </div>
@@ -175,15 +182,6 @@
                         <p class="directory-feedback" id="directory-feedback" role="status" aria-live="polite"></p>
                     </section>
 
-                    <a class="translator-launch-card library-whiteboard-card" href="{{ url_for('notes') }}?kind=whiteboard">
-                        <span class="translator-launch-icon" aria-hidden="true">▤</span>
-                        <span class="translator-launch-copy">
-                            <span class="resource-browser-eyebrow">STUDY TOOL</span>
-                            <strong>Whiteboards</strong>
-                            <span>Create and organize visual study notes.</span>
-                        </span>
-                        <span class="translator-launch-action">Open whiteboards <span aria-hidden="true">→</span></span>
-                    </a>
                     {% else %}
                     <a class="translator-launch-card" href="{{ url_for('resources', library='1') }}">
                         <span class="translator-launch-icon" aria-hidden="true">▱</span>
@@ -292,6 +290,8 @@
                     fileInput?.click();
                 } else if (action === "whiteboard") {
                     createWhiteboardInFolder();
+                } else if (action === "existing-notebook") {
+                    addExistingNotebookToFolder();
                 } else if (action === "web-search") {
                     openWebSearch();
                 }
@@ -314,6 +314,7 @@
         }
 
         let folders = [];
+        let notebooks = [];
         let openFolderId = null;
         let menu = null;
         let modal = null;
@@ -333,6 +334,76 @@
                 if (feedback) feedback.textContent = "Whiteboard added to this folder.";
             } catch (error) {
                 if (feedback) feedback.textContent = error.message || "Could not create a whiteboard.";
+            }
+        }
+
+        async function addExistingNotebookToFolder() {
+            const activeFolder = folders.find(folder => folder.id === openFolderId);
+            if (!activeFolder) return;
+
+            try {
+                const response = await fetch("/api/notebooks", {
+                    headers: { "Accept": "application/json" },
+                    credentials: "same-origin"
+                });
+                const notebookData = await window.MeridianApi.read(
+                    response,
+                    "Could not load your notes and whiteboards."
+                );
+                notebooks = Array.isArray(notebookData.notebooks)
+                    ? notebookData.notebooks
+                    : [];
+                if (!notebooks.length) {
+                    if (feedback) feedback.textContent =
+                        "Create a note or whiteboard in Notes before adding it to a folder.";
+                    return;
+                }
+
+                showFolderDialog({
+                    title: "Add an existing note or whiteboard",
+                    message: "Choose an item to link to this folder. It stays in Notes and changes sync automatically.",
+                    selectOptions: notebooks.map(notebook => ({
+                        value: notebook.id,
+                        label: `${notebook.name} (${notebook.kind === "whiteboard" ? "Whiteboard" : "Note"})`
+                    })),
+                    confirmText: "Add to folder",
+                    onConfirm: async notebookId => {
+                        try {
+                            const addResponse = await fetch(
+                                `/api/saved-folders/${encodeURIComponent(activeFolder.id)}/notebooks`,
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "Accept": "application/json"
+                                    },
+                                    credentials: "same-origin",
+                                    body: JSON.stringify({ notebook_id: notebookId })
+                                }
+                            );
+                            const result = await window.MeridianApi.read(
+                                addResponse,
+                                "Could not add this note or whiteboard."
+                            );
+                            if (!activeFolder.items.some(
+                                item => item.notebook_id === result.item.notebook_id
+                            )) {
+                                activeFolder.items.push(result.item);
+                            }
+                            render();
+                            if (feedback) feedback.textContent =
+                                "Linked to this folder. Changes in Notes will stay in sync.";
+                        } catch (error) {
+                            console.error("Could not add notebook to folder:", error);
+                            if (feedback) feedback.textContent =
+                                error.message || "Could not add this note or whiteboard.";
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Could not load notes and whiteboards:", error);
+                if (feedback) feedback.textContent =
+                    error.message || "Could not load your notes and whiteboards.";
             }
         }
 
@@ -591,6 +662,18 @@
                     throw new Error("Invalid saved folder data.");
                 }
 
+                const notebooksResponse = await fetch("/api/notebooks", {
+                    headers: { "Accept": "application/json" },
+                    credentials: "same-origin"
+                });
+                const notebookData = await window.MeridianApi.read(
+                    notebooksResponse,
+                    "Could not load your notes and whiteboards."
+                );
+                notebooks = Array.isArray(notebookData.notebooks)
+                    ? notebookData.notebooks
+                    : [];
+
                 folders = stored.filter(folder =>
                     folder &&
                     typeof folder.id === "string" &&
@@ -676,6 +759,7 @@
             message,
             icon = "📁",
             inputValue = null,
+            selectOptions = null,
             confirmText = "Save",
             danger = false,
             onConfirm
@@ -707,6 +791,7 @@
             dialog.append( heading, description);
 
             let input = null;
+            let select = null;
 
             if (inputValue !== null) {
                 input = document.createElement("input");
@@ -718,6 +803,19 @@
                 input.setAttribute("aria-label", "Folder name");
                 input.required = true;
                 dialog.append(input);
+            }
+
+            if (Array.isArray(selectOptions)) {
+                select = document.createElement("select");
+                select.className = "folder-dialog-input";
+                select.setAttribute("aria-label", "Choose a note or whiteboard");
+                selectOptions.forEach(optionData => {
+                    const option = document.createElement("option");
+                    option.value = optionData.value;
+                    option.textContent = optionData.label;
+                    select.append(option);
+                });
+                dialog.append(select);
             }
 
             const actions = document.createElement("div");
@@ -748,7 +846,7 @@
                 if (input) input.setCustomValidity("");
 
                 closeDialog();
-                onConfirm(value);
+                onConfirm(select ? select.value : value);
             });
 
             actions.append(cancel, confirm);
@@ -772,6 +870,8 @@
 
                 input.focus();
                 input.select();
+            } else if (select) {
+                select.focus();
             } else {
                 cancel.focus();
             }
@@ -1003,8 +1103,12 @@
                         item && item.kind === "web" &&
                         typeof item.url === "string";
                     const isWhiteboard =
-                        item && item.kind === "whiteboard" &&
-                        typeof item.notebook_id === "string";
+                        item && typeof item.notebook_id === "string" &&
+                        (item.kind === "whiteboard" || item.file_type === "whiteboard");
+                    const linkedNotebook =
+                        item && typeof item.notebook_id === "string"
+                            ? notebooks.find(notebook => notebook.id === item.notebook_id)
+                            : null;
                     const card = document.createElement("article");
                     card.className = "folder-file-card";
 
@@ -1017,6 +1121,8 @@
                         "video": "VID",
                         "audio": "AUD",
                         "text": "TXT",
+                        "note": "NOTE",
+                        "notes": "NOTE",
                         "whiteboard": "BOARD",
                         "web link": "WEB",
                         "video link": "VID"
@@ -1031,12 +1137,16 @@
                     const title = document.createElement("span");
                     title.className = "folder-file-name";
                     title.textContent =
+                        linkedNotebook?.name ||
                         item?.original_filename || item?.title || item?.filename || "Saved content";
 
                     const uploadDate = document.createElement("time");
                     uploadDate.className = "folder-file-meta";
                     const uploadedAt = new Date(item?.uploaded_at);
-                    if (
+                    if (linkedNotebook) {
+                        uploadDate.textContent =
+                            `Linked ${linkedNotebook.kind === "whiteboard" ? "whiteboard" : "note"} · synced with Notes`;
+                    } else if (
                         typeof item?.uploaded_at === "string" &&
                         !Number.isNaN(uploadedAt.getTime())
                     ) {
@@ -1079,10 +1189,15 @@
                         } catch {
                             console.warn("Skipping invalid saved web resource URL.");
                         }
-                    } else if (isWhiteboard) {
+                    } else if (isWhiteboard || linkedNotebook) {
                         const openLink = document.createElement("a");
-                        openLink.href = `/notes?kind=whiteboard&file_id=${encodeURIComponent(item.notebook_id)}`;
-                        openLink.textContent = "Open whiteboard";
+                        const notebookKind = linkedNotebook?.kind || "whiteboard";
+                        openLink.href = notebookKind === "whiteboard"
+                            ? `/notes?kind=whiteboard&file_id=${encodeURIComponent(item.notebook_id)}`
+                            : `/notes?file_id=${encodeURIComponent(item.notebook_id)}`;
+                        openLink.textContent = notebookKind === "whiteboard"
+                            ? "Open whiteboard"
+                            : "Open note";
                         actions.append(openLink);
                     }
 

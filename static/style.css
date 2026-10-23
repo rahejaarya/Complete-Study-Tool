@@ -4313,6 +4313,40 @@ body {
     background: var(--soft-surface);
 }
 
+.resource-browser-result-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+.resource-browser-save-button {
+    min-height: 38px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--white);
+    color: var(--accent-strong);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.resource-browser-save-button:hover:not(:disabled) {
+    border-color: var(--purple);
+    background: var(--purple-light);
+}
+
+.resource-browser-save-button:focus-visible {
+    outline: 2px solid var(--purple);
+    outline-offset: 3px;
+}
+
+.resource-browser-save-button:disabled {
+    cursor: wait;
+    opacity: 0.7;
+}
+
 .resource-browser-video-preview {
     position: relative;
     display: block;
@@ -8109,9 +8143,31 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .logo-mark {
         box-shadow 160ms ease;
 }
 
+.folder-dialog-input[hidden] {
+    display: none !important;
+}
+
 .folder-dialog-input:focus {
     border-color: var(--purple);
     box-shadow: 0 0 0 3px var(--purple-light);
+}
+
+.folder-save-dialog-label {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.folder-save-dialog-status {
+    margin: -12px 0 18px;
+    color: var(--danger, #d64545);
+    font-size: 0.85rem;
+}
+
+.folder-save-dialog-status:empty {
+    display: none;
 }
 
 /* Action buttons */
