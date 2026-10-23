@@ -5043,6 +5043,11 @@ body.audio-route-open {
     max-width: calc(100vw - 32px);
 }
 
+.persistent-media-hud.is-noise-songs {
+    top: auto;
+    bottom: 16px;
+}
+
 .persistent-now-playing {
     position: static;
     min-width: 0;
@@ -5168,6 +5173,12 @@ body.audio-route-open {
         bottom: 12px;
         right: 12px;
         max-width: calc(100vw - 24px);
+    }
+}
+
+@media (max-width: 700px) {
+    .persistent-media-hud.is-noise-songs {
+        bottom: 82px;
     }
 }
 

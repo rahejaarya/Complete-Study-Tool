@@ -170,6 +170,7 @@
             return;
         }
         if (!frameDocument) return;
+        persistentHud?.classList.toggle("is-noise-songs", new URL(frameUrl).pathname === "/noise-songs");
         if (history.state?.studyToolAudioRoute && frameUrl !== location.href) {
             history.replaceState({ studyToolAudioRoute: true }, "", frameUrl);
         }
