@@ -1431,6 +1431,7 @@ def translator():
 @app.route("/flashcard-generator")
 @login_required
 def flashcard_generator():
+    """Render the authenticated flashcard generator workspace."""
     return render_template("flashcard_generator.html")
 
 
