@@ -1073,7 +1073,7 @@ def find_resources(query, conversation_history=None, conversation_summary=""):
         return []
 
     search_query = _search_query_with_history(
-        user_input,
+        query,
         conversation_history,
         conversation_summary,
     )
@@ -1084,7 +1084,7 @@ def find_resources(query, conversation_history=None, conversation_summary=""):
         re.search(
             r"\b(?:latest|newest|most recent|last)\b.{0,70}\bepisodes?\b"
             r"|\bepisodes?\b.{0,70}\b(?:latest|newest|most recent)\b",
-            user_input,
+            query,
             re.IGNORECASE,
         )
     )

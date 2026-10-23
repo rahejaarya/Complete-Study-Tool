@@ -902,7 +902,16 @@ async function sendMessage() {
 
         
         if (!response.ok) {
-            throw new Error("Something went wrong.");
+            let errorMessage = `The server returned an error (${response.status}).`;
+            try {
+                const errorData = await response.json();
+                if (typeof errorData.error === "string" && errorData.error.trim()) {
+                    errorMessage = errorData.error;
+                }
+            } catch (error) {
+                console.warn("AI error response could not be read as JSON.", error);
+            }
+            throw new Error(errorMessage);
         }
 
         const reader = response.body.getReader();
