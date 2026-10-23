@@ -74,15 +74,35 @@
                     <div><p class="flashcard-eyebrow">YOUR DECK</p><h2 id="flashcard-review-heading">Review flashcards</h2></div>
                     <span class="flashcard-progress" id="flashcard-progress" aria-live="polite"></span>
                 </div>
-                <article class="flashcard-card" aria-live="polite">
-                    <h3 id="flashcard-question"></h3>
-                    <div id="flashcard-answer-wrap" hidden><p class="flashcard-answer-label">Answer</p><p id="flashcard-answer"></p></div>
-                </article>
+                <div class="flashcard-toolbar">
+                    <div class="flashcard-modes" role="group" aria-label="Study mode">
+                        <button class="flashcard-mode is-active" type="button" data-mode="practice" aria-pressed="true">Practice</button>
+                        <button class="flashcard-mode" type="button" data-mode="quiz" aria-pressed="false">Quiz</button>
+                    </div>
+                    <button class="flashcard-action secondary" id="flashcard-shuffle" type="button">↻ Shuffle</button>
+                </div>
+                <button class="flashcard-card" id="flashcard-card" type="button" aria-label="Flashcard. Click to flip and reveal the answer.">
+                    <span class="flashcard-card-inner" id="flashcard-card-inner">
+                        <span class="flashcard-face flashcard-front"><span class="flashcard-face-label">QUESTION</span><strong id="flashcard-question"></strong><span class="flashcard-tap-hint">Click or press Space to flip</span></span>
+                        <span class="flashcard-face flashcard-back"><span class="flashcard-face-label">ANSWER</span><span id="flashcard-answer"></span></span>
+                    </span>
+                </button>
+                <div class="flashcard-quiz" id="flashcard-quiz" hidden>
+                    <h3 class="flashcard-quiz-question" id="flashcard-quiz-question"></h3>
+                    <p class="flashcard-quiz-prompt">Choose the correct answer</p>
+                    <div class="flashcard-quiz-options" id="flashcard-quiz-options"></div>
+                    <p class="flashcard-quiz-feedback" id="flashcard-quiz-feedback" role="status" aria-live="polite"></p>
+                </div>
                 <div class="flashcard-controls">
                     <button class="flashcard-action secondary" id="flashcard-previous" type="button">Previous</button>
+                    <div class="flashcard-practice-actions" id="flashcard-practice-actions">
+                        <button class="flashcard-action secondary" id="flashcard-again" type="button">↻ Practice again</button>
+                        <button class="flashcard-action" id="flashcard-known" type="button">✓ Got it</button>
+                    </div>
                     <button class="flashcard-action" id="flashcard-reveal" type="button">Show answer</button>
                     <button class="flashcard-action secondary" id="flashcard-next" type="button">Next</button>
                 </div>
+                <p class="flashcard-session-score" id="flashcard-session-score" aria-live="polite"></p>
             </section>
         </main>
     </div>

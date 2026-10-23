@@ -1428,6 +1428,7 @@ def translator():
     """Render the full-page translator workspace."""
     return render_template("translator.html")
 
+@app.route("/flashcards")
 @app.route("/flashcard-generator")
 @login_required
 def flashcard_generator():
