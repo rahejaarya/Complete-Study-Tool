@@ -4262,17 +4262,6 @@ body {
     font-size: 22px;
 }
 
-.resource-browser-summary-mark {
-    width: 40px;
-    height: 40px;
-    display: grid;
-    place-items: center;
-    border: 1px solid var(--border);
-    border-radius: 13px;
-    background: var(--white);
-    color: var(--accent-strong);
-}
-
 .resource-browser-summary-text {
     margin-top: 14px;
     color: var(--text);
@@ -5211,17 +5200,6 @@ body.audio-route-open {
     border: 1px solid var(--border);
     border-radius: 14px;
     background: var(--control-bg);
-}
-
-.recommendation-icon {
-    width: 32px;
-    height: 32px;
-    display: grid;
-    place-items: center;
-    flex: 0 0 32px;
-    border-radius: 10px;
-    background: var(--purple-light);
-    color: var(--purple);
 }
 
 .recommendation-panel > div:nth-child(2) {
@@ -8744,12 +8722,12 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .logo-mark {
 }
 
 
-/* ===== Translator: vertical layout ===== */
+/* ===== Translator: side-by-side language panels ===== */
 
 .translator-panels {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 20px;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
 }
 
 .translator-panel {
@@ -8776,10 +8754,14 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .logo-mark {
 }
 
 .translator-swap {
-    align-self: flex-start;
+    align-self: center;
 }
 
 @media (max-width: 600px) {
+    .translator-panels {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
     .translator-panel textarea {
         min-height: 120px;
     }
