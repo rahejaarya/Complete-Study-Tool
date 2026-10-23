@@ -41,7 +41,7 @@
                             {% if profile_picture_url %}
                             <img src="{{ profile_picture_url }}" alt="">
                             {% else %}
-                            <span aria-hidden="true">☀</span>
+                            <img src="{{ url_for('static', filename='default-profile.svg') }}" alt="">
                             {% endif %}
                             <span class="profile-picture-edit-indicator" aria-hidden="true">
                                 <svg viewBox="0 0 20 20" fill="none" focusable="false">

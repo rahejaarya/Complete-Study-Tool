@@ -958,7 +958,7 @@
             let sessionPhase = "work";
             let remainingSeconds = selectedPreset.work * 60;
             let timerInterval;
-            window.studyToolHasActiveTimer = () => Boolean(timerInterval);
+            let timerHasStarted = false;
 
             // Format the remaining timer duration as a zero-padded clock value.
             function formatTime(totalSeconds) {
@@ -973,9 +973,28 @@
                 return `${minutes}:${seconds}`;
             }
 
+            window.studyToolHasActiveTimer = () => timerHasStarted;
+            window.studyToolGetTimerState = () => ({
+                active: timerHasStarted,
+                isRunning: Boolean(timerInterval),
+                phase: sessionPhase === "work" ? "Study" : "Break",
+                remaining: formatTime(remainingSeconds)
+            });
+            window.studyToolToggleTimerPause = () => {
+                if (!timerHasStarted) return;
+                timerInterval ? pauseTimer() : startTimer();
+            };
+
+            function publishTimerState() {
+                window.dispatchEvent(new CustomEvent("studytool:timer-state", {
+                    detail: window.studyToolGetTimerState()
+                }));
+            }
+
             // Refresh the visible timer display from the remaining seconds.
             function renderTimer() {
                 timerReadout.textContent = formatTime(remainingSeconds);
+                publishTimerState();
             }
 
             // Describe whether the current timer interval is study or break time.
@@ -995,6 +1014,7 @@
 
                 startButton.disabled = false;
                 pauseButton.disabled = true;
+                publishTimerState();
             }
 
             // Start the countdown and transition between study and break intervals.
@@ -1003,6 +1023,7 @@
                     return;
                 }
 
+                timerHasStarted = true;
                 timerStatus.textContent =
                     `${selectedPreset.name} ${sessionPhase === "work" ? "study" : "break"} session in progress.`;
 
@@ -1031,6 +1052,7 @@
                         }
 
                         stopTimer();
+                        timerHasStarted = false;
 
                         sessionPhase = "work";
                         remainingSeconds = selectedPreset.work * 60;
@@ -1042,6 +1064,7 @@
                             "Break complete. Start your next study session when you are ready.";
                     }
                 }, 1000);
+                publishTimerState();
             }
 
             // Pause the countdown while retaining the current remaining duration.
@@ -1060,6 +1083,7 @@
             function resetTimer() {
                 stopTimer();
 
+                timerHasStarted = false;
                 sessionPhase = "work";
                 remainingSeconds = selectedPreset.work * 60;
 

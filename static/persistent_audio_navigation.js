@@ -12,6 +12,9 @@
     let nowPlayingText;
     let pauseButton;
     let stopButton;
+    let timerHud;
+    let timerReadout;
+    let timerPauseButton;
 
     function isInternalUrl(rawUrl) {
         try {
@@ -34,6 +37,34 @@
         pauseButton.textContent = state.paused ? "Resume" : "Pause";
         pauseButton.setAttribute("aria-label", state.paused ? "Resume audio" : "Pause audio");
         stopButton.hidden = !state.hasAudio;
+        updateTimerHud();
+    }
+
+    function updateTimerHud(state = window.studyToolGetTimerState?.()) {
+        if (!timerHud) return;
+        state ||= { active: false, isRunning: false, phase: "Study", remaining: "00:00" };
+        timerHud.hidden = !state.active;
+        timerHud.classList.toggle("with-audio", Boolean(nowPlaying && !nowPlaying.hidden));
+        timerReadout.textContent = `${state.phase} · ${state.remaining}`;
+        timerPauseButton.textContent = state.isRunning ? "Pause" : "Resume";
+        timerPauseButton.setAttribute("aria-label", state.isRunning ? "Pause study timer" : "Resume study timer");
+    }
+
+    function createTimerHud() {
+        if (timerHud) return;
+        timerHud = document.createElement("div");
+        timerHud.className = "persistent-study-timer";
+        timerHud.setAttribute("role", "timer");
+        timerHud.setAttribute("aria-live", "off");
+        timerReadout = document.createElement("span");
+        timerReadout.className = "persistent-study-timer-readout";
+        timerPauseButton = document.createElement("button");
+        timerPauseButton.type = "button";
+        timerPauseButton.className = "persistent-now-playing-control";
+        timerPauseButton.addEventListener("click", () => window.studyToolToggleTimerPause?.());
+        timerHud.append(timerReadout, timerPauseButton);
+        document.body.append(timerHud);
+        updateTimerHud();
     }
 
     function createPlayer() {
@@ -76,6 +107,7 @@
             app.classList.add("audio-route-background");
             document.body.classList.add("audio-route-open");
             createPlayer();
+            createTimerHud();
         }
         if (addHistory) history.pushState({ studyToolAudioRoute: true }, "", url);
         routeFrame.src = url;
@@ -116,6 +148,7 @@
     }, true);
 
     window.addEventListener("studytool:now-playing", (event) => updatePlayer(event.detail));
+    window.addEventListener("studytool:timer-state", (event) => updateTimerHud(event.detail));
     window.addEventListener("popstate", (event) => {
         if (event.state?.studyToolAudioRoute) {
             routeTo(location.href, false);
@@ -127,6 +160,8 @@
             document.body.classList.remove("audio-route-open");
             nowPlaying?.remove();
             nowPlaying = null;
+            timerHud?.remove();
+            timerHud = null;
             document.title = document.querySelector("title")?.textContent || "Meridian";
         }
     });
