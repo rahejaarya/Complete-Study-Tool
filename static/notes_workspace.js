@@ -158,6 +158,10 @@
         wordCount.textContent = `${count} ${count === 1 ? "word" : "words"}`;
     }
 
+    function darkPaperColor() {
+        return getComputedStyle(document.documentElement).getPropertyValue("--workspace-dark-paper").trim() || "#171717";
+    }
+
     function makeFilePreview(file) {
         const page = document.createElement("div");
         const isDark = file.theme === "dark";
@@ -168,7 +172,7 @@
             canvas.width = 240;
             canvas.height = 310;
             const context = canvas.getContext("2d");
-            context.fillStyle = isDark ? "#171717" : "#fff";
+            context.fillStyle = isDark ? darkPaperColor() : "#fff";
             context.fillRect(0, 0, canvas.width, canvas.height);
             (file.whiteboard?.strokes || []).forEach((stroke) => {
                 if (stroke.type === "text") {
@@ -408,7 +412,7 @@
         const width = boardCanvas.clientWidth;
         const height = boardCanvas.clientHeight;
         boardContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-        boardContext.fillStyle = currentFile()?.theme === "dark" ? "#171717" : "#ffffff";
+        boardContext.fillStyle = currentFile()?.theme === "dark" ? darkPaperColor() : "#ffffff";
         boardContext.fillRect(0, 0, width, height);
         currentStrokes().forEach((stroke) => {
             if (stroke.type === "text") {

@@ -21,10 +21,10 @@
     };
     const themeCards = Array.from(document.querySelectorAll("[data-theme-choice]"));
     const status = document.getElementById("appearance-status");
-    const applyButton = document.getElementById("apply-theme");
-    const applyRow = applyButton.closest(".appearance-apply-row");
+    const applyRow = document.querySelector(".appearance-apply-row");
     let selectedTheme = document.documentElement.dataset.theme || "light-lavender";
     let appliedTheme = selectedTheme;
+    let isSaving = false;
 
     // Keep the pressed state of each theme card synchronized with the selection.
     function updateSelection() {
@@ -33,10 +33,9 @@
         });
     }
 
-    function updateApplyButton() {
+    function updateApplyRow() {
         const hasUnappliedTheme = selectedTheme !== appliedTheme;
         applyRow.hidden = !hasUnappliedTheme;
-        applyButton.disabled = !hasUnappliedTheme;
     }
 
     // Preview a palette locally when its card is selected.
@@ -45,9 +44,9 @@
             selectedTheme = card.dataset.themeChoice;
             status.textContent = selectedTheme === appliedTheme
                 ? `Previewing ${themeNames[selectedTheme]}. This is your current theme.`
-                : `Previewing ${themeNames[selectedTheme]}. Double-click or apply to set this theme.`;
+                : `Previewing ${themeNames[selectedTheme]}. Double-click to set this theme.`;
             updateSelection();
-            updateApplyButton();
+            updateApplyRow();
         });
 
         card.addEventListener("dblclick", applySelectedTheme);
@@ -58,16 +57,16 @@
         selectedTheme = event.detail.theme;
         appliedTheme = selectedTheme;
         updateSelection();
-        updateApplyButton();
+        updateApplyRow();
     });
 
     // Persist the chosen theme to the user's account and report the save result.
     async function applySelectedTheme() {
-        if (selectedTheme === appliedTheme || applyButton.disabled) return;
+        if (selectedTheme === appliedTheme || isSaving) return;
 
         const themeToApply = selectedTheme;
+        isSaving = true;
         document.documentElement.dataset.theme = themeToApply;
-        applyButton.disabled = true;
         status.textContent = "Saving theme…";
         try {
             window.localStorage.setItem(storageKey, themeToApply);
@@ -86,17 +85,16 @@
             appliedTheme = themeToApply;
             status.textContent = selectedTheme === appliedTheme
                 ? ""
-                : `Previewing ${themeNames[selectedTheme]}. Double-click or apply to set this theme.`;
+                : `Previewing ${themeNames[selectedTheme]}. Double-click to set this theme.`;
         } catch (error) {
             status.textContent = "Theme could not be saved. Please try again.";
             console.error("Color theme could not be saved to the account.", error);
         } finally {
-            updateApplyButton();
+            isSaving = false;
+            updateApplyRow();
         }
     }
 
-    applyButton.addEventListener("click", applySelectedTheme);
-
     updateSelection();
-    updateApplyButton();
+    updateApplyRow();
 })();
