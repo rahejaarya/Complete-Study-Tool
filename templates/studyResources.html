@@ -1,4 +1,5 @@
 {% from "_app_icon.html" import app_icon %}
+{% set library_mode = (library_mode|default(false)) or request.args.get("library") == "1" %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,7 +10,7 @@
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
     <script src="{{ url_for('static', filename='api_response.js') }}"></script>
     <script src="{{ url_for('static', filename='ai_chats.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='resource_browser.js') }}" defer></script>
+    {% if not library_mode %}<script src="{{ url_for('static', filename='resource_browser.js') }}" defer></script>{% endif %}
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
@@ -78,8 +79,13 @@
                 <div class="welcome">
                     <div class="welcome-icon">{{ app_icon("resources") }}</div>
                     <div>
+                        {% if library_mode %}
+                        <h1>Your study library</h1>
+                        <p>Keep your folders, files, and whiteboards together.</p>
+                        {% else %}
                         <h1>What do you want to learn?</h1>
                         <p>Find free resources for any subject or topic.</p>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -87,6 +93,7 @@
 
 
             <section class="dashboard resources-dashboard">
+                {% if not library_mode %}
                 <section class="resource-browser-search-panel resources-search-panel" aria-labelledby="browse-search-heading">
                     <div class="resource-browser-search-copy">
                         <p class="resource-browser-eyebrow">EXPLORE A TOPIC</p>
@@ -100,7 +107,9 @@
                     </form>
                     <p class="resource-browser-error" id="resource-browser-error" role="alert" hidden></p>
                 </section>
+                {% endif %}
 
+                {% if not library_mode %}
                 <div class="resource-browser-loading" id="resource-browser-loading" role="status" aria-live="polite" hidden>
                     <span class="resource-browser-spinner" aria-hidden="true"></span>
                     <span>Searching learning sites and videos…</span>
@@ -134,8 +143,10 @@
                         </section>
                     </div>
                 </section>
+                {% endif %}
 
                 <div class="resources-workspace-grid">
+                    {% if library_mode %}
                     <section class="saved-content-directory resources-folder-panel" aria-labelledby="saved-content-title">
                         <div class="directory-heading">
                             <div>
@@ -148,7 +159,8 @@
                             <div class="folder-add-menu-wrapper">
                                 <button type="button" class="folder-toolbar-add-button" id="folder-toolbar-add" aria-label="Add content" aria-expanded="false" aria-controls="folder-add-popup">+</button>
                                 <div class="folder-add-popup" id="folder-add-popup" role="menu" hidden>
-                                    <button type="button" role="menuitem" data-action="computer-upload"><span class="folder-popup-icon">↑</span>Computer upload</button>
+                                    <button type="button" role="menuitem" data-action="computer-upload"><span class="folder-popup-icon">↑</span>Upload files</button>
+                                    <button type="button" role="menuitem" data-action="whiteboard"><span class="folder-popup-icon">▤</span>New whiteboard</button>
                                     <button type="button" role="menuitem" data-action="web-search"><span class="folder-popup-icon">⌕</span>Web Search</button>
                                 </div>
                             </div>
@@ -163,6 +175,25 @@
                         <p class="directory-feedback" id="directory-feedback" role="status" aria-live="polite"></p>
                     </section>
 
+                    <a class="translator-launch-card library-whiteboard-card" href="{{ url_for('notes') }}?kind=whiteboard">
+                        <span class="translator-launch-icon" aria-hidden="true">▤</span>
+                        <span class="translator-launch-copy">
+                            <span class="resource-browser-eyebrow">STUDY TOOL</span>
+                            <strong>Whiteboards</strong>
+                            <span>Create and organize visual study notes.</span>
+                        </span>
+                        <span class="translator-launch-action">Open whiteboards <span aria-hidden="true">→</span></span>
+                    </a>
+                    {% else %}
+                    <a class="translator-launch-card" href="{{ url_for('resources', library='1') }}">
+                        <span class="translator-launch-icon" aria-hidden="true">▱</span>
+                        <span class="translator-launch-copy">
+                            <span class="resource-browser-eyebrow">YOUR LIBRARY</span>
+                            <strong>Folders &amp; files</strong>
+                            <span>Organize uploads, saved resources, and whiteboards in one place.</span>
+                        </span>
+                        <span class="translator-launch-action">Open your library <span aria-hidden="true">→</span></span>
+                    </a>
                     <a class="translator-launch-card" href="{{ url_for('translator') }}">
                         <span class="translator-launch-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -176,6 +207,7 @@
                         </span>
                         <span class="translator-launch-action">Open translator <span aria-hidden="true">→</span></span>
                     </a>
+                    {% endif %}
                 </div>
             </section>
 
@@ -213,6 +245,7 @@
 
         <!-- App Logic Scripts -->
     
+    {% if library_mode %}
     <script>
     (() => {
         const grid = document.getElementById("folder-grid");
@@ -257,6 +290,8 @@
 
                 if (action === "computer-upload") {
                     fileInput?.click();
+                } else if (action === "whiteboard") {
+                    createWhiteboardInFolder();
                 } else if (action === "web-search") {
                     openWebSearch();
                 }
@@ -282,6 +317,24 @@
         let openFolderId = null;
         let menu = null;
         let modal = null;
+
+        async function createWhiteboardInFolder() {
+            const activeFolder = folders.find(folder => folder.id === openFolderId);
+            if (!activeFolder) return;
+            if (feedback) feedback.textContent = "Creating whiteboard…";
+            try {
+                const response = await fetch(
+                    `/api/saved-folders/${encodeURIComponent(activeFolder.id)}/whiteboards`,
+                    { method: "POST", headers: { "Accept": "application/json" }, credentials: "same-origin" }
+                );
+                const result = await window.MeridianApi.read(response, "Could not create a whiteboard.");
+                activeFolder.items.push(result.item);
+                render();
+                if (feedback) feedback.textContent = "Whiteboard added to this folder.";
+            } catch (error) {
+                if (feedback) feedback.textContent = error.message || "Could not create a whiteboard.";
+            }
+        }
 
         function openWebSearch() {
             const activeFolder = folders.find(
@@ -949,6 +1002,9 @@
                     const isWebResource =
                         item && item.kind === "web" &&
                         typeof item.url === "string";
+                    const isWhiteboard =
+                        item && item.kind === "whiteboard" &&
+                        typeof item.notebook_id === "string";
                     const card = document.createElement("article");
                     card.className = "folder-file-card";
 
@@ -961,6 +1017,7 @@
                         "video": "VID",
                         "audio": "AUD",
                         "text": "TXT",
+                        "whiteboard": "BOARD",
                         "web link": "WEB",
                         "video link": "VID"
                     };
@@ -968,7 +1025,7 @@
                     icon.textContent =
                         iconLabels[fileType] ||
                         iconLabels[fileType.split("/")[0]] ||
-                        (isWebResource ? "WEB" : extension.toUpperCase().slice(0, 4) || "FILE");
+                        (isWhiteboard ? "BOARD" : isWebResource ? "WEB" : extension.toUpperCase().slice(0, 4) || "FILE");
                     icon.setAttribute("aria-hidden", "true");
 
                     const title = document.createElement("span");
@@ -1022,6 +1079,11 @@
                         } catch {
                             console.warn("Skipping invalid saved web resource URL.");
                         }
+                    } else if (isWhiteboard) {
+                        const openLink = document.createElement("a");
+                        openLink.href = `/notes?kind=whiteboard&file_id=${encodeURIComponent(item.notebook_id)}`;
+                        openLink.textContent = "Open whiteboard";
+                        actions.append(openLink);
                     }
 
                     card.append(icon, title, uploadDate, actions);
@@ -1086,6 +1148,7 @@ loadFolders();
 
 
 </script>
+    {% endif %}
 
 </body>
 </html>

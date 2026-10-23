@@ -1384,8 +1384,8 @@ def resources():
         resources=filtered_resources,
         query=query,
         web_results=web_results,
+        library_mode=False,
     )
-
 
 @app.route("/resource-browser")
 @login_required
@@ -2377,6 +2377,55 @@ def upload_saved_folder_file(folder_id):
     except (OSError, ValueError, json.JSONDecodeError):
         app.logger.exception("Could not save a study file")
         return jsonify({"error": "Could not save the uploaded file."}), 500
+
+
+@app.route("/api/saved-folders/<folder_id>/whiteboards", methods=["POST"])
+@login_required
+def create_saved_folder_whiteboard(folder_id):
+    """Create a whiteboard and add a link to it in the selected folder."""
+    try:
+        folder_path = find_saved_folder(folder_id)
+        if folder_path is None:
+            return jsonify({"error": "Folder not found."}), 404
+
+        user_dir = user_save_directory(session["user_id"])
+        notebooks_path = user_dir / "Notebooks" / "notebooks.json"
+        if notebooks_path.exists():
+            with notebooks_path.open("r", encoding="utf-8") as file:
+                saved_notebooks = json.load(file)
+            if not isinstance(saved_notebooks, dict):
+                raise ValueError("Saved notebooks must be an object.")
+            notebook_data = clean_notebook_data(saved_notebooks)
+        else:
+            notebook_data = {"notebooks": [], "active_id": ""}
+
+        notebook_id = uuid.uuid4().hex
+        name = "Untitled whiteboard"
+        notebook = {
+            "id": notebook_id,
+            "name": name,
+            "content": "",
+            "whiteboard": {"strokes": []},
+            "kind": "whiteboard",
+        }
+        notebook_data["notebooks"].append(notebook)
+        notebook_data["active_id"] = notebook_id
+        write_json_atomically(notebooks_path, notebook_data)
+
+        folder = read_folder_data(folder_path)
+        item = {
+            "kind": "whiteboard",
+            "notebook_id": notebook_id,
+            "title": name,
+            "file_type": "whiteboard",
+            "uploaded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        }
+        folder["items"].append(item)
+        write_folder_data(folder_path, folder)
+        return jsonify({"item": item}), 201
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not create a folder whiteboard")
+        return jsonify({"error": "Could not create the whiteboard."}), 500
 
 
 @app.route("/api/saved-folders/<folder_id>/web-resources", methods=["POST"])
