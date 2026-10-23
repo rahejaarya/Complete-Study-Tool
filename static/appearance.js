@@ -35,6 +35,7 @@
 
     function updateApplyRow() {
         const hasUnappliedTheme = selectedTheme !== appliedTheme;
+        applyRow.dataset.theme = selectedTheme;
         applyRow.hidden = !hasUnappliedTheme;
     }
 
