@@ -167,6 +167,7 @@
                                 <div class="folder-add-popup" id="folder-add-popup" role="menu" hidden>
                                     <button type="button" role="menuitem" data-action="computer-upload"><span class="folder-popup-icon">↑</span>Upload files</button>
                                     <button type="button" role="menuitem" data-action="whiteboard"><span class="folder-popup-icon">▤</span>New whiteboard</button>
+                                    <button type="button" role="menuitem" data-action="note"><span class="folder-popup-icon">✎</span>New note</button>
                                     <button type="button" role="menuitem" data-action="existing-notebook"><span class="folder-popup-icon">▤</span>Add existing note or whiteboard</button>
                                     <button type="button" role="menuitem" data-action="web-search"><span class="folder-popup-icon">⌕</span>Browse videos &amp; resources</button>
                                 </div>
@@ -289,7 +290,9 @@
                 if (action === "computer-upload") {
                     fileInput?.click();
                 } else if (action === "whiteboard") {
-                    createWhiteboardInFolder();
+                    createNotebookInFolder("whiteboard");
+                } else if (action === "note") {
+                    createNotebookInFolder("notes");
                 } else if (action === "existing-notebook") {
                     addExistingNotebookToFolder();
                 } else if (action === "web-search") {
@@ -319,21 +322,23 @@
         let menu = null;
         let modal = null;
 
-        async function createWhiteboardInFolder() {
+        async function createNotebookInFolder(kind) {
             const activeFolder = folders.find(folder => folder.id === openFolderId);
             if (!activeFolder) return;
-            if (feedback) feedback.textContent = "Creating whiteboard…";
+            const label = kind === "whiteboard" ? "whiteboard" : "note";
+            if (feedback) feedback.textContent = `Creating ${label}…`;
             try {
                 const response = await fetch(
-                    `/api/saved-folders/${encodeURIComponent(activeFolder.id)}/whiteboards`,
+                    `/api/saved-folders/${encodeURIComponent(activeFolder.id)}/${label}s`,
                     { method: "POST", headers: { "Accept": "application/json" }, credentials: "same-origin" }
                 );
-                const result = await window.MeridianApi.read(response, "Could not create a whiteboard.");
+                const result = await window.MeridianApi.read(response, `Could not create a ${label}.`);
                 activeFolder.items.push(result.item);
+                if (result.notebook) notebooks.push(result.notebook);
                 render();
-                if (feedback) feedback.textContent = "Whiteboard added to this folder.";
+                if (feedback) feedback.textContent = `${label === "whiteboard" ? "Whiteboard" : "Note"} added to this folder.`;
             } catch (error) {
-                if (feedback) feedback.textContent = error.message || "Could not create a whiteboard.";
+                if (feedback) feedback.textContent = error.message || `Could not create a ${label}.`;
             }
         }
 
@@ -769,6 +774,35 @@
             }
         }
 
+        async function removeFolderItem(folder, item) {
+            const itemId = item.storage_id || item.file_id || item.notebook_id;
+            if (!itemId) {
+                if (feedback) feedback.textContent = "This saved item cannot be removed.";
+                return false;
+            }
+            try {
+                const response = await fetch(
+                    `/api/saved-folders/${encodeURIComponent(folder.id)}` +
+                    `/items/${encodeURIComponent(itemId)}`,
+                    {
+                        method: "DELETE",
+                        headers: { "Accept": "application/json" },
+                        credentials: "same-origin"
+                    }
+                );
+                await window.MeridianApi.read(response, "Could not remove this item from the folder.");
+                folder.items = folder.items.filter(candidate => candidate !== item);
+                if (feedback) feedback.textContent = "Removed from this folder.";
+                render();
+                return true;
+            } catch (error) {
+                console.error("Could not remove saved folder item:", error);
+                if (feedback) feedback.textContent =
+                    error.message || "Could not remove this item from the folder.";
+                return false;
+            }
+        }
+
                 
         function closeMenu() {
             if (menu) menu.remove();
@@ -1160,10 +1194,7 @@
                             ? notebooks.find(notebook => notebook.id === item.notebook_id)
                             : null;
                     const card = document.createElement("article");
-                    const itemSize = ["small", "medium", "large"].includes(item?.display_size)
-                        ? item.display_size
-                        : "medium";
-                    card.className = `folder-file-card folder-file-card-${itemSize}`;
+                    card.className = "folder-file-card";
 
                     const icon = document.createElement("span");
                     icon.className = "folder-file-icon";
@@ -1290,26 +1321,20 @@
                             )
                         });
                     });
-                    const sizeSelect = document.createElement("select");
-                    sizeSelect.className = "folder-item-size";
-                    sizeSelect.setAttribute("aria-label", `Display size for ${title.textContent}`);
-                    [
-                        ["small", "Small"],
-                        ["medium", "Medium"],
-                        ["large", "Large"]
-                    ].forEach(([value, label]) => {
-                        const option = document.createElement("option");
-                        option.value = value;
-                        option.textContent = label;
-                        sizeSelect.append(option);
-                    });
-                    sizeSelect.value = itemSize;
-                    sizeSelect.addEventListener("change", () => {
-                        updateFolderItem(
-                            activeFolder,
-                            item,
-                            { display_size: sizeSelect.value }
-                        );
+                    const removeButton = document.createElement("button");
+                    removeButton.type = "button";
+                    removeButton.className = "folder-item-remove";
+                    removeButton.textContent = "Remove";
+                    removeButton.addEventListener("click", () => {
+                        showFolderDialog({
+                            title: "Remove item from folder?",
+                            message: linkedNotebook
+                                ? "This removes the link from this folder. The note or whiteboard will remain in Notes."
+                                : "This removes the item from this folder.",
+                            confirmText: "Remove",
+                            danger: true,
+                            onConfirm: () => removeFolderItem(activeFolder, item)
+                        });
                     });
                     if (isUploadedFile) {
                         const fileUrl =
@@ -1350,12 +1375,12 @@
                         actions.append(openLink);
                     }
 
-                    actions.prepend(renameButton);
+                    actions.prepend(renameButton, removeButton);
                     card.append(icon, title);
                     if (preview.textContent || preview.childElementCount) {
                         card.append(preview);
                     }
-                    card.append(uploadDate, sizeSelect, actions);
+                    card.append(uploadDate, actions);
                     grid.append(card);
                 });
 

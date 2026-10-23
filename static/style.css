@@ -5604,32 +5604,26 @@ body.library-mode .resources-folder-panel {
 }
 
 body.library-mode .resources-folder-panel .folder-grid.folder-files-grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
 }
 
-.folder-file-card-small {
-    grid-column: span 2;
-}
-
-.folder-file-card-medium {
-    grid-column: span 3;
-}
-
-.folder-file-card-large {
-    grid-column: span 6;
+body.library-mode .resources-folder-panel .folder-file-card {
+    min-height: 0;
+    padding: 12px;
+    gap: 8px;
 }
 
 .folder-file-preview {
     width: 100%;
-    max-height: 280px;
+    max-height: 100px;
     overflow: auto;
-    padding: 12px;
+    padding: 8px;
     border: 1px solid var(--border);
     border-radius: 10px;
     background: var(--soft-surface);
     color: var(--text);
-    font-size: 14px;
-    line-height: 1.55;
+    font-size: 12px;
+    line-height: 1.4;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
@@ -5644,16 +5638,6 @@ body.library-mode .resources-folder-panel .folder-grid.folder-files-grid {
     height: auto;
     aspect-ratio: 16 / 9;
     background: #fff;
-}
-
-.folder-item-size {
-    width: 100%;
-    min-height: 36px;
-    padding: 6px 9px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--white);
-    color: var(--text);
 }
 
 .folder-file-actions button {
@@ -5672,18 +5656,13 @@ body.library-mode .resources-folder-panel .folder-grid.folder-files-grid {
     background: var(--nav-hover);
 }
 
+.folder-file-actions .folder-item-remove {
+    color: var(--danger, #d64545);
+}
+
 @media (max-width: 1000px) {
     body.library-mode .resources-folder-panel .folder-grid.folder-files-grid {
         grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .folder-file-card-small,
-    .folder-file-card-medium {
-        grid-column: span 2;
-    }
-
-    .folder-file-card-large {
-        grid-column: span 4;
     }
 }
 
@@ -5695,26 +5674,11 @@ body.library-mode .resources-folder-panel .folder-grid.folder-files-grid {
     body.library-mode .resources-folder-panel .folder-grid.folder-files-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-
-    .folder-file-card-small {
-        grid-column: span 1;
-    }
-
-    .folder-file-card-medium,
-    .folder-file-card-large {
-        grid-column: span 2;
-    }
 }
 
 @media (max-width: 360px) {
     body.library-mode .resources-folder-panel .folder-grid.folder-files-grid {
         grid-template-columns: minmax(0, 1fr);
-    }
-
-    .folder-file-card-small,
-    .folder-file-card-medium,
-    .folder-file-card-large {
-        grid-column: span 1;
     }
 }
 

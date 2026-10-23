@@ -192,7 +192,16 @@
         ]
       },
       "kind": "whiteboard"
+    },
+    {
+      "id": "bf70f2dbeaa945798c45ac36fb7c5738",
+      "name": "Untitled whiteboard",
+      "content": "",
+      "whiteboard": {
+        "strokes": []
+      },
+      "kind": "whiteboard"
     }
   ],
-  "active_id": "0a5537b4-a044-4d90-9154-db16d88afc40"
+  "active_id": "bf70f2dbeaa945798c45ac36fb7c5738"
 }

@@ -104,7 +104,7 @@ class SavedFolderUploadTests(unittest.TestCase):
         self.assertEqual(file_item["title"], "unsafe.txt")
         self.assertEqual(file_item["filename"], f"{file_item['file_id']}.txt")
 
-    def test_saved_item_can_be_renamed_and_resized_without_changing_file(self):
+    def test_saved_item_can_be_renamed_without_changing_file(self):
         upload_response = self.client.post(
             f"/api/saved-folders/{self.folder_id}/files",
             data={"file": (io.BytesIO(b"study notes"), "notes.txt")},
@@ -115,12 +115,11 @@ class SavedFolderUploadTests(unittest.TestCase):
 
         update_response = self.client.patch(
             f"/api/saved-folders/{self.folder_id}/items/{item['file_id']}",
-            json={"custom_title": "Biology notes", "display_size": "large"},
+            json={"custom_title": "Biology notes"},
         )
 
         self.assertEqual(update_response.status_code, 200)
         self.assertEqual(update_response.get_json()["item"]["custom_title"], "Biology notes")
-        self.assertEqual(update_response.get_json()["item"]["display_size"], "large")
         refreshed_item = self.client.get("/api/saved-folders").get_json()[0]["items"][0]
         self.assertEqual(refreshed_item["title"], "notes.txt")
         self.assertEqual(refreshed_item["custom_title"], "Biology notes")
@@ -130,7 +129,7 @@ class SavedFolderUploadTests(unittest.TestCase):
         self.assertEqual(file_response.data, b"study notes")
         file_response.close()
 
-    def test_item_update_rejects_invalid_size(self):
+    def test_item_update_rejects_size_changes(self):
         upload_response = self.client.post(
             f"/api/saved-folders/{self.folder_id}/files",
             data={"file": (io.BytesIO(b"study notes"), "notes.txt")},
@@ -140,11 +139,74 @@ class SavedFolderUploadTests(unittest.TestCase):
 
         response = self.client.patch(
             f"/api/saved-folders/{self.folder_id}/items/{item['file_id']}",
-            json={"display_size": "giant"},
+            json={"display_size": "small"},
         )
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn("size", response.get_json()["error"])
+        self.assertIn("update", response.get_json()["error"])
+
+    def test_removing_file_from_folder_deletes_file_and_metadata(self):
+        upload_response = self.client.post(
+            f"/api/saved-folders/{self.folder_id}/files",
+            data={"file": (io.BytesIO(b"remove me"), "notes.txt")},
+            content_type="multipart/form-data",
+        )
+        item = upload_response.get_json()["file"]
+        file_path = (
+            Path(app.config["SAVE_DATA_DIR"])
+            / "admin"
+            / "Folders"
+            / self.folder_id
+            / item["filename"]
+        )
+
+        response = self.client.delete(
+            f"/api/saved-folders/{self.folder_id}/items/{item['file_id']}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(file_path.exists())
+        self.assertEqual(self.client.get("/api/saved-folders").get_json()[0]["items"], [])
+
+    def test_removing_link_does_not_delete_note_from_notes(self):
+        notebook_id = uuid.uuid4().hex
+        notebook = {
+            "id": notebook_id,
+            "name": "Keep this note",
+            "content": "<p>Still here</p>",
+            "whiteboard": {"strokes": []},
+            "kind": "notes",
+        }
+        self.client.put(
+            "/api/notebooks",
+            json={"notebooks": [notebook], "active_id": notebook_id},
+        )
+        linked = self.client.post(
+            f"/api/saved-folders/{self.folder_id}/notebooks",
+            json={"notebook_id": notebook_id},
+        )
+        self.assertEqual(linked.status_code, 201)
+
+        response = self.client.delete(
+            f"/api/saved-folders/{self.folder_id}/items/{notebook_id}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.client.get("/api/saved-folders").get_json()[0]["items"], [])
+        self.assertEqual(
+            self.client.get("/api/notebooks").get_json()["notebooks"],
+            [notebook],
+        )
+
+    def test_new_notes_and_whiteboards_can_be_created_from_folder(self):
+        for kind, name in (("notes", "Untitled note"), ("whiteboards", "Untitled whiteboard")):
+            response = self.client.post(
+                f"/api/saved-folders/{self.folder_id}/{kind}"
+            )
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(response.get_json()["notebook"]["name"], name)
+            self.assertEqual(response.get_json()["item"]["notebook_id"],
+                             response.get_json()["notebook"]["id"])
 
     def test_folder_save_reports_duplicate_names(self):
         response = self.client.put(
@@ -309,7 +371,8 @@ class SavedFolderUploadTests(unittest.TestCase):
         self.assertNotIn(b"Open whiteboards", response.data)
         self.assertIn(b"Add existing note or whiteboard", response.data)
         self.assertIn(b'class="library-mode"', response.data)
-        self.assertIn(b"folder-item-size", response.data)
+        self.assertIn(b"New note", response.data)
+        self.assertNotIn(b"folder-item-size", response.data)
         self.assertIn(b"Rename saved item", response.data)
 
     def test_legacy_folder_layout_migrates_without_losing_contents(self):

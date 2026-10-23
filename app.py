@@ -2320,7 +2320,7 @@ def save_saved_folders():
 )
 @login_required
 def update_saved_folder_item(folder_id, item_id):
-    """Update a folder-specific display name or card size without changing its source."""
+    """Update a folder-specific display name without changing its source."""
     if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", item_id):
         return jsonify({"error": "Saved item not found."}), 404
 
@@ -2339,15 +2339,6 @@ def update_saved_folder_item(folder_id, item_id):
         ):
             return jsonify({"error": "Item names must be 1 to 240 characters."}), 400
         updates["custom_title"] = custom_title.strip()
-
-    if "display_size" in data:
-        display_size = data["display_size"]
-        if (
-            not isinstance(display_size, str)
-            or display_size not in {"small", "medium", "large"}
-        ):
-            return jsonify({"error": "Choose a valid item size."}), 400
-        updates["display_size"] = display_size
 
     if not updates or set(data) != set(updates):
         return jsonify({"error": "Choose a valid item update."}), 400
@@ -2378,6 +2369,62 @@ def update_saved_folder_item(folder_id, item_id):
     except (OSError, ValueError, json.JSONDecodeError):
         app.logger.exception("Could not update a saved folder item")
         return jsonify({"error": "Could not update this saved item."}), 500
+
+
+@app.route(
+    "/api/saved-folders/<folder_id>/items/<item_id>",
+    methods=["DELETE"],
+)
+@login_required
+def remove_saved_folder_item(folder_id, item_id):
+    """Remove an item from a folder without deleting linked notes or whiteboards."""
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", item_id):
+        return jsonify({"error": "Saved item not found."}), 404
+
+    try:
+        folder_path = find_saved_folder(folder_id)
+        if folder_path is None:
+            return jsonify({"error": "Folder not found."}), 404
+
+        folder = read_folder_data(folder_path)
+        item_index = next(
+            (
+                index for index, candidate in enumerate(folder["items"])
+                if isinstance(candidate, dict)
+                and any(
+                    candidate.get(key) == item_id
+                    for key in ("storage_id", "file_id", "notebook_id")
+                )
+            ),
+            None,
+        )
+        if item_index is None:
+            return jsonify({"error": "Saved item not found."}), 404
+
+        item = folder["items"].pop(item_index)
+        write_folder_data(folder_path, folder)
+
+        if item.get("kind") == "file":
+            filename = item.get("filename")
+            file_id = item.get("file_id")
+            if (
+                isinstance(filename, str)
+                and isinstance(file_id, str)
+                and item.get("storage_id", file_id) == file_id
+                and Path(filename).name == filename
+                and (
+                    filename == file_id
+                    or filename.startswith(f"{file_id}.")
+                )
+            ):
+                file_path = folder_path / filename
+                if file_path.resolve().parent == folder_path.resolve():
+                    file_path.unlink(missing_ok=True)
+
+        return jsonify({"success": True})
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not remove an item from a saved folder")
+        return jsonify({"error": "Could not remove this saved item."}), 500
 
 
 @app.route("/api/saved-folders/<folder_id>/files", methods=["POST"])
@@ -2456,10 +2503,19 @@ def upload_saved_folder_file(folder_id):
         return jsonify({"error": "Could not save the uploaded file."}), 500
 
 
-@app.route("/api/saved-folders/<folder_id>/whiteboards", methods=["POST"])
+@app.route(
+    "/api/saved-folders/<folder_id>/whiteboards",
+    defaults={"notebook_kind": "whiteboard"},
+    methods=["POST"],
+)
+@app.route(
+    "/api/saved-folders/<folder_id>/notes",
+    defaults={"notebook_kind": "notes"},
+    methods=["POST"],
+)
 @login_required
-def create_saved_folder_whiteboard(folder_id):
-    """Create a whiteboard and add a link to it in the selected folder."""
+def create_saved_folder_notebook(folder_id, notebook_kind):
+    """Create a note or whiteboard and add a link to it in the selected folder."""
     try:
         folder_path = find_saved_folder(folder_id)
         if folder_path is None:
@@ -2477,13 +2533,13 @@ def create_saved_folder_whiteboard(folder_id):
             notebook_data = {"notebooks": [], "active_id": ""}
 
         notebook_id = uuid.uuid4().hex
-        name = "Untitled whiteboard"
+        name = "Untitled whiteboard" if notebook_kind == "whiteboard" else "Untitled note"
         notebook = {
             "id": notebook_id,
             "name": name,
             "content": "",
             "whiteboard": {"strokes": []},
-            "kind": "whiteboard",
+            "kind": notebook_kind,
         }
         notebook_data["notebooks"].append(notebook)
         notebook_data["active_id"] = notebook_id
@@ -2491,18 +2547,19 @@ def create_saved_folder_whiteboard(folder_id):
 
         folder = read_folder_data(folder_path)
         item = {
-            "kind": "whiteboard",
+            "kind": notebook_kind,
             "notebook_id": notebook_id,
             "title": name,
-            "file_type": "whiteboard",
+            "file_type": notebook_kind,
             "uploaded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         }
         folder["items"].append(item)
         write_folder_data(folder_path, folder)
-        return jsonify({"item": item}), 201
+        return jsonify({"item": item, "notebook": notebook}), 201
     except (OSError, ValueError, json.JSONDecodeError):
-        app.logger.exception("Could not create a folder whiteboard")
-        return jsonify({"error": "Could not create the whiteboard."}), 500
+        app.logger.exception("Could not create a note or whiteboard in a folder")
+        label = "whiteboard" if notebook_kind == "whiteboard" else "note"
+        return jsonify({"error": f"Could not create the {label}."}), 500
 
 
 @app.route("/api/saved-folders/<folder_id>/notebooks", methods=["POST"])
