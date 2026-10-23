@@ -1334,6 +1334,13 @@ def resource_browser():
     return render_template("resource_browser.html")
 
 
+@app.route("/translator")
+@login_required
+def translator():
+    """Render the full-page translator workspace."""
+    return render_template("translator.html")
+
+
 @app.route("/api/resource-browser/search", methods=["POST"])
 @login_required
 def resource_browser_search():
