@@ -1690,10 +1690,16 @@ def generate_flashcards_api():
             temporary_path = Path(temporary_file.name)
             uploaded_file.save(temporary_file)
 
-        from static.flashcard_generator import generate_flashcards
+        from static.flashcard_generator import (
+            FlashcardGenerationError,
+            generate_flashcards,
+        )
 
         cards = generate_flashcards(temporary_path, count=count, focus=focus)
         return jsonify({"flashcards": cards})
+    except FlashcardGenerationError as error:
+        app.logger.warning("Flashcard generation returned no usable cards: %s", error)
+        return jsonify({"error": str(error)}), 502
     except ValueError as error:
         return jsonify({"error": str(error)}), 400
     except Exception:
