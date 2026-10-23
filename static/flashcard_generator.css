@@ -13,6 +13,41 @@
     margin: 0 auto 26px;
 }
 
+.flashcard-header-links { display: flex; flex-wrap: wrap; gap: 10px; }
+.flashcard-saved-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 22px 0 8px; }
+.flashcard-saved-actions > span { color: var(--muted); font-size: .88rem; }
+.flashcard-folder-dialog { width: min(460px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--border-color, #e9e6ef); border-radius: 20px; background: var(--card-bg, #fff); color: var(--text); box-shadow: 0 24px 80px rgba(24, 20, 40, .24); }
+.flashcard-folder-dialog::backdrop { background: rgba(21, 17, 36, .48); backdrop-filter: blur(3px); }
+.flashcard-folder-dialog form { display: grid; gap: 14px; padding: 26px; }
+.flashcard-folder-dialog h2 { margin: 0 0 4px; font-size: 1.3rem; }
+.flashcard-folder-dialog label { color: var(--text); font-size: .9rem; font-weight: 700; }
+.flashcard-folder-dialog select, .flashcard-folder-dialog input { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--border-color, #e9e6ef); border-radius: 10px; background: var(--input-bg, #fbfaff); color: var(--text); font: inherit; }
+.flashcard-folder-choice { display: grid; gap: 12px; margin: 0; padding: 0; border: 0; }
+.flashcard-folder-choice legend { margin-bottom: 2px; color: var(--muted); font-size: .88rem; }
+.flashcard-folder-choice-option { display: flex; min-height: 48px; align-items: center; gap: 10px; padding: 11px 13px; border: 1px solid var(--border-color, #e9e6ef); border-radius: 12px; background: var(--input-bg, #fbfaff); cursor: pointer; }
+.flashcard-folder-dialog input[type="radio"] { width: 17px; min-height: 17px; flex: 0 0 17px; margin: 0; padding: 0; accent-color: var(--accent); }
+.flashcard-folder-choice select { margin-bottom: 3px; }
+.flashcard-new-folder { display: grid; gap: 8px; }
+.flashcard-folder-dialog-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 4px; }
+.flashcard-library-panel { width: min(100%, 1040px); margin: 0 auto; padding: clamp(22px, 4vw, 38px); border: 1px solid var(--border-color); border-radius: 24px; background: var(--card-bg); box-shadow: 0 16px 42px var(--card-shadow, rgba(50, 40, 80, .07)); }
+.flashcard-library-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+.flashcard-library-heading h2 { margin: 0; color: var(--text); font-size: clamp(1.5rem, 3vw, 2rem); }
+.flashcard-library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 16px; }
+.flashcard-library-card { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; gap: 11px; padding: 20px; border: 1px solid var(--border-color); border-radius: 18px; background: var(--card-bg); transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease; }
+.flashcard-library-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 36%, var(--border-color)); box-shadow: 0 12px 28px rgba(40, 30, 70, .09); }
+.flashcard-library-icon { display: grid; min-width: 50px; height: 40px; padding: 0 9px; place-items: center; border-radius: 12px; background: var(--purple-light, #eeeaff); color: var(--accent); font-size: .68rem; font-weight: 850; letter-spacing: .08em; }
+.flashcard-library-card h3 { margin: 2px 0 0; color: var(--text); font-size: 1.08rem; overflow-wrap: anywhere; }
+.flashcard-library-card > p, .flashcard-library-date { margin: 0; color: var(--muted); font-size: .88rem; }
+.flashcard-library-date { margin-top: auto; }
+.flashcard-library-actions { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; margin-top: 8px; }
+.flashcard-library-actions .flashcard-action { min-height: 40px; padding: 9px 13px; text-decoration: none; }
+.flashcard-library-empty { display: grid; justify-items: center; gap: 10px; padding: 56px 20px; border: 1px dashed var(--border-color); border-radius: 18px; text-align: center; }
+.flashcard-library-empty > span { color: var(--accent); font-size: 2rem; }
+.flashcard-library-empty h3, .flashcard-library-empty p { margin: 0; }
+.flashcard-library-empty h3 { color: var(--text); }
+.flashcard-library-empty p { max-width: 460px; color: var(--muted); line-height: 1.5; }
+.flashcard-library-empty .flashcard-submit { margin-top: 8px; text-decoration: none; }
+
 .flashcard-builder,
 .flashcard-review {
     width: min(100%, 1040px);
@@ -270,6 +305,7 @@
 @media (max-width: 700px) {
     .flashcard-page { padding: 20px 14px; }
     .flashcard-page > .topbar { align-items: flex-start; flex-direction: column; gap: 12px; }
+    .flashcard-header-links { width: 100%; }
     .flashcard-form,
     .flashcard-upload-options { grid-template-columns: 1fr; }
     .flashcard-editor-heading,

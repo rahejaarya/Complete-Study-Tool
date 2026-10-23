@@ -185,7 +185,7 @@
 
                     {% else %}
                     <a class="translator-launch-card" href="{{ url_for('resources', library='1') }}">
-                        <span class="translator-launch-icon" aria-hidden="true">📁</span>
+                        <span class="translator-launch-icon" aria-hidden="true">{{ app_icon("folder") }}</span>
                         <span class="translator-launch-copy">
                             <span class="resource-browser-eyebrow">YOUR LIBRARY</span>
                             <strong>Folders &amp; files</strong>
@@ -821,7 +821,8 @@
                         fill="none" stroke="currentColor" stroke-width="1.7"
                         stroke-linecap="round" stroke-linejoin="round"
                         aria-hidden="true">
-                        <path d="M3.5 7A2 2 0 0 1 5.5 5H10l2 2h6.5a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>
+                        <path d="M3.5 7.5a2 2 0 0 1 2-2H10l2 2h6.5a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>
+                        <path d="M3.8 10h16.4"/>
                     </svg>`,
                 file: `
                     <svg viewBox="0 0 24 24" width="30" height="30"
@@ -845,7 +846,7 @@
         function showFolderDialog({
             title,
             message,
-            icon = "📁",
+            icon = "",
             inputValue = null,
             selectOptions = null,
             confirmText = "Save",
@@ -1191,6 +1192,9 @@
                     const isWebResource =
                         item && item.kind === "web" &&
                         typeof item.url === "string";
+                    const isFlashcardDeck =
+                        item && item.kind === "flashcard_deck" &&
+                        typeof item.deck_id === "string";
                     const isWhiteboard =
                         item && typeof item.notebook_id === "string" &&
                         (item.kind === "whiteboard" || item.file_type === "whiteboard");
@@ -1214,13 +1218,14 @@
                         "notes": "NOTE",
                         "whiteboard": "BOARD",
                         "web link": "WEB",
-                        "video link": "VID"
+                        "video link": "VID",
+                        "flashcard deck": "CARDS"
                     };
                     const fileType = item?.file_type || "";
                     icon.textContent =
                         iconLabels[fileType] ||
                         iconLabels[fileType.split("/")[0]] ||
-                        (isWhiteboard ? "BOARD" : isWebResource ? "WEB" : extension.toUpperCase().slice(0, 4) || "FILE");
+                        (isWhiteboard ? "BOARD" : isWebResource ? "WEB" : isFlashcardDeck ? "CARDS" : extension.toUpperCase().slice(0, 4) || "FILE");
                     icon.setAttribute("aria-hidden", "true");
 
                     const title = document.createElement("span");
@@ -1283,6 +1288,8 @@
                         preview.textContent = item.description || item.url;
                     } else if (isUploadedFile) {
                         preview.textContent = item.original_filename || item.title || "Saved file";
+                    } else if (isFlashcardDeck) {
+                        preview.textContent = `${item.card_count || "Saved"} ${item.card_count === 1 ? "card" : "cards"} · Term and definition`;
                     }
 
                     const uploadDate = document.createElement("time");
@@ -1377,6 +1384,11 @@
                         openLink.textContent = notebookKind === "whiteboard"
                             ? "Open whiteboard"
                             : "Open note";
+                        actions.append(openLink);
+                    } else if (isFlashcardDeck) {
+                        const openLink = document.createElement("a");
+                        openLink.href = `/flashcard-generator?deck=${encodeURIComponent(item.deck_id)}`;
+                        openLink.textContent = "Study deck";
                         actions.append(openLink);
                     }
 

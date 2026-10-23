@@ -1512,6 +1512,17 @@ def saved_flashcard_api(deck_id):
                 clean_cards.append({"term": term.strip(), "definition": definition.strip()})
             deck.update({"title": title[:60] or "Untitled flashcards", "cards": clean_cards, "updated_at": datetime.now(timezone.utc).isoformat()})
             write_json_atomically(flashcard_decks_path(), {"decks": decks})
+            folders_dir = get_user_folders_dir()
+            if folders_dir:
+                for folder_path in folders_dir.iterdir():
+                    if folder_path.is_symlink() or not folder_path.is_dir():
+                        continue
+                    folder = read_folder_data(folder_path)
+                    for item in folder["items"]:
+                        if isinstance(item, dict) and item.get("kind") == "flashcard_deck" and item.get("deck_id") == deck_id:
+                            item["title"] = deck["title"]
+                            item["card_count"] = len(deck["cards"])
+                    write_folder_data(folder_path, folder)
             return jsonify(deck)
         write_json_atomically(flashcard_decks_path(), {"decks": [item for item in decks if item.get("id") != deck_id]})
         folders_dir = get_user_folders_dir()

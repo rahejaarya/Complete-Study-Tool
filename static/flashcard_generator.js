@@ -35,6 +35,9 @@
     const folderDialog = document.getElementById("flashcard-folder-dialog");
     const folderSelect = document.getElementById("flashcard-folder-select");
     const newFolderInput = document.getElementById("flashcard-new-folder");
+    const existingFolderChoice = document.getElementById("flashcard-existing-folder-choice");
+    const newFolderChoice = document.getElementById("flashcard-new-folder-choice");
+    const folderChoiceInputs = [...document.querySelectorAll('input[name="flashcard-folder-choice"]')];
     const folderError = document.getElementById("flashcard-folder-error");
 
     let draft = [{ term: "", definition: "" }];
@@ -334,18 +337,32 @@
                 option.textContent = folder.name;
                 return option;
             }));
-            folderSelect.hidden = folders.length === 0;
+            const existingChoiceRadio = folderChoiceInputs.find((input) => input.value === "existing");
+            const newChoiceRadio = folderChoiceInputs.find((input) => input.value === "new");
+            existingChoiceRadio.disabled = folders.length === 0;
+            existingChoiceRadio.checked = folders.length > 0;
+            newChoiceRadio.checked = folders.length === 0;
             newFolderInput.value = "";
+            toggleFolderChoice();
             folderDialog.showModal();
         } catch (error) { saveStatus.textContent = error.message; }
         finally { folderButton.disabled = false; }
     });
 
+    function toggleFolderChoice() {
+        const creatingNewFolder = folderChoiceInputs.find((input) => input.checked)?.value === "new";
+        existingFolderChoice.hidden = creatingNewFolder;
+        newFolderChoice.hidden = !creatingNewFolder;
+    }
+    folderChoiceInputs.forEach((input) => input.addEventListener("change", toggleFolderChoice));
+
     document.getElementById("flashcard-folder-confirm").addEventListener("click", async () => {
-        const name = newFolderInput.value.trim();
         try {
+            const creatingNewFolder = folderChoiceInputs.find((input) => input.checked)?.value === "new";
             let folderId = folderSelect.value;
-            if (name) {
+            if (creatingNewFolder) {
+                const name = newFolderInput.value.trim();
+                if (!name) throw new Error("Enter a name for the new folder.");
                 const listResponse = await fetch("/api/saved-folders", { headers: { Accept: "application/json" } });
                 const folders = await listResponse.json();
                 if (!listResponse.ok || !Array.isArray(folders)) throw new Error("Could not load your folders.");
@@ -355,7 +372,7 @@
                 const createData = await createResponse.json();
                 if (!createResponse.ok) throw new Error(createData.error || "Could not create that folder.");
             }
-            if (!folderId) throw new Error("Choose a folder or enter a new folder name.");
+            if (!folderId) throw new Error("Choose a folder first.");
             const response = await fetch(`/api/flashcards/${encodeURIComponent(currentDeckId)}/folders/${encodeURIComponent(folderId)}`, { method: "POST", headers: { Accept: "application/json" } });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || "Could not add this deck to the folder.");

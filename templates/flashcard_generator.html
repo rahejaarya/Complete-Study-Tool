@@ -7,9 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flashcard Studio - Meridian</title>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
-    <script src="{{ url_for('static', filename='flashcard_generator.js', v='3') }}" defer></script>
+    <script src="{{ url_for('static', filename='flashcard_generator.js', v='5') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='flashcard_generator.css', v='3') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='flashcard_generator.css', v='5') }}">
 </head>
 <body>
     <div class="app">
@@ -131,9 +131,17 @@
             <dialog class="flashcard-folder-dialog" id="flashcard-folder-dialog" aria-labelledby="flashcard-folder-title">
                 <form method="dialog" id="flashcard-folder-form">
                     <h2 id="flashcard-folder-title">Add deck to a folder</h2>
-                    <label for="flashcard-folder-select">Choose a folder</label>
-                    <select id="flashcard-folder-select"></select>
-                    <div class="flashcard-new-folder"><label for="flashcard-new-folder">Or create a folder</label><input id="flashcard-new-folder" maxlength="100" placeholder="Folder name"></div>
+                    <fieldset class="flashcard-folder-choice">
+                        <legend>Where should this deck go?</legend>
+                        <div id="flashcard-existing-folder-choice">
+                            <label class="flashcard-folder-choice-option"><input type="radio" name="flashcard-folder-choice" value="existing" checked><span>Choose an existing folder</span></label>
+                            <select id="flashcard-folder-select" aria-label="Choose an existing folder"></select>
+                        </div>
+                        <div class="flashcard-new-folder" id="flashcard-new-folder-choice">
+                            <label class="flashcard-folder-choice-option"><input type="radio" name="flashcard-folder-choice" value="new"><span>Create a new folder</span></label>
+                            <input id="flashcard-new-folder" maxlength="100" placeholder="New folder name" aria-label="New folder name">
+                        </div>
+                    </fieldset>
                     <p class="flashcard-error" id="flashcard-folder-error" role="alert" hidden></p>
                     <div class="flashcard-folder-dialog-actions"><button class="flashcard-action secondary" value="cancel">Cancel</button><button class="flashcard-action" id="flashcard-folder-confirm" type="button">Add to folder</button></div>
                 </form>

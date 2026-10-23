@@ -7,9 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Flashcards - Meridian</title>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
-    <script src="{{ url_for('static', filename='flashcard_library.js', v='1') }}" defer></script>
+    <script src="{{ url_for('static', filename='flashcard_library.js', v='3') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='flashcard_generator.css', v='4') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='flashcard_generator.css', v='5') }}">
 </head>
 <body>
     <div class="app">
@@ -31,7 +31,7 @@
         <main class="main-content flashcard-page">
             <header class="topbar">
                 <div class="welcome"><div class="welcome-icon" aria-hidden="true">▤</div><div><h1>My flashcards</h1><p>Your saved study sets, ready whenever you are.</p></div></div>
-                <a class="resource-browser-back" href="{{ url_for('flashcard_generator') }}">＋ Create a deck</a>
+                <a class="resource-browser-back" href="{{ url_for('flashcard_generator') }}">← Flashcard Studio</a>
             </header>
             <section class="flashcard-library-panel">
                 <div class="flashcard-library-heading"><div><p class="flashcard-eyebrow">YOUR STUDY SETS</p><h2>Saved flashcards</h2></div><span id="flashcard-library-count" class="flashcard-count-badge">Loading…</span></div>
