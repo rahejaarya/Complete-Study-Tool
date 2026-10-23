@@ -174,7 +174,10 @@
                 if (stroke.type === "text") {
                     context.fillStyle = stroke.color || "#20242d";
                     context.font = `${Math.max(8, (Number(stroke.size) || 20) * .38)}px Arial`;
+                    context.shadowColor = isDark ? "#f1f3f7" : "transparent";
+                    context.shadowBlur = isDark ? 2 : 0;
                     context.fillText(String(stroke.text || "").slice(0, 45), stroke.x * canvas.width, stroke.y * canvas.height);
+                    context.shadowBlur = 0;
                     return;
                 }
                 const points = Array.isArray(stroke.points) ? stroke.points : [];
@@ -303,8 +306,9 @@
     function applyFileTheme(file) {
         const dark = file?.theme === "dark";
         documentView.classList.toggle("is-dark", dark);
-        themeToggle.textContent = dark ? "Light mode" : "Dark mode";
-        themeToggle.setAttribute("aria-pressed", String(dark));
+        themeToggle.querySelector(".workspace-theme-label").textContent = dark ? "Dark mode" : "Light mode";
+        themeToggle.setAttribute("aria-checked", String(dark));
+        themeToggle.classList.toggle("is-dark", dark);
         if (file?.kind === "whiteboard") requestAnimationFrame(() => {
             if (!boardPanel.hidden) drawBoard();
         });
@@ -411,7 +415,10 @@
                 boardContext.globalCompositeOperation = "source-over";
                 boardContext.fillStyle = stroke.color || "#20242d";
                 boardContext.font = `${stroke.size || 20}px Arial, sans-serif`;
+                boardContext.shadowColor = currentFile()?.theme === "dark" ? "#f1f3f7" : "transparent";
+                boardContext.shadowBlur = currentFile()?.theme === "dark" ? 3 : 0;
                 boardContext.fillText(stroke.text || "", stroke.x * width, stroke.y * height);
+                boardContext.shadowBlur = 0;
                 return;
             }
             const points = Array.isArray(stroke.points) ? stroke.points : [];

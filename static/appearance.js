@@ -45,10 +45,12 @@
             selectedTheme = card.dataset.themeChoice;
             status.textContent = selectedTheme === appliedTheme
                 ? `Previewing ${themeNames[selectedTheme]}. This is your current theme.`
-                : `Previewing ${themeNames[selectedTheme]}. Apply to save this theme.`;
+                : `Previewing ${themeNames[selectedTheme]}. Double-click or apply to set this theme.`;
             updateSelection();
             updateApplyButton();
         });
+
+        card.addEventListener("dblclick", applySelectedTheme);
     });
 
     // Reflect a theme loaded asynchronously by the shared theme bootstrapper.
@@ -60,12 +62,15 @@
     });
 
     // Persist the chosen theme to the user's account and report the save result.
-    applyButton.addEventListener("click", async () => {
-        document.documentElement.dataset.theme = selectedTheme;
+    async function applySelectedTheme() {
+        if (selectedTheme === appliedTheme || applyButton.disabled) return;
+
+        const themeToApply = selectedTheme;
+        document.documentElement.dataset.theme = themeToApply;
         applyButton.disabled = true;
         status.textContent = "Saving theme…";
         try {
-            window.localStorage.setItem(storageKey, selectedTheme);
+            window.localStorage.setItem(storageKey, themeToApply);
         } catch (error) {
             console.warn("Color theme could not be cached in browser storage.", error);
         }
@@ -73,20 +78,24 @@
             const response = await fetch("/api/preferences/theme", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ theme: selectedTheme })
+                body: JSON.stringify({ theme: themeToApply })
             });
             if (!response.ok) {
                 throw new Error(`Theme save failed with status ${response.status}.`);
             }
-            appliedTheme = selectedTheme;
-            status.textContent = "";
+            appliedTheme = themeToApply;
+            status.textContent = selectedTheme === appliedTheme
+                ? ""
+                : `Previewing ${themeNames[selectedTheme]}. Double-click or apply to set this theme.`;
         } catch (error) {
             status.textContent = "Theme could not be saved. Please try again.";
             console.error("Color theme could not be saved to the account.", error);
         } finally {
             updateApplyButton();
         }
-    });
+    }
+
+    applyButton.addEventListener("click", applySelectedTheme);
 
     updateSelection();
     updateApplyButton();

@@ -39,7 +39,10 @@
                                     <input id="workspace-document-title" type="text" maxlength="80" aria-label="File name" placeholder="Untitled note">
                                 </div>
                                 <div class="workspace-document-actions">
-                                    <button type="button" class="workspace-theme-toggle" id="workspace-theme-toggle" aria-pressed="false">Dark mode</button>
+                                    <button type="button" class="workspace-theme-toggle" id="workspace-theme-toggle" role="switch" aria-checked="false" aria-label="Dark mode">
+                                        <span class="workspace-theme-switch-track" aria-hidden="true"><span></span></span>
+                                        <span class="workspace-theme-label">Light mode</span>
+                                    </button>
                                     <button type="button" class="workspace-delete-file" id="workspace-delete-file" aria-label="Delete this file" title="Move to bin"></button>
                                 </div>
                             </header>
