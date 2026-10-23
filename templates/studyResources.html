@@ -95,7 +95,7 @@
                     </div>
                     <form id="resource-browser-form" class="resource-browser-form">
                         <label class="sr-only" for="resource-browser-query">Topic to browse</label>
-                        <input id="resource-browser-query" name="query" type="search" maxlength="180" placeholder="Try “how photosynthesis works”" autocomplete="off" required>
+                        <input id="resource-browser-query" name="query" type="search" maxlength="180" value="{{ query }}" placeholder="Try “how photosynthesis works”" autocomplete="off" required>
                         <button class="resource-browser-submit" type="submit">Search</button>
                     </form>
                     <p class="resource-browser-error" id="resource-browser-error" role="alert" hidden></p>
@@ -935,7 +935,7 @@
             if (heading) {
                 heading.textContent = activeFolder
                     ? activeFolder.name
-                    : "Browse your Saved Content";
+                    : "Your folders";
             }
 
             toolbar.hidden = !activeFolder;
@@ -1089,96 +1089,4 @@ loadFolders();
 </script>
 
 </body>
-</html>                    const actions = document.createElement("div");
-                    actions.className = "folder-file-actions";
-                    if (isUploadedFile) {
-                        const fileUrl =
-                            `/api/saved-folders/${encodeURIComponent(activeFolder.id)}` +
-                            `/files/${encodeURIComponent(item.file_id)}`;
-                        const openLink = document.createElement("a");
-                        openLink.href = fileUrl;
-                        openLink.target = "_blank";
-                        openLink.rel = "noopener";
-                        openLink.textContent = "Open";
-                        const downloadLink = document.createElement("a");
-                        downloadLink.href = `${fileUrl}?download=1`;
-                        downloadLink.textContent = "Download";
-                        actions.append(openLink, downloadLink);
-                    } else if (isWebResource) {
-                        try {
-                            const resourceUrl = new URL(item.url);
-                            if (["http:", "https:"].includes(resourceUrl.protocol)) {
-                                const openLink = document.createElement("a");
-                                openLink.href = resourceUrl.href;
-                                openLink.target = "_blank";
-                                openLink.rel = "noopener noreferrer";
-                                openLink.textContent = "Open resource";
-                                actions.append(openLink);
-                            }
-                        } catch {
-                            console.warn("Skipping invalid saved web resource URL.");
-                        }
-                    }
-
-                    card.append(icon, title, uploadDate, actions);
-                    grid.append(card);
-                });
-
-                if (activeFolder.items.length === 0) {
-                    emptyState.hidden = false;
-                }
-
-    return;
-}
-
-folders.forEach(folder => {
-    grid.append(makeFolderCard(folder));
-});
-
-const add = document.createElement("button");
-add.type = "button";
-add.className = "folder-card folder-add-card";
-add.setAttribute("aria-label", "Create new folder");
-
-const plus = document.createElement("span");
-plus.className = "folder-add-icon";
-plus.textContent = "+";
-
-const label = document.createElement("span");
-label.className = "folder-add-label";
-label.textContent = "New folder";
-
-add.append(plus, label);
-add.addEventListener("click", createFolder);
-grid.append(add);
-}
-
-backButton.addEventListener("click", () => {
-openFolderId = null;
-render();
-});
-
-document.addEventListener("click", event => {
-if (
-    menu &&
-    !menu.contains(event.target) &&
-    !event.target.closest(".folder-options-button")
-) {
-    closeMenu();
-}
-});
-
-document.addEventListener("keydown", event => {
-if (event.key === "Escape") {
-    closeDialog();
-    closeMenu();
-}
-});
-
-setFolderIcon(document.getElementById("empty-folder-icon"), "folder");
-loadFolders();
-})();
-
-
-
-</script>
+</html>

@@ -8207,6 +8207,10 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .logo-mark {
     gap: 12px;
 }
 
+.resources-folder-panel .folder-grid.folder-files-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+
 .resources-folder-panel .folder-card {
     min-height: 150px;
     padding: 14px 10px 12px;

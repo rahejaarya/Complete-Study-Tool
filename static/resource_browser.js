@@ -185,6 +185,7 @@
         void searchTopic(query);
     });
 
-    const initialQuery = new URLSearchParams(window.location.search).get("q");
+    const params = new URLSearchParams(window.location.search);
+    const initialQuery = params.get("q") || params.get("query");
     if (initialQuery) void searchTopic(initialQuery.slice(0, 180));
 })();
