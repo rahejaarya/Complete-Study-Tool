@@ -5059,11 +5059,12 @@ body.audio-route-open {
     right: 22px;
     z-index: 10002;
     max-width: min(320px, calc(100vw - 32px));
-    min-height: 42px;
-    padding: 8px 10px 8px 13px;
+    min-height: 46px;
+    padding: 0;
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 0;
+    overflow: hidden;
     border: 1px solid var(--purple);
     border-radius: 999px;
     background: var(--white);
@@ -5081,10 +5082,46 @@ body.audio-route-open {
 }
 
 .persistent-study-timer-readout {
+    min-width: 0;
+    min-height: 46px;
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.persistent-study-timer-readout:hover {
+    color: var(--purple);
+    background: var(--purple-light);
+}
+
+.persistent-study-timer-readout:focus-visible {
+    outline: 2px solid var(--purple);
+    outline-offset: -3px;
+}
+
+.persistent-study-timer .persistent-now-playing-control {
+    align-self: stretch;
+    margin: 0;
+    padding: 0 13px;
+    border: 0;
+    border-left: 1px solid var(--border);
+    border-radius: 0;
+    background: transparent;
+}
+
+.persistent-study-timer .persistent-now-playing-control:hover {
+    background: var(--purple-light);
 }
 
 .persistent-now-playing-text {
@@ -7856,21 +7893,63 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .logo-mark {
 
 .dashboard .dashboard-notebook-launcher {
     display: grid;
-    grid-template-rows: auto auto 1fr auto;
+    grid-template-columns: 58px minmax(0, 1fr);
+    grid-template-rows: 1fr auto;
     align-content: stretch;
+    align-items: center;
+    justify-items: stretch;
     height: 100%;
     min-height: 0;
-    padding: 20px;
-    gap: 15px;
+    padding: 22px;
+    gap: 18px;
     border-radius: 19px;
     box-shadow: 0 4px 14px var(--card-shadow);
 }
 
 .dashboard .dashboard-notebook-launcher-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 15px;
-    font-size: 29px;
+    grid-column: 1;
+    grid-row: 1;
+    transform: translateY(-8px);
+    width: 58px;
+    height: 58px;
+    border-radius: 17px;
+    font-size: 33px;
+}
+
+.dashboard .dashboard-notebook-launcher strong {
+    color: var(--text);
+    font-size: 23px;
+    line-height: 1.25;
+    letter-spacing: -.02em;
+}
+
+.dashboard .dashboard-notebook-launcher > span:nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+    transform: translateY(-8px);
+    justify-items: start;
+    text-align: left;
+}
+
+.dashboard .dashboard-notebook-open {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    align-self: end;
+    justify-self: stretch;
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 15px;
+    border-radius: 13px;
+    background: var(--purple-light);
+    color: var(--accent-strong);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.dashboard .dashboard-notebook-launcher.is-board .dashboard-notebook-open {
+    background: color-mix(in srgb, var(--accent-strong) 12%, var(--white));
 }
 
 .dashboard .motivation-card {

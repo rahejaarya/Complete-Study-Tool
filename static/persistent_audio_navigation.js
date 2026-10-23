@@ -70,6 +70,7 @@
         timerHud.hidden = !state.active;
         timerHud.classList.toggle("with-audio", Boolean(nowPlaying && !nowPlaying.hidden));
         timerReadout.textContent = `${state.phase} · ${state.remaining}`;
+        timerReadout.setAttribute("aria-label", `Open Time Management. ${state.phase}, ${state.remaining} remaining.`);
         timerPauseButton.textContent = state.isRunning ? "Pause" : "Resume";
         timerPauseButton.setAttribute("aria-label", state.isRunning ? "Pause study timer" : "Resume study timer");
     }
@@ -78,10 +79,13 @@
         if (timerHud) return;
         timerHud = document.createElement("div");
         timerHud.className = "persistent-study-timer";
-        timerHud.setAttribute("role", "timer");
-        timerHud.setAttribute("aria-live", "off");
-        timerReadout = document.createElement("span");
+        timerHud.setAttribute("role", "group");
+        timerHud.setAttribute("aria-label", "Study timer controls");
+        timerReadout = document.createElement("button");
+        timerReadout.type = "button";
         timerReadout.className = "persistent-study-timer-readout";
+        timerReadout.title = "Open Time Management";
+        timerReadout.addEventListener("click", () => routeTo(originalUrl.href));
         timerPauseButton = document.createElement("button");
         timerPauseButton.type = "button";
         timerPauseButton.className = "persistent-now-playing-control";

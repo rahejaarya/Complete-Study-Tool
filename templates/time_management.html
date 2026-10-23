@@ -440,7 +440,6 @@
 
                             <div class="preset-heading">
                                 <h3>Choose a study rhythm</h3>
-                                <p>Select a preset to set the work-session timer.</p>
                             </div>
 
                             <div class="preset-grid" role="group" aria-label="Study and break presets">
@@ -959,6 +958,7 @@
             let remainingSeconds = selectedPreset.work * 60;
             let timerInterval;
             let timerHasStarted = false;
+            let timerAudioContext;
 
             // Format the remaining timer duration as a zero-padded clock value.
             function formatTime(totalSeconds) {
@@ -989,6 +989,38 @@
                 window.dispatchEvent(new CustomEvent("studytool:timer-state", {
                     detail: window.studyToolGetTimerState()
                 }));
+            }
+
+            function getTimerAudioContext() {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContextClass) return null;
+                timerAudioContext ??= new AudioContextClass();
+                if (timerAudioContext.state === "suspended") {
+                    void timerAudioContext.resume().catch(() => {});
+                }
+                return timerAudioContext;
+            }
+
+            function playTimerRingtone() {
+                const context = getTimerAudioContext();
+                if (!context) return;
+
+                const notes = [659.25, 783.99, 987.77, 783.99];
+                const startTime = context.currentTime + 0.03;
+                notes.forEach((frequency, index) => {
+                    const noteStart = startTime + index * 0.23;
+                    const oscillator = context.createOscillator();
+                    const volume = context.createGain();
+                    oscillator.type = "sine";
+                    oscillator.frequency.setValueAtTime(frequency, noteStart);
+                    volume.gain.setValueAtTime(0.0001, noteStart);
+                    volume.gain.exponentialRampToValueAtTime(0.16, noteStart + 0.025);
+                    volume.gain.exponentialRampToValueAtTime(0.0001, noteStart + 0.2);
+                    oscillator.connect(volume);
+                    volume.connect(context.destination);
+                    oscillator.start(noteStart);
+                    oscillator.stop(noteStart + 0.21);
+                });
             }
 
             // Refresh the visible timer display from the remaining seconds.
@@ -1023,6 +1055,7 @@
                     return;
                 }
 
+                getTimerAudioContext();
                 timerHasStarted = true;
                 timerStatus.textContent =
                     `${selectedPreset.name} ${sessionPhase === "work" ? "study" : "break"} session in progress.`;
@@ -1037,6 +1070,7 @@
                     if (remainingSeconds <= 0) {
                         remainingSeconds = 0;
                         renderTimer();
+                        playTimerRingtone();
 
                         if (sessionPhase === "work") {
                             sessionPhase = "break";
