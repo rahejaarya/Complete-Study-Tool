@@ -116,6 +116,21 @@ _CURRENT_INFO_REQUEST_RE = re.compile(
     r"this\s+year|up[\s-]to[\s-]date|breaking\s+news)\b",
     re.IGNORECASE,
 )
+_FACT_CHECK_REQUEST_RE = re.compile(
+    r"\b(?:is|are|was|were|does|do|did|has|have|had)\b.{0,100}"
+    r"\b(?:official|real|legit(?:imate)?|exist(?:s|ed)?|a product|"
+    r"a brand|made by|owned by|released by|sold by|manufactured by)\b|"
+    r"\b(?:official|real|legit(?:imate)?|exist(?:s|ed)?|product|brand)\b"
+    r".{0,100}\b(?:is|are|was|were|does|do|did|has|have|had)\b",
+    re.IGNORECASE | re.DOTALL,
+)
+_INFORMATION_REQUEST_RE = re.compile(
+    r"^\s*(?:what|why|when|where|who|whom|whose|which|how|is|are|was|were|"
+    r"do|does|did|has|have|had|can|could|would|will|should)\b|"
+    r"\b(?:explain|define|describe|compare|contrast|summarize|tell\s+me\s+"
+    r"about|help\s+me\s+understand|teach\s+me)\b|\?",
+    re.IGNORECASE,
+)
 _VIDEO_REQUEST_RE = re.compile(r"\bvideos?\b", re.IGNORECASE)
 _WEB_SEARCH_PREFIX_RE = re.compile(
     r"^\s*(?:(?:please|can\s+you|could\s+you|would\s+you)\s+)?"
@@ -144,7 +159,8 @@ _RESOURCE_PREFERENCE_RE = re.compile(
 )
 _CONTEXTUAL_FOLLOWUP_RE = re.compile(
     r"\b(?:it|that|those|them|this|these|more|another|continue|"
-    r"earlier|above|same|related|topic)\b",
+    r"earlier|above|same|related|topic)\b|"
+    r"^\s*(?:why|how|what|when|where|who|which)[?.!\s]*$",
     re.IGNORECASE,
 )
 
@@ -364,13 +380,15 @@ def conversational_reply(message):
     return None
 
 def should_search_web(message, conversation_history=None, conversation_summary=""):
-    """Use fast, predictable rules so ordinary questions reach Cypher immediately."""
+    """Research factual questions and information requests before answering."""
     if conversational_reply(message) or calculate_math_or_science(message):
         return False
     return bool(
         _WEB_SEARCH_REQUEST_RE.search(message)
         or _CURRENT_INFO_REQUEST_RE.search(message)
         or _RESOURCE_REQUEST_RE.search(message)
+        or _FACT_CHECK_REQUEST_RE.search(message)
+        or _INFORMATION_REQUEST_RE.search(message)
     )
 
 def should_recommend_resources(message):

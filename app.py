@@ -278,11 +278,24 @@ def load_user_memory(user_dir):
     try:
         with memory_path.open("r", encoding="utf-8") as memory_file:
             memory = json.load(memory_file)
-    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+    except json.JSONDecodeError as error:
         app.logger.warning(
-            "Ignoring unreadable AI memory file for this request: %s",
+            "Resetting malformed AI memory file: %s",
             error,
         )
+        # A malformed memory file otherwise causes the same warning on every
+        # chat request. Recover it to a valid empty memory atomically so the
+        # assistant can keep working and future requests stay clean.
+        try:
+            write_json_atomically(
+                memory_path,
+                {"explicit_facts": [], "facts": []},
+            )
+        except OSError as write_error:
+            app.logger.warning("Could not reset malformed AI memory file: %s", write_error)
+        return {"explicit_facts": [], "facts": []}
+    except (OSError, UnicodeError) as error:
+        app.logger.warning("Ignoring unreadable AI memory file: %s", error)
         return {"explicit_facts": [], "facts": []}
     facts = memory.get("facts") if isinstance(memory, dict) else None
     if not isinstance(facts, list):
