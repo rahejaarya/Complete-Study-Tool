@@ -3,6 +3,7 @@ import ipaddress
 import json
 import re
 import socket
+import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
 from urllib.parse import parse_qs, urlsplit
 
@@ -59,15 +60,23 @@ def extract_url_text(url):
         video_id = (parsed.path.strip("/").split("/")[0] if host == "youtu.be" else parse_qs(parsed.query).get("v", [""])[0])
         if not re.fullmatch(r"[A-Za-z0-9_-]{11}", video_id or ""):
             raise ValueError("Enter a valid YouTube video link.")
-        response = requests.get("https://www.youtube.com/api/timedtext", params={"v": video_id, "lang": "en"}, timeout=15)
+        tracks_response = requests.get("https://www.youtube.com/api/timedtext", params={"v": video_id, "type": "list"}, timeout=15)
+        tracks_response.raise_for_status()
+        try:
+            tracks = ET.fromstring(tracks_response.text).findall("track")
+        except ET.ParseError:
+            tracks = []
+        if not tracks:
+            raise ValueError("No captions were available for this YouTube video.")
+        track = next((track for track in tracks if track.get("lang_code", "").startswith("en")), tracks[0])
+        response = requests.get("https://www.youtube.com/api/timedtext", params={"v": video_id, "lang": track.get("lang_code", "en"), "name": track.get("name", "")}, timeout=15)
         response.raise_for_status()
-        parser = _TextExtractor()
-        parser.feed(response.text)
-        text = " ".join(parser.parts)
-        if not text:
+        try:
+            text = " ".join((element.text or "") for element in ET.fromstring(response.text).iter("text"))
+        except ET.ParseError:
             text = re.sub(r"<[^>]+>", " ", response.text)
         if not text.strip():
-            raise ValueError("No English captions were available for this YouTube video.")
+            raise ValueError("Could not read captions for this YouTube video.")
         return text[:24000]
 
     response = requests.get(url, timeout=15, allow_redirects=False, headers={"User-Agent": "Mozilla/5.0 StudyTool/1.0"})

@@ -1709,6 +1709,8 @@ def generate_flashcards_api():
 @app.route("/api/quizzes/generate", methods=["POST"])
 @login_required
 def generate_quiz_api():
+    if request.content_length and request.content_length > 11 * 1024 * 1024:
+        return jsonify({"error": "Files must be 10 MB or smaller."}), 413
     try:
         count = int(request.form.get("count", "10"))
     except (TypeError, ValueError):
