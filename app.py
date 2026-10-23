@@ -6,6 +6,7 @@ import re
 import shutil
 import sqlite3
 import tempfile
+import threading
 import uuid
 import requests
 from concurrent.futures import ThreadPoolExecutor
@@ -63,6 +64,8 @@ except ModuleNotFoundError:  # pragma: no cover
 
 app = Flask(__name__)
 flashcard_generation_pool = ThreadPoolExecutor(max_workers=3, thread_name_prefix="flashcard-generation")
+flashcard_generation_futures = {}
+flashcard_generation_futures_lock = threading.Lock()
 
 
 class _HideAIChatAccessLogs(logging.Filter):
@@ -1698,11 +1701,11 @@ def generate_flashcards_api():
             "id": job_id,
             "status": "queued",
             "title": Path(filename).stem[:60] or "Generated flashcards",
+            "count": count,
+            "focus": focus,
             "created_at": datetime.now(timezone.utc).isoformat(),
         })
-        flashcard_generation_pool.submit(
-            _run_flashcard_generation, user_id, job_id, source_path, job_path, count, focus
-        )
+        _schedule_flashcard_generation(user_id, job_id, source_path, job_path, count, focus)
         return jsonify({"job_id": job_id}), 202
     except ValueError as error:
         return jsonify({"error": str(error)}), 400
@@ -1718,7 +1721,13 @@ def _run_flashcard_generation(user_id, job_id, source_path, job_path, count, foc
             with job_path.open("r", encoding="utf-8") as job_file:
                 job_metadata = json.load(job_file)
             title = job_metadata.get("title") or "Generated flashcards"
-            write_json_atomically(job_path, {"id": job_id, "status": "generating", "title": title})
+            write_json_atomically(job_path, {
+                "id": job_id,
+                "status": "generating",
+                "title": title,
+                "count": count,
+                "focus": focus,
+            })
             from static.flashcard_generator import generate_flashcards
 
             generated = generate_flashcards(source_path, count=count, focus=focus)
@@ -1762,6 +1771,18 @@ def _run_flashcard_generation(user_id, job_id, source_path, job_path, count, foc
         Path(source_path).unlink(missing_ok=True)
 
 
+def _schedule_flashcard_generation(user_id, job_id, source_path, job_path, count, focus):
+    """Start a queued job once, including jobs recovered after a server restart."""
+    with flashcard_generation_futures_lock:
+        future = flashcard_generation_futures.get(job_id)
+        if future is not None and not future.done():
+            return
+        future = flashcard_generation_pool.submit(
+            _run_flashcard_generation, user_id, job_id, source_path, job_path, count, focus
+        )
+        flashcard_generation_futures[job_id] = future
+
+
 @app.route("/api/flashcards/generate/<job_id>")
 @login_required
 def flashcard_generation_status_api(job_id):
@@ -1773,6 +1794,23 @@ def flashcard_generation_status_api(job_id):
     try:
         with job_path.open("r", encoding="utf-8") as job_file:
             job = json.load(job_file)
+        if job.get("status") in {"queued", "generating"}:
+            source_path = next(
+                (job_path.with_suffix(extension) for extension in (".pdf", ".docx", ".txt") if job_path.with_suffix(extension).is_file()),
+                None,
+            )
+            if source_path is not None:
+                _schedule_flashcard_generation(
+                    session["user_id"], job_id, source_path, job_path,
+                    int(job.get("count", 20)), job.get("focus", "mixed")
+                )
+            else:
+                job = {
+                    "id": job_id,
+                    "status": "failed",
+                    "error": "Generation was interrupted before it could finish. Please upload the file again.",
+                }
+                write_json_atomically(job_path, job)
         return jsonify(job)
     except (OSError, ValueError, json.JSONDecodeError):
         app.logger.exception("Could not read flashcard generation job %s", job_id)
