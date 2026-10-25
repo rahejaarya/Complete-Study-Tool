@@ -8510,7 +8510,15 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .logo-mark {
 .folder-dialog-button.primary {
     border-color: var(--purple);
     background: var(--purple);
+    color: #000;
+}
+
+[data-theme^="dark"] .folder-dialog-button.primary {
     color: #fff;
+}
+
+[data-theme="dark-neon"] .folder-dialog-button.primary {
+    color: #000;
 }
 
 .folder-dialog-button.primary:hover {

@@ -38,6 +38,8 @@
     let quizId = null;
     let isComplete = false;
     let selectedSource = "file";
+    const pendingGenerationKey = "pendingQuizGenerationJob";
+    let activeGenerationJob = null;
 
     async function readResponse(response, fallbackMessage) {
         let data;
@@ -214,6 +216,60 @@
         saveRetryButton.hidden = true;
     }
 
+    function showGeneratedQuiz(quiz, requestedCount) {
+        const generatedQuestions = normalizeQuestions(quiz.questions);
+        questions = generatedQuestions;
+        answers = Array(questions.length).fill(null);
+        index = 0;
+        quizId = quiz.id || null;
+        isComplete = false;
+        title.textContent = quiz.title || "Study quiz";
+        builder.hidden = true;
+        review.hidden = false;
+        nextButton.hidden = false;
+        restartButton.hidden = true;
+        folderButton.disabled = !quizId;
+        const partialResult = Number.isInteger(requestedCount) && questions.length < requestedCount;
+        saveStatus.textContent = quizId
+            ? partialResult
+                ? `Quiz saved with ${questions.length} questions; the source supported fewer than the ${requestedCount} requested.`
+                : "Quiz saved to My quizzes."
+            : "";
+        render();
+        review.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    async function resumeGeneration(jobId) {
+        activeGenerationJob = jobId;
+        submitButton.disabled = true;
+        loading.hidden = false;
+        loading.querySelector("span:last-child").textContent = "Your quiz is being created… You can leave this page.";
+        while (activeGenerationJob === jobId) {
+            try {
+                const response = await fetch(`/api/quizzes/generate/${encodeURIComponent(jobId)}`, { headers: { Accept: "application/json" } });
+                const data = await readResponse(response, "Could not check quiz generation status.");
+                if (data.status === "completed" && data.quiz) {
+                    localStorage.removeItem(pendingGenerationKey);
+                    activeGenerationJob = null;
+                    showGeneratedQuiz(data.quiz, data.requested_count);
+                    return;
+                }
+                if (data.status === "failed") throw new Error(data.error || "The quiz could not be generated. Please try again.");
+                loading.querySelector("span:last-child").textContent = data.status === "queued"
+                    ? "Your quiz is queued and will be saved automatically…"
+                    : "Reading your source and creating questions… You can leave this page.";
+            } catch (pollError) {
+                if (pollError.message !== "Failed to fetch" && !/network|fetch/i.test(pollError.message)) {
+                    localStorage.removeItem(pendingGenerationKey);
+                    activeGenerationJob = null;
+                    showError(pollError.message);
+                    return;
+                }
+            }
+            await new Promise((resolve) => window.setTimeout(resolve, 1500));
+        }
+    }
+
     sourceForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         showError();
@@ -244,39 +300,21 @@
                 headers: { Accept: "application/json" },
             });
             const data = await readResponse(response, "Could not create the quiz.");
-            const generatedQuestions = normalizeQuestions(data.questions);
-            const quizTitle = typeof data.title === "string" && data.title.trim()
-                ? data.title.trim()
-                : "Study quiz";
-
-            questions = generatedQuestions;
-            answers = Array(questions.length).fill(null);
-            index = 0;
-            quizId = null;
-            isComplete = false;
-            title.textContent = quizTitle;
-            builder.hidden = true;
-            review.hidden = false;
-            nextButton.hidden = false;
-            restartButton.hidden = true;
-            folderButton.disabled = true;
-            render();
-
-            try {
-                await saveQuiz(quizTitle, questions);
-            } catch (saveError) {
-                saveStatus.textContent = saveError.message;
-                saveRetryButton.hidden = false;
-                saveRetryButton.disabled = false;
-            }
-            review.scrollIntoView({ behavior: "smooth", block: "start" });
+            if (!data.job_id) throw new Error("Quiz generation could not be started.");
+            localStorage.setItem(pendingGenerationKey, data.job_id);
+            await resumeGeneration(data.job_id);
         } catch (requestError) {
             showError(requestError.message || "Could not create the quiz. Please try again.");
         } finally {
-            submitButton.disabled = false;
-            loading.hidden = true;
+            if (!activeGenerationJob) {
+                submitButton.disabled = false;
+                loading.hidden = true;
+            }
         }
     });
+
+    const pendingJobId = localStorage.getItem(pendingGenerationKey);
+    if (pendingJobId) resumeGeneration(pendingJobId);
 
     previousButton.addEventListener("click", () => {
         if (index > 0) {

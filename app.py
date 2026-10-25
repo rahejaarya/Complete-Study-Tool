@@ -66,6 +66,9 @@ app = Flask(__name__)
 flashcard_generation_pool = ThreadPoolExecutor(max_workers=3, thread_name_prefix="flashcard-generation")
 flashcard_generation_futures = {}
 flashcard_generation_futures_lock = threading.Lock()
+quiz_generation_pool = ThreadPoolExecutor(max_workers=3, thread_name_prefix="quiz-generation")
+quiz_generation_futures = {}
+quiz_generation_futures_lock = threading.Lock()
 
 
 class _HideAIChatAccessLogs(logging.Filter):
@@ -1849,11 +1852,21 @@ def generate_quiz_api():
             title = urlparse(source_url).hostname or "Web source"
         else:
             return jsonify({"error": "Upload a file or enter a website or YouTube link."}), 400
-        from static.quiz_generator import QuizGenerationError, generate_quiz
-        return jsonify({"title": title, "questions": generate_quiz(source_text, count)})
-    except QuizGenerationError as error:
-        app.logger.warning("Quiz generation returned an incomplete deck: %s", error)
-        return jsonify({"error": str(error)}), 502
+        job_id = uuid.uuid4().hex
+        user_id = session["user_id"]
+        jobs_dir = user_save_directory(user_id) / "Quizzes" / "generation_jobs"
+        jobs_dir.mkdir(parents=True, exist_ok=True)
+        job_path = jobs_dir / f"{job_id}.json"
+        write_json_atomically(job_path, {
+            "id": job_id,
+            "status": "queued",
+            "title": title[:100] or "Study quiz",
+            "count": count,
+            "source_text": source_text[:24000],
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+        _schedule_quiz_generation(user_id, job_id, job_path, count)
+        return jsonify({"job_id": job_id}), 202
     except ValueError as error:
         return jsonify({"error": str(error)}), 400
     except requests.RequestException:
@@ -1864,6 +1877,82 @@ def generate_quiz_api():
     finally:
         if temporary_path is not None:
             temporary_path.unlink(missing_ok=True)
+
+
+def _run_quiz_generation(user_id, job_id, job_path, count):
+    """Generate and save a quiz independently of the browser request."""
+    try:
+        with app.app_context():
+            with job_path.open("r", encoding="utf-8") as job_file:
+                job = json.load(job_file)
+            title = job.get("title") or "Study quiz"
+            source_text = job.get("source_text", "")
+            write_json_atomically(job_path, {
+                "id": job_id, "status": "generating", "title": title, "count": count,
+                "source_text": source_text,
+            })
+            from static.quiz_generator import generate_quiz
+            questions = generate_quiz(source_text, count)
+            now = datetime.now(timezone.utc).isoformat()
+            quiz = {"id": uuid.uuid4().hex, "title": title, "questions": questions, "created_at": now}
+            quizzes_path = user_save_directory(user_id) / "Quizzes" / "quizzes.json"
+            quizzes_path.parent.mkdir(parents=True, exist_ok=True)
+            quizzes = []
+            if quizzes_path.is_file():
+                with quizzes_path.open("r", encoding="utf-8") as quizzes_file:
+                    existing = json.load(quizzes_file)
+                if isinstance(existing, dict) and isinstance(existing.get("quizzes"), list):
+                    quizzes = existing["quizzes"]
+            quizzes.insert(0, quiz)
+            write_json_atomically(quizzes_path, {"quizzes": quizzes[:500]})
+            write_json_atomically(job_path, {
+                "id": job_id, "status": "completed", "quiz": quiz,
+                "requested_count": count,
+            })
+    except Exception as error:
+        app.logger.exception("Quiz generation job %s failed", job_id)
+        try:
+            write_json_atomically(job_path, {
+                "id": job_id,
+                "status": "failed",
+                "error": str(error) or "The quiz could not be generated. Check that the AI service is available, then try again.",
+            })
+        except OSError:
+            app.logger.exception("Could not save failed quiz job %s", job_id)
+
+
+def _schedule_quiz_generation(user_id, job_id, job_path, count):
+    with quiz_generation_futures_lock:
+        future = quiz_generation_futures.get(job_id)
+        if future is not None and not future.done():
+            return
+        quiz_generation_futures[job_id] = quiz_generation_pool.submit(
+            _run_quiz_generation, user_id, job_id, job_path, count
+        )
+
+
+@app.route("/api/quizzes/generate/<job_id>")
+@login_required
+def quiz_generation_status_api(job_id):
+    if not re.fullmatch(r"[a-f0-9]{32}", job_id):
+        return jsonify({"error": "Quiz generation job not found."}), 404
+    job_path = user_save_directory(session["user_id"]) / "Quizzes" / "generation_jobs" / f"{job_id}.json"
+    if not job_path.is_file():
+        return jsonify({"error": "Quiz generation job not found."}), 404
+    try:
+        with job_path.open("r", encoding="utf-8") as job_file:
+            job = json.load(job_file)
+        if job.get("status") in {"queued", "generating"}:
+            # Recover queued jobs after a server restart; completed/failed jobs
+            # do not contain source text and are never rescheduled.
+            if "source_text" in job:
+                _schedule_quiz_generation(session["user_id"], job_id, job_path, int(job.get("count", 10)))
+        # Keep extracted source material private to the job file.
+        job.pop("source_text", None)
+        return jsonify(job)
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not read quiz generation job %s", job_id)
+        return jsonify({"error": "Could not check quiz generation status."}), 500
 
 
 @app.route("/api/resource-browser/search", methods=["POST"])

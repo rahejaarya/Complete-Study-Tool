@@ -29,6 +29,31 @@
       "file_type": "whiteboard",
       "uploaded_at": "2026-10-23T02:47:18+00:00",
       "display_size": "medium"
+    },
+    {
+      "kind": "whiteboard",
+      "notebook_id": "b67ebc0c09484c96864c0634a6cbbc2d",
+      "title": "Untitled whiteboard",
+      "file_type": "whiteboard",
+      "uploaded_at": "2026-10-25T01:57:01+00:00",
+      "custom_title": "test whiteboard"
+    },
+    {
+      "kind": "notes",
+      "notebook_id": "2c693fa4b59d4293a215cc9b44f887bd",
+      "title": "Untitled note",
+      "file_type": "notes",
+      "uploaded_at": "2026-10-25T01:57:19+00:00",
+      "custom_title": "test note"
+    },
+    {
+      "kind": "web",
+      "storage_id": "fe3395da1fc946be850e83313b9e3200",
+      "title": "Resources - Britannica Education - US",
+      "filename": "Resources - Britannica Education - US",
+      "url": "https://britannicaeducation.com/resources/",
+      "file_type": "web link",
+      "uploaded_at": "2026-10-25T02:23:33+00:00"
     }
   ]
 }

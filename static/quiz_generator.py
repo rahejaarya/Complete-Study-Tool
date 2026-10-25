@@ -126,7 +126,11 @@ def generate_quiz(text, count):
     cards = []
     seen = set()
     attempts = 0
-    while len(cards) < count and attempts < count + 4:
+    # Each request asks for up to five questions. Keep retries proportional to
+    # the number of batches so malformed model output cannot hold the request
+    # open for dozens of inference calls.
+    max_attempts = min(count + 4, max(5, (count + 4) // 5 + 3))
+    while len(cards) < count and attempts < max_attempts:
         attempts += 1
         amount = min(5, count - len(cards))
         prior = "\n".join(f"- {item['question']}" for item in cards)
@@ -166,9 +170,8 @@ def generate_quiz(text, count):
                 cards.append({"question": question[:1000], "options": options, "answer": answer})
                 if len(cards) == count:
                     break
-    if len(cards) != count:
+    if not cards:
         raise QuizGenerationError(
-            f"The source supported {len(cards)} of the {count} questions requested. "
-            "Try a longer source or choose a smaller number."
+            "The source did not support any usable questions. Try a longer source or choose another file."
         )
     return cards

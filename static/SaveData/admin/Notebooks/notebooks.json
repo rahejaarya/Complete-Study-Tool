@@ -1246,7 +1246,25 @@
         ]
       },
       "kind": "whiteboard"
+    },
+    {
+      "id": "b67ebc0c09484c96864c0634a6cbbc2d",
+      "name": "Untitled whiteboard",
+      "content": "",
+      "whiteboard": {
+        "strokes": []
+      },
+      "kind": "whiteboard"
+    },
+    {
+      "id": "2c693fa4b59d4293a215cc9b44f887bd",
+      "name": "Untitled note",
+      "content": "",
+      "whiteboard": {
+        "strokes": []
+      },
+      "kind": "notes"
     }
   ],
-  "active_id": "b632c299-6724-41ab-945e-5dae796da3f1"
+  "active_id": "2c693fa4b59d4293a215cc9b44f887bd"
 }

@@ -166,9 +166,8 @@
                                 <button type="button" class="folder-toolbar-add-button" id="folder-toolbar-add" aria-label="Add content" aria-expanded="false" aria-controls="folder-add-popup">+</button>
                                 <div class="folder-add-popup" id="folder-add-popup" role="menu" hidden>
                                     <button type="button" role="menuitem" data-action="computer-upload"><span class="folder-popup-icon">↑</span>Upload files</button>
-                                    <button type="button" role="menuitem" data-action="whiteboard"><span class="folder-popup-icon">▤</span>New whiteboard</button>
-                                    <button type="button" role="menuitem" data-action="note"><span class="folder-popup-icon">✎</span>New note</button>
-                                    <button type="button" role="menuitem" data-action="existing-notebook"><span class="folder-popup-icon">▤</span>Add existing note or whiteboard</button>
+                                    <button type="button" role="menuitem" data-action="new-notebook"><span class="folder-popup-icon">✎</span>New note / whiteboard</button>
+                                    <button type="button" role="menuitem" data-action="existing-notebook"><span class="folder-popup-icon">▤</span>Add existing note / whiteboard</button>
                                     <button type="button" role="menuitem" data-action="web-search"><span class="folder-popup-icon">⌕</span>Browse videos &amp; resources</button>
                                 </div>
                             </div>
@@ -275,6 +274,8 @@
 
         function closeAddPopup() {
             if (addPopup) addPopup.hidden = true;
+            addPopup?.querySelectorAll("[data-notebook-type]").forEach(option => { option.hidden = true; });
+            addPopup?.querySelector('[data-action="new-notebook"]')?.removeAttribute("hidden");
 
             if (addButton) {
                 addButton.setAttribute("aria-expanded", "false");
@@ -300,6 +301,12 @@
                 if (!option) return;
 
                 const action = option.dataset.action;
+
+                if (action === "new-notebook") {
+                    option.hidden = true;
+                    addPopup.querySelectorAll("[data-notebook-type]").forEach(typeOption => { typeOption.hidden = false; });
+                    return;
+                }
 
                 closeAddPopup();
 
