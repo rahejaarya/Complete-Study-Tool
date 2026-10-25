@@ -16,9 +16,17 @@
                 const card = document.createElement("article");
                 card.className = "flashcard-library-card";
                 const title = document.createElement("h3");
-                title.textContent = deck.title || "Untitled flashcards";
+                const titleLink = document.createElement("a");
+                titleLink.href = `/flashcard-generator?deck=${encodeURIComponent(deck.id)}`;
+                titleLink.textContent = deck.title || "Untitled flashcards";
+                title.append(titleLink);
+                card.addEventListener("click", (event) => {
+                    if (event.target.closest("a, button")) return;
+                    window.location.assign(titleLink.href);
+                });
                 const meta = document.createElement("p");
-                meta.textContent = `${deck.cards.length} ${deck.cards.length === 1 ? "card" : "cards"} · Term and definition`;
+                const deckCards = Array.isArray(deck.cards) ? deck.cards : [];
+                meta.textContent = `${deckCards.length} ${deckCards.length === 1 ? "card" : "cards"} · Term and definition`;
                 const date = document.createElement("time");
                 date.className = "flashcard-library-date";
                 const created = new Date(deck.created_at);

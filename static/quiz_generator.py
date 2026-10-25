@@ -126,13 +126,13 @@ def generate_quiz(text, count):
     cards = []
     seen = set()
     attempts = 0
-    # Each request asks for up to five questions. Keep retries proportional to
+    # Each request asks for up to ten questions. Keep retries proportional to
     # the number of batches so malformed model output cannot hold the request
     # open for dozens of inference calls.
-    max_attempts = min(count + 4, max(5, (count + 4) // 5 + 3))
+    max_attempts = min(count + 4, max(2, (count + 9) // 10 + 1))
     while len(cards) < count and attempts < max_attempts:
         attempts += 1
-        amount = min(5, count - len(cards))
+        amount = min(10, count - len(cards))
         prior = "\n".join(f"- {item['question']}" for item in cards)
         response = ollama.chat(
             model="qwen3.5:2b",
@@ -141,7 +141,7 @@ def generate_quiz(text, count):
                 {"role": "user", "content": f"Create exactly {amount} distinct MCQ questions. Do not repeat these questions:\n{prior or '(none)'}\nReturn JSON only. Source:\n{text[:24000]}"},
             ],
             format=QUIZ_RESPONSE_FORMAT, think=False, stream=False,
-            options={"temperature": 0.1, "num_predict": 1800, "num_ctx": 12288},
+            options={"temperature": 0.1, "num_predict": 2500, "num_ctx": 12288},
         )
         try:
             raw = json.loads(response["message"]["content"])

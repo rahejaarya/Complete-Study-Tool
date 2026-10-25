@@ -40,6 +40,8 @@
     let selectedSource = "file";
     const pendingGenerationKey = "pendingQuizGenerationJob";
     let activeGenerationJob = null;
+    let progressSaveTimer = null;
+    let progressSaveQueue = Promise.resolve();
 
     async function readResponse(response, fallbackMessage) {
         let data;
@@ -125,6 +127,41 @@
         return answers.filter((answer) => answer !== null).length;
     }
 
+    function saveProgressNow() {
+        if (!quizId || !questions.length) return Promise.resolve();
+        const payload = JSON.stringify({ answers, index, complete: isComplete });
+        const currentQuizId = quizId;
+        progressSaveQueue = progressSaveQueue
+            .catch(() => {})
+            .then(async () => {
+                const response = await fetch(`/api/quizzes/${encodeURIComponent(currentQuizId)}/progress`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json", Accept: "application/json" },
+                    body: payload,
+                    keepalive: true,
+                });
+                return readResponse(response, "Could not save quiz progress.");
+            });
+        return progressSaveQueue;
+    }
+
+    function queueProgressSave() {
+        if (!quizId) return;
+        window.clearTimeout(progressSaveTimer);
+        progressSaveTimer = window.setTimeout(() => {
+            progressSaveTimer = null;
+            saveProgressNow().catch(() => {
+                saveStatus.textContent = "Could not save quiz progress. Check your connection.";
+            });
+        }, 250);
+    }
+
+    function flushProgressSave() {
+        window.clearTimeout(progressSaveTimer);
+        progressSaveTimer = null;
+        saveProgressNow().catch(() => {});
+    }
+
     function render() {
         if (!questions.length) return;
         const item = questions[index];
@@ -182,6 +219,7 @@
         score.textContent = isComplete
             ? `Quiz complete · ${correctAnswerCount()} of ${questions.length} correct · ${questions.length - answeredCount()} unanswered`
             : `${answeredCount()} of ${questions.length} answered · ${correctAnswerCount()} correct`;
+        queueProgressSave();
     }
 
     function finishQuiz() {
@@ -216,13 +254,21 @@
         saveRetryButton.hidden = true;
     }
 
-    function showGeneratedQuiz(quiz, requestedCount) {
+    function showGeneratedQuiz(quiz, requestedCount, savedProgress = null) {
         const generatedQuestions = normalizeQuestions(quiz.questions);
         questions = generatedQuestions;
-        answers = Array(questions.length).fill(null);
-        index = 0;
+        const savedAnswers = Array.isArray(savedProgress?.answers) && savedProgress.answers.length === questions.length
+            ? savedProgress.answers
+            : [];
+        answers = questions.map((item, itemIndex) => {
+            const answer = savedAnswers[itemIndex];
+            return answer === null || item.options.includes(answer) ? answer : null;
+        });
+        index = Number.isInteger(savedProgress?.index)
+            ? Math.max(0, Math.min(savedProgress.index, questions.length - 1))
+            : 0;
         quizId = quiz.id || null;
-        isComplete = false;
+        isComplete = savedProgress?.complete === true;
         title.textContent = quiz.title || "Study quiz";
         builder.hidden = true;
         review.hidden = false;
@@ -236,6 +282,10 @@
                 : "Quiz saved to My quizzes."
             : "";
         render();
+        if (isComplete) {
+            nextButton.hidden = true;
+            restartButton.hidden = false;
+        }
         review.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
@@ -251,7 +301,7 @@
                 if (data.status === "completed" && data.quiz) {
                     localStorage.removeItem(pendingGenerationKey);
                     activeGenerationJob = null;
-                    showGeneratedQuiz(data.quiz, data.requested_count);
+                    showGeneratedQuiz(data.quiz, data.requested_count, data.quiz.progress);
                     return;
                 }
                 if (data.status === "failed") throw new Error(data.error || "The quiz could not be generated. Please try again.");
@@ -313,8 +363,11 @@
         }
     });
 
-    const pendingJobId = localStorage.getItem(pendingGenerationKey);
-    if (pendingJobId) resumeGeneration(pendingJobId);
+    const requestedQuizId = new URLSearchParams(window.location.search).get("quiz");
+    if (!requestedQuizId) {
+        const pendingJobId = localStorage.getItem(pendingGenerationKey);
+        if (pendingJobId) resumeGeneration(pendingJobId);
+    }
 
     previousButton.addEventListener("click", () => {
         if (index > 0) {
@@ -396,25 +449,20 @@
         }
     });
 
-    const requestedQuizId = new URLSearchParams(window.location.search).get("quiz");
     if (requestedQuizId) {
         fetch(`/api/quizzes/${encodeURIComponent(requestedQuizId)}`, {
             headers: { Accept: "application/json" },
         })
             .then((response) => readResponse(response, "Could not load quiz."))
             .then((data) => {
-                questions = normalizeQuestions(data.questions);
-                answers = Array(questions.length).fill(null);
-                index = 0;
-                quizId = data.id;
-                isComplete = false;
-                title.textContent = data.title || "Study quiz";
-                builder.hidden = true;
-                review.hidden = false;
-                folderButton.disabled = false;
-                saveStatus.textContent = "Saved quiz.";
-                render();
+                if (!Array.isArray(data.questions) || !data.questions.length) throw new Error("This saved quiz has no readable questions.");
+                showGeneratedQuiz(data, null, data.progress);
             })
             .catch((loadError) => showError(loadError.message));
     }
+
+    window.addEventListener("pagehide", flushProgressSave);
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") flushProgressSave();
+    });
 })();

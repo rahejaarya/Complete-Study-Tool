@@ -1544,6 +1544,56 @@ def saved_quiz_api(quiz_id):
         return jsonify({"error": "Could not delete this quiz."}), 500
 
 
+@app.route("/api/quizzes/<quiz_id>/progress", methods=["PUT"])
+@login_required
+def quiz_progress_api(quiz_id):
+    """Persist answers and position for a saved quiz."""
+    try:
+        quizzes = read_quizzes()
+        quiz = next((item for item in quizzes if item.get("id") == quiz_id), None)
+        if quiz is None:
+            return jsonify({"error": "Quiz not found."}), 404
+        data = request.get_json(silent=True)
+        questions = quiz.get("questions")
+        if not isinstance(data, dict) or not isinstance(questions, list) or not questions:
+            return jsonify({"error": "Could not save quiz progress."}), 400
+        answers = data.get("answers")
+        index = data.get("index")
+        complete = data.get("complete")
+        invalid_answer = False
+        if isinstance(answers, list) and len(answers) == len(questions):
+            for answer, question in zip(answers, questions):
+                choices = question.get("options") if isinstance(question, dict) else None
+                if answer is not None and (
+                    not isinstance(answer, str)
+                    or not isinstance(choices, list)
+                    or answer not in choices
+                ):
+                    invalid_answer = True
+                    break
+        if (
+            not isinstance(answers, list)
+            or len(answers) != len(questions)
+            or not isinstance(index, int)
+            or isinstance(index, bool)
+            or not 0 <= index < len(questions)
+            or not isinstance(complete, bool)
+            or invalid_answer
+        ):
+            return jsonify({"error": "Invalid quiz progress."}), 400
+        quiz["progress"] = {
+            "answers": answers,
+            "index": index,
+            "complete": complete,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+        write_json_atomically(quiz_decks_path(), {"quizzes": quizzes})
+        return jsonify({"success": True})
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not save quiz progress")
+        return jsonify({"error": "Could not save quiz progress."}), 500
+
+
 @app.route("/api/quizzes/<quiz_id>/folders/<folder_id>", methods=["POST"])
 @login_required
 def add_quiz_to_folder(quiz_id, folder_id):
@@ -1619,6 +1669,8 @@ def saved_flashcard_api(deck_id):
                 if not isinstance(term, str) or not isinstance(definition, str) or not term.strip() or not definition.strip() or len(term) > 240 or len(definition) > 1200:
                     return jsonify({"error": "Each card needs a term and definition."}), 400
                 clean_cards.append({"term": term.strip(), "definition": definition.strip()})
+            if deck.get("cards") != clean_cards:
+                deck.pop("progress", None)
             deck.update({"title": title[:60] or "Untitled flashcards", "cards": clean_cards, "updated_at": datetime.now(timezone.utc).isoformat()})
             write_json_atomically(flashcard_decks_path(), {"decks": decks})
             folders_dir = get_user_folders_dir()
@@ -1646,6 +1698,55 @@ def saved_flashcard_api(deck_id):
     except (OSError, ValueError, json.JSONDecodeError):
         app.logger.exception("Could not delete saved flashcard")
         return jsonify({"error": "Could not delete this deck."}), 500
+
+
+@app.route("/api/flashcards/<deck_id>/progress", methods=["PUT"])
+@login_required
+def flashcard_progress_api(deck_id):
+    """Save a user's place and learning marks in a flashcard deck."""
+    try:
+        decks = read_flashcard_decks()
+        deck = next((item for item in decks if item.get("id") == deck_id), None)
+        if deck is None:
+            return jsonify({"error": "Flashcard deck not found."}), 404
+        data = request.get_json(silent=True)
+        cards = deck.get("cards")
+        if not isinstance(data, dict) or not isinstance(cards, list) or not cards:
+            return jsonify({"error": "Could not save study progress."}), 400
+
+        order = data.get("order")
+        current_index = data.get("current_index")
+        known_cards = data.get("known_cards", [])
+        mode = data.get("mode")
+        if (
+            not isinstance(order, list)
+            or len(order) != len(cards)
+            or any(not isinstance(value, int) or isinstance(value, bool) for value in order)
+            or set(order) != set(range(len(cards)))
+            or not isinstance(current_index, int)
+            or isinstance(current_index, bool)
+            or not 0 <= current_index < len(cards)
+            or not isinstance(known_cards, list)
+            or any(not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < len(cards) for value in known_cards)
+            or len(set(known_cards)) != len(known_cards)
+            or not isinstance(mode, str)
+            or mode not in {"random", "learn"}
+        ):
+            return jsonify({"error": "Invalid study progress."}), 400
+
+        deck["progress"] = {
+            "order": order,
+            "current_index": current_index,
+            "known_cards": known_cards,
+            "mode": mode,
+            "flipped": bool(data.get("flipped", False)),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+        write_json_atomically(flashcard_decks_path(), {"decks": decks})
+        return jsonify({"success": True})
+    except (OSError, ValueError, json.JSONDecodeError):
+        app.logger.exception("Could not save flashcard progress")
+        return jsonify({"error": "Could not save study progress."}), 500
 
 
 @app.route("/api/flashcards/<deck_id>/folders/<folder_id>", methods=["POST"])

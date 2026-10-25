@@ -52,6 +52,8 @@
     let editingDeckId = null;
     const pendingGenerationKey = "flashcard-generation-job";
     let activeGenerationJob = null;
+    let progressSaveTimer = null;
+    let progressSaveQueue = Promise.resolve();
 
     function showError(message = "") {
         errorMessage.textContent = message;
@@ -103,6 +105,7 @@
             : "Flashcard term. Click or press Space to flip and reveal the definition.");
         revealButton.textContent = flipped ? "Show term" : "Show definition";
         practiceActions.hidden = mode !== "learn" || !flipped;
+        queueProgressSave();
     }
 
     function shuffleOrder() {
@@ -112,26 +115,40 @@
         }
     }
 
-    function startDeck(newCards, title, { persist = true, deckId = null } = {}) {
-        cards = newCards
-            .filter((card) => card && card.term && card.definition)
-            .map((card) => ({ term: String(card.term).trim(), definition: String(card.definition).trim() }))
+    function startDeck(newCards, title, { persist = true, deckId = null, savedProgress = null } = {}) {
+        cards = (Array.isArray(newCards) ? newCards : [])
+            .filter((card) => card && (card.term || card.question) && (card.definition || card.answer))
+            .map((card) => ({
+                term: String(card.term ?? card.question).trim(),
+                definition: String(card.definition ?? card.answer).trim(),
+            }))
             .filter((card) => card.term && card.definition);
         if (!cards.length) {
             showError("No complete flashcards were created. Add a term and definition, then try again.");
             return;
         }
-        order = cards.map((_, index) => index);
-        currentIndex = 0;
-        mode = "random";
-        shuffleOrder();
-        knownCards = new Set();
+        const defaultOrder = cards.map((_, index) => index);
+        const validSavedOrder = Array.isArray(savedProgress?.order)
+            && savedProgress.order.length === cards.length
+            && savedProgress.order.every((value) => Number.isInteger(value) && value >= 0 && value < cards.length)
+            && new Set(savedProgress.order).size === cards.length;
+        order = validSavedOrder ? [...savedProgress.order] : defaultOrder;
+        mode = savedProgress?.mode === "learn" ? "learn" : "random";
+        if (!validSavedOrder && mode === "random") shuffleOrder();
+        currentIndex = Number.isInteger(savedProgress?.current_index)
+            ? Math.max(0, Math.min(savedProgress.current_index, cards.length - 1))
+            : 0;
+        knownCards = new Set(Array.isArray(savedProgress?.known_cards)
+            ? savedProgress.known_cards.filter((value) => Number.isInteger(value) && value >= 0 && value < cards.length)
+            : []);
         currentDeckTitle = title || "";
         currentDeckId = deckId;
         saveStatus.textContent = "";
         saveButton.textContent = "Save deck";
         saveButton.hidden = false;
-        sessionScore.textContent = "";
+        sessionScore.textContent = knownCards.size
+            ? `${knownCards.size} of ${cards.length} cards marked learned.`
+            : "";
         subtitle.textContent = title || `${cards.length} ${cards.length === 1 ? "card" : "cards"} · Term and definition`;
         showError();
         builder.hidden = true;
@@ -142,8 +159,62 @@
             button.setAttribute("aria-pressed", String(active));
         });
         renderCard();
+        if (savedProgress?.flipped) setFlipped(true);
         review.scrollIntoView({ behavior: "smooth", block: "start" });
-        if (persist) persistDeck().catch((error) => { saveStatus.textContent = error.message; });
+        if (persist) {
+            persistDeck()
+                .then(() => saveProgressNow())
+                .catch((error) => { saveStatus.textContent = error.message; });
+        } else {
+            queueProgressSave();
+        }
+        return true;
+    }
+
+    function progressSnapshot() {
+        return {
+            order,
+            current_index: currentIndex,
+            known_cards: [...knownCards],
+            mode,
+            flipped: isFlipped,
+        };
+    }
+
+    function saveProgressNow() {
+        if (!currentDeckId || !cards.length) return Promise.resolve();
+        const snapshot = JSON.stringify(progressSnapshot());
+        const deckId = currentDeckId;
+        progressSaveQueue = progressSaveQueue
+            .catch(() => {})
+            .then(async () => {
+                const response = await fetch(`/api/flashcards/${encodeURIComponent(deckId)}/progress`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json", Accept: "application/json" },
+                    body: snapshot,
+                    keepalive: true,
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "Could not save study progress.");
+            });
+        return progressSaveQueue;
+    }
+
+    function queueProgressSave() {
+        if (!currentDeckId) return;
+        window.clearTimeout(progressSaveTimer);
+        progressSaveTimer = window.setTimeout(() => {
+            progressSaveTimer = null;
+            saveProgressNow().catch(() => {
+                saveStatus.textContent = "Could not save study progress. Check your connection.";
+            });
+        }, 250);
+    }
+
+    function flushProgressSave() {
+        window.clearTimeout(progressSaveTimer);
+        progressSaveTimer = null;
+        saveProgressNow().catch(() => {});
     }
 
     function renderCard() {
@@ -159,6 +230,7 @@
         learnHint.hidden = mode !== "learn";
         practiceActions.hidden = mode !== "learn" || !isFlipped;
         setFlipped(false);
+        queueProgressSave();
     }
 
     function advance() {
@@ -206,7 +278,7 @@
                 if (data.status === "completed" && data.deck) {
                     localStorage.removeItem(pendingGenerationKey);
                     activeGenerationJob = null;
-                    startDeck(data.deck.cards, data.deck.title, { persist: false, deckId: data.deck.id });
+                    startDeck(data.deck.cards, data.deck.title, { persist: false, deckId: data.deck.id, savedProgress: data.deck.progress });
                     saveButton.textContent = "Saved";
                     saveStatus.textContent = "Generated and saved to My flashcards";
                     return;
@@ -295,6 +367,7 @@
     document.getElementById("flashcard-known").addEventListener("click", () => {
         knownCards.add(order[currentIndex]);
         sessionScore.textContent = `${knownCards.size} of ${cards.length} cards marked learned.`;
+        queueProgressSave();
         advance();
     });
     document.getElementById("flashcard-again").addEventListener("click", () => {
@@ -441,7 +514,8 @@
             .then(async (response) => {
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error || "Could not load this deck.");
-                startDeck(data.cards, data.title, { persist: false, deckId: data.id });
+                if (!Array.isArray(data.cards) || !data.cards.length) throw new Error("This saved deck has no readable flashcards.");
+                startDeck(data.cards, data.title, { persist: false, deckId: data.id, savedProgress: data.progress });
                 saveButton.textContent = "Saved";
             })
             .catch((error) => showError(error.message));
@@ -460,6 +534,11 @@
             currentIndex -= 1;
             renderCard();
         }
+    });
+
+    window.addEventListener("pagehide", flushProgressSave);
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") flushProgressSave();
     });
 
     renderEditor();

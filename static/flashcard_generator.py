@@ -11,7 +11,7 @@ from docx.opc.exceptions import PackageNotFoundError
 
 MODEL = "qwen3.5:2b"
 MAX_FILE_SIZE = 10 * 1024 * 1024
-MAX_TEXT_CHARS = 40_000
+MAX_TEXT_CHARS = 24_000
 SUPPORTED_EXTENSIONS = {".txt", ".pdf", ".docx"}
 FLASHCARD_RESPONSE_FORMAT = {
     "type": "object",
@@ -157,10 +157,10 @@ def generate_flashcards(file_path, count=20, focus="mixed"):
     validated_cards = []
     seen_questions = set()
     attempts = 0
-    max_attempts = min(count + 4, (count + 4) // 5 + 3)
+    max_attempts = min(count + 4, max(2, (count + 9) // 10 + 1))
     while len(validated_cards) < count and attempts < max_attempts:
         attempts += 1
-        batch_size = min(5, count - len(validated_cards))
+        batch_size = min(10, count - len(validated_cards))
         prior_questions = "\n".join(
             f"- {card['question']}" for card in validated_cards
         ) or "(none)"
@@ -190,7 +190,7 @@ def generate_flashcards(file_path, count=20, focus="mixed"):
             stream=False,
             options={
                 "temperature": 0.2,
-                "num_predict": 1800,
+                "num_predict": 2500,
                 "num_ctx": 12288,
             },
         )
