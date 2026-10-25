@@ -149,14 +149,7 @@ def generate_flashcards(file_path, count=20, focus="mixed"):
     if not 1 <= count <= 50:
         raise ValueError("Choose between 1 and 50 flashcards.")
 
-    allowed_focus = {
-        "mixed",
-        "definitions",
-        "key concepts",
-        "exam revision",
-    }
-
-    if focus not in allowed_focus:
+    if focus != "mixed":
         raise ValueError("Invalid flashcard focus.")
 
     source_text = extract_file_text(file_path)

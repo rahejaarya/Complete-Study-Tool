@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flashcard Studio - Meridian</title>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
-    <script src="{{ url_for('static', filename='flashcard_generator.js', v='6') }}" defer></script>
+    <script src="{{ url_for('static', filename='flashcard_generator.js', v='7') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='flashcard_generator.css', v='6') }}">
 </head>
@@ -42,16 +42,14 @@
                             <path d="M10 8h6M10 11.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
                         </svg>
                     </div>
-                    <div><h1>Flashcard Studio</h1><p>Make a deck, flip through it, and see what you know.</p></div>
+                    <div><h1>Flashcard Studio</h1></div>
                 </div>
                 <div class="flashcard-header-links"><a class="resource-browser-back" href="{{ url_for('flashcard_library') }}">My flashcards</a><a class="resource-browser-back" href="{{ url_for('resources') }}">← Study Resources</a></div>
             </header>
 
             <section class="flashcard-builder" aria-labelledby="flashcard-heading">
                 <div class="flashcard-intro">
-                    <p class="flashcard-eyebrow">YOUR STUDY SET</p>
                     <h2 id="flashcard-heading">Build your flashcards</h2>
-                    <p>Turn a study file into cards in seconds, or build a set yourself.</p>
                 </div>
                 <div class="flashcard-source-tabs" role="group" aria-label="Choose how to make your deck">
                     <button class="flashcard-source-tab is-active" type="button" data-source="file" aria-pressed="true"><span aria-hidden="true">▤</span> Generate from a file</button>
@@ -69,14 +67,7 @@
                         <label for="flashcard-ai-count">Number of cards
                             <input id="flashcard-ai-count" name="count" type="number" min="1" max="50" value="20" inputmode="numeric" required>
                         </label>
-                        <label for="flashcard-focus">Focus
-                            <select id="flashcard-focus" name="focus">
-                                <option value="mixed">Mixed review</option>
-                                <option value="definitions">Definitions</option>
-                                <option value="key concepts">Key concepts</option>
-                                <option value="exam revision">Exam revision</option>
-                            </select>
-                        </label>
+                        <input type="hidden" name="focus" value="mixed">
                         <button class="flashcard-submit" id="flashcard-generate" type="submit">Generate flashcards <span aria-hidden="true">→</span></button>
                     </div>
                 </form>

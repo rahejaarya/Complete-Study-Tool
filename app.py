@@ -1690,7 +1690,8 @@ def generate_flashcards_api():
     if not 1 <= count <= 50:
         return jsonify({"error": "Choose between 1 and 50 flashcards."}), 400
 
-    focus = request.form.get("focus", "mixed")
+    # Flashcard generation uses one balanced review focus.
+    focus = "mixed"
     try:
         job_id = uuid.uuid4().hex
         user_id = session["user_id"]

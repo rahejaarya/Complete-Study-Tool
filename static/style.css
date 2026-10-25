@@ -8473,6 +8473,10 @@ body.sidebar-collapsed:not(.sidebar-hover-expanded) .logo-mark {
     gap: 10px;
 }
 
+.folder-notebook-type-actions .folder-dialog-button {
+    flex: 1;
+}
+
 .folder-dialog-button {
     display: inline-flex;
     align-items: center;

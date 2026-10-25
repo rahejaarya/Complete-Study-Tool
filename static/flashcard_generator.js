@@ -195,7 +195,7 @@
         const submitButton = document.getElementById("flashcard-generate");
         submitButton.disabled = true;
         loading.hidden = false;
-        loadingText.textContent = "Your flashcards are being generated and saved… You can leave this page.";
+        loadingText.textContent = "Your flashcards are being generated and saved…";
         while (activeGenerationJob === jobId) {
             try {
                 const response = await fetch(`/api/flashcards/generate/${encodeURIComponent(jobId)}`, { headers: { Accept: "application/json" } });
@@ -212,7 +212,7 @@
                 if (data.status === "failed") throw new Error(data.error || "Flashcards could not be generated. Please try again.");
                 loadingText.textContent = data.status === "queued"
                     ? "Your flashcards are queued and will be saved automatically…"
-                    : "Reading your material and building your cards… You can leave this page.";
+                    : "Reading your material and building your cards…";
             } catch (error) {
                 if (error.message !== "Failed to fetch" && !/network|fetch/i.test(error.message)) {
                     localStorage.removeItem(pendingGenerationKey);

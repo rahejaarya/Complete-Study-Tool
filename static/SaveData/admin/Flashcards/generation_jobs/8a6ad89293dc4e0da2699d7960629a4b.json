@@ -1,7 +1,32 @@
 {
   "id": "8a6ad89293dc4e0da2699d7960629a4b",
-  "status": "generating",
-  "title": "volunteer_waiver_forms-3_gallardo_filled",
-  "count": 20,
-  "focus": "mixed"
+  "status": "completed",
+  "deck": {
+    "id": "e6f4c9f003f6440b8465e22ff0757f43",
+    "title": "volunteer_waiver_forms-3_gallardo_filled",
+    "cards": [
+      {
+        "term": "What does the acronym PTA stand for in the context of Gallardo?",
+        "definition": "Parent Teacher Association"
+      },
+      {
+        "term": "What is the primary purpose of a school's PTA?",
+        "definition": "To support the school and foster cooperation between parents, teachers, and the community."
+      },
+      {
+        "term": "How does the Gallardo PTA typically contribute to the school environment?",
+        "definition": "By organizing events, fundraising, and advocating for student needs."
+      },
+      {
+        "term": "Who are the main members of a PTA organization like Gallardo PTA?",
+        "definition": "Parents, teachers, staff, and community volunteers."
+      },
+      {
+        "term": "What is a common activity for a PTA to engage with families?",
+        "definition": "Hosting family nights or educational workshops."
+      }
+    ],
+    "created_at": "2026-10-25T02:26:18.784103+00:00",
+    "updated_at": "2026-10-25T02:26:18.784103+00:00"
+  }
 }

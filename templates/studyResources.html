@@ -274,8 +274,6 @@
 
         function closeAddPopup() {
             if (addPopup) addPopup.hidden = true;
-            addPopup?.querySelectorAll("[data-notebook-type]").forEach(option => { option.hidden = true; });
-            addPopup?.querySelector('[data-action="new-notebook"]')?.removeAttribute("hidden");
 
             if (addButton) {
                 addButton.setAttribute("aria-expanded", "false");
@@ -303,8 +301,8 @@
                 const action = option.dataset.action;
 
                 if (action === "new-notebook") {
-                    option.hidden = true;
-                    addPopup.querySelectorAll("[data-notebook-type]").forEach(typeOption => { typeOption.hidden = false; });
+                    closeAddPopup();
+                    showNotebookTypeDialog();
                     return;
                 }
 
@@ -360,6 +358,12 @@
                 if (result.notebook) notebooks.push(result.notebook);
                 render();
                 if (feedback) feedback.textContent = `${label === "whiteboard" ? "Whiteboard" : "Note"} added to this folder.`;
+                const notebookId = result.notebook?.id || result.item?.notebook_id;
+                if (notebookId) {
+                    const query = new URLSearchParams({ file_id: notebookId });
+                    if (kind === "whiteboard") query.set("kind", "whiteboard");
+                    window.location.assign(`/notes?${query.toString()}`);
+                }
             } catch (error) {
                 if (feedback) feedback.textContent = error.message || `Could not create a ${label}.`;
             }
@@ -982,6 +986,56 @@
             } else {
                 cancel.focus();
             }
+        }
+
+        function showNotebookTypeDialog() {
+            closeDialog();
+            closeMenu();
+
+            const overlay = document.createElement("div");
+            overlay.className = "folder-dialog-overlay";
+            overlay.addEventListener("click", event => {
+                if (event.target === overlay) closeDialog();
+            });
+
+            const dialog = document.createElement("section");
+            dialog.className = "folder-dialog";
+            dialog.setAttribute("role", "dialog");
+            dialog.setAttribute("aria-modal", "true");
+            dialog.setAttribute("aria-labelledby", "folder-notebook-type-title");
+
+            const heading = document.createElement("h2");
+            heading.className = "folder-dialog-title";
+            heading.id = "folder-notebook-type-title";
+            heading.textContent = "New note or whiteboard";
+
+            const description = document.createElement("p");
+            description.className = "folder-dialog-message";
+            description.textContent = "Choose what you want to create.";
+
+            const actions = document.createElement("div");
+            actions.className = "folder-dialog-actions folder-notebook-type-actions";
+
+            [
+                { kind: "notes", label: "Note" },
+                { kind: "whiteboard", label: "Whiteboard" }
+            ].forEach(({ kind, label }) => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "folder-dialog-button primary";
+                button.textContent = label;
+                button.addEventListener("click", () => {
+                    closeDialog();
+                    createNotebookInFolder(kind);
+                });
+                actions.append(button);
+            });
+
+            dialog.append(heading, description, actions);
+            overlay.append(dialog);
+            document.body.append(overlay);
+            modal = overlay;
+            actions.querySelector("button")?.focus();
         }
 
 

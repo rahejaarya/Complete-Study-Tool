@@ -1264,7 +1264,16 @@
         "strokes": []
       },
       "kind": "notes"
+    },
+    {
+      "id": "3ddb25dfd7cd4cceb36127356242b1fd",
+      "name": "Untitled note",
+      "content": "",
+      "whiteboard": {
+        "strokes": []
+      },
+      "kind": "notes"
     }
   ],
-  "active_id": "2c693fa4b59d4293a215cc9b44f887bd"
+  "active_id": "3ddb25dfd7cd4cceb36127356242b1fd"
 }
