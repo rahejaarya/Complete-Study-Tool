@@ -383,8 +383,9 @@
     shuffleButton.addEventListener("click", () => {
         shuffleOrder();
         currentIndex = 0;
-        knownCards = new Set();
-        sessionScore.textContent = "Deck shuffled · no repeats";
+        sessionScore.textContent = knownCards.size
+            ? `Deck shuffled · ${knownCards.size} of ${cards.length} cards marked learned.`
+            : "Deck shuffled · no repeats";
         renderCard();
     });
 

@@ -179,6 +179,27 @@
     background: color-mix(in srgb, var(--card-bg) 96%, var(--accent) 4%);
 }
 
+.quiz-time-estimate {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--muted, #667085);
+    font-size: 0.84rem;
+}
+.quiz-page #quiz-loading small { color: var(--muted); font-size: 0.82rem; }
+
+.quiz-results {
+    margin: 1.5rem 0;
+    padding: clamp(1.5rem, 5vw, 3rem);
+    border: 1px solid var(--quiz-border, #dce3ec);
+    border-radius: 1.25rem;
+    background: var(--quiz-surface, #fff);
+    text-align: center;
+}
+.quiz-results[hidden] { display: none; }
+.quiz-results h3 { margin: 0.35rem 0 0; font-size: clamp(1.4rem, 4vw, 2rem); }
+.quiz-results-score { margin: 0.7rem 0; font-size: clamp(2.8rem, 10vw, 5rem); font-weight: 800; line-height: 1; }
+.quiz-results-detail { margin: 0; color: var(--muted, #667085); }
+
 .quiz-question-meta {
     display: flex;
     justify-content: space-between;

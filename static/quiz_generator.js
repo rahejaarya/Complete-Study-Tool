@@ -19,6 +19,12 @@
     const options = document.getElementById("quiz-options");
     const feedback = document.getElementById("quiz-feedback");
     const score = document.getElementById("quiz-score");
+    const questionCard = document.querySelector(".quiz-question-card");
+    const results = document.getElementById("quiz-results");
+    const resultsScore = document.getElementById("quiz-results-score");
+    const resultsDetail = document.getElementById("quiz-results-detail");
+    const countInput = document.getElementById("quiz-count");
+    const timeEstimate = document.getElementById("quiz-time-estimate");
     const nextButton = document.getElementById("quiz-next");
     const previousButton = document.getElementById("quiz-previous");
     const restartButton = document.getElementById("quiz-restart");
@@ -42,6 +48,14 @@
     let activeGenerationJob = null;
     let progressSaveTimer = null;
     let progressSaveQueue = Promise.resolve();
+
+    function updateTimeEstimate() {
+        const count = Math.max(1, Math.min(50, Number(countInput.value) || 10));
+        const minutes = Math.max(1, Math.round(count * 0.5));
+        timeEstimate.textContent = `Estimated time: about ${minutes} minute${minutes === 1 ? "" : "s"}`;
+    }
+    countInput.addEventListener("input", updateTimeEstimate);
+    updateTimeEstimate();
 
     async function readResponse(response, fallbackMessage) {
         let data;
@@ -164,6 +178,27 @@
 
     function render() {
         if (!questions.length) return;
+        questionCard.hidden = isComplete;
+        results.hidden = !isComplete;
+        if (isComplete) {
+            resultsScore.textContent = `${correctAnswerCount()} / ${questions.length}`;
+            const unanswered = questions.length - answeredCount();
+            resultsDetail.textContent = unanswered
+                ? `${answeredCount()} answered · ${unanswered} unanswered`
+                : `You answered all ${questions.length} questions.`;
+            progress.textContent = `Quiz complete · ${questions.length} questions`;
+            progressTrack.setAttribute("aria-valuenow", "100");
+            progressBar.style.width = "100%";
+            previousButton.hidden = true;
+            nextButton.hidden = true;
+            score.textContent = "";
+            restartButton.hidden = false;
+            queueProgressSave();
+            return;
+        }
+        previousButton.hidden = false;
+        nextButton.hidden = false;
+        restartButton.hidden = true;
         const item = questions[index];
         const selectedAnswer = answers[index];
         const percentage = Math.round(((index + 1) / questions.length) * 100);
@@ -209,10 +244,10 @@
         feedback.classList.toggle("is-correct", selectedAnswer === item.answer);
         feedback.classList.toggle("is-incorrect", selectedAnswer !== null && selectedAnswer !== item.answer);
         feedback.textContent = selectedAnswer === null
-            ? "Choose one answer."
+            ? ""
             : selectedAnswer === item.answer
                 ? "Correct! Nice work."
-                : `Not quite. The correct answer is: ${item.answer}`;
+                : "Incorrect.";
         previousButton.disabled = index === 0;
         nextButton.disabled = isComplete;
         nextButton.textContent = index === questions.length - 1 ? "Finish quiz" : "Next question →";
@@ -224,14 +259,6 @@
 
     function finishQuiz() {
         isComplete = true;
-        const correct = correctAnswerCount();
-        const answered = answeredCount();
-        const unanswered = questions.length - answered;
-        score.textContent = unanswered
-            ? `Quiz complete · ${correct} of ${questions.length} correct · ${unanswered} unanswered`
-            : `Quiz complete · ${correct} of ${questions.length} correct`;
-        nextButton.hidden = true;
-        restartButton.hidden = false;
         render();
     }
 
@@ -293,7 +320,7 @@
         activeGenerationJob = jobId;
         submitButton.disabled = true;
         loading.hidden = false;
-        loading.querySelector("span:last-child").textContent = "Your quiz is being created… You can leave this page.";
+        loading.querySelector(".flashcard-loading-message").textContent = "Your quiz is being created…";
         while (activeGenerationJob === jobId) {
             try {
                 const response = await fetch(`/api/quizzes/generate/${encodeURIComponent(jobId)}`, { headers: { Accept: "application/json" } });
@@ -305,9 +332,9 @@
                     return;
                 }
                 if (data.status === "failed") throw new Error(data.error || "The quiz could not be generated. Please try again.");
-                loading.querySelector("span:last-child").textContent = data.status === "queued"
+                loading.querySelector(".flashcard-loading-message").textContent = data.status === "queued"
                     ? "Your quiz is queued and will be saved automatically…"
-                    : "Reading your source and creating questions… You can leave this page.";
+                    : "Reading your source and creating questions…";
             } catch (pollError) {
                 if (pollError.message !== "Failed to fetch" && !/network|fetch/i.test(pollError.message)) {
                     localStorage.removeItem(pendingGenerationKey);
@@ -341,7 +368,7 @@
 
         submitButton.disabled = true;
         loading.hidden = false;
-        loading.querySelector("span:last-child").textContent = "Reading your source and creating questions…";
+        loading.querySelector(".flashcard-loading-message").textContent = "Reading your source and creating questions…";
 
         try {
             const response = await fetch("/api/quizzes/generate", {

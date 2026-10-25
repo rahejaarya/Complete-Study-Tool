@@ -122,6 +122,9 @@ class QuizGeneratorApiTests(unittest.TestCase):
         self.assertIn(b'id="quiz-source-switch"', response.data)
         self.assertIn(b'id="quiz-progress-bar"', response.data)
         self.assertIn(b'id="quiz-save-retry"', response.data)
+        self.assertIn(b'id="quiz-time-estimate"', response.data)
+        self.assertIn(b'id="quiz-results-score"', response.data)
+        self.assertNotIn(b"Choose one answer", response.data)
 
     def test_upload_queues_generation_and_returns_before_model_work(self):
         flashcard_module = types.ModuleType("static.flashcard_generator")
@@ -187,6 +190,30 @@ class QuizGeneratorApiTests(unittest.TestCase):
         self.assertEqual(saved.status_code, 200)
         self.assertEqual(loaded.get_json()["progress"]["answers"], ["DNA"])
         self.assertTrue(loaded.get_json()["progress"]["complete"])
+
+    def test_quiz_progress_can_be_updated_repeatedly(self):
+        created = self.client.post("/api/quizzes", json={
+            "title": "Cells",
+            "questions": [{
+                "question": "What do cells contain?",
+                "options": ["DNA", "Metal", "Rock", "Plastic"],
+                "answer": "DNA",
+            }],
+        })
+        quiz_id = created.get_json()["id"]
+
+        first = self.client.put(f"/api/quizzes/{quiz_id}/progress", json={
+            "answers": [None], "index": 0, "complete": False,
+        })
+        second = self.client.put(f"/api/quizzes/{quiz_id}/progress", json={
+            "answers": ["DNA"], "index": 0, "complete": True,
+        })
+        loaded = self.client.get(f"/api/quizzes/{quiz_id}").get_json()
+
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(loaded["progress"]["answers"], ["DNA"])
+        self.assertTrue(loaded["progress"]["complete"])
 
     def test_quiz_progress_rejects_answers_not_in_question_options(self):
         created = self.client.post("/api/quizzes", json={

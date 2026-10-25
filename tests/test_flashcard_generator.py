@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from app import app, init_db
+from app import _run_flashcard_generation, app, init_db
 from static.flashcard_generator import (
     FLASHCARD_RESPONSE_FORMAT,
     FlashcardGenerationError,
@@ -74,7 +74,7 @@ class FlashcardGeneratorTests(unittest.TestCase):
             with self.assertRaises(FlashcardGenerationError):
                 generate_flashcards(self.text_path)
 
-        self.assertEqual(chat.call_count, 2)
+        self.assertEqual(chat.call_count, 3)
 
     def test_rejects_invalid_count_before_calling_model(self):
         with patch("static.flashcard_generator.ollama.chat") as chat:
@@ -88,6 +88,7 @@ class FlashcardGenerationApiTests(unittest.TestCase):
     def setUp(self):
         self.original_database = app.config["DATABASE"]
         self.original_save_data_dir = app.config["SAVE_DATA_DIR"]
+        self.original_testing = app.config.get("TESTING", False)
         self.temporary_directory = tempfile.TemporaryDirectory()
         root = Path(self.temporary_directory.name)
         app.config["DATABASE"] = str(root / "studytool.db")
@@ -103,13 +104,11 @@ class FlashcardGenerationApiTests(unittest.TestCase):
     def tearDown(self):
         app.config["DATABASE"] = self.original_database
         app.config["SAVE_DATA_DIR"] = self.original_save_data_dir
+        app.config["TESTING"] = self.original_testing
         self.temporary_directory.cleanup()
 
-    def test_returns_success_for_generated_cards(self):
-        with patch(
-            "static.flashcard_generator.generate_flashcards",
-            return_value=[{"question": "What?", "answer": "This."}],
-        ):
+    def test_upload_queues_generation_and_returns_before_model_work(self):
+        with patch("app._schedule_flashcard_generation") as schedule:
             response = self.client.post(
                 "/api/flashcards/generate",
                 data={
@@ -119,30 +118,72 @@ class FlashcardGenerationApiTests(unittest.TestCase):
                 },
                 content_type="multipart/form-data",
             )
+            self.assertEqual(response.status_code, 202)
+            job_id = response.get_json()["job_id"]
+            self.assertRegex(job_id, r"^[a-f0-9]{32}$")
+            schedule.assert_called_once()
+            status = self.client.get(f"/api/flashcards/generate/{job_id}")
+        self.assertEqual(status.status_code, 200)
+        self.assertEqual(status.get_json()["status"], "queued")
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.get_json(),
-            {"flashcards": [{"question": "What?", "answer": "This."}]},
-        )
+    def _create_job_files(self, job_id="a" * 32):
+        jobs = Path(app.config["SAVE_DATA_DIR"]) / "admin" / "Flashcards" / "generation_jobs"
+        jobs.mkdir(parents=True, exist_ok=True)
+        source_path = jobs / f"{job_id}.txt"
+        source_path.write_text("Study material", encoding="utf-8")
+        job_path = jobs / f"{job_id}.json"
+        job_path.write_text(json.dumps({"id": job_id, "status": "queued", "title": "Notes", "count": 1}), encoding="utf-8")
+        return job_id, source_path, job_path
 
-    def test_reports_unusable_ai_output_as_service_error(self):
-        with patch(
-            "static.flashcard_generator.generate_flashcards",
-            side_effect=FlashcardGenerationError("Could not create a deck."),
-        ):
-            response = self.client.post(
-                "/api/flashcards/generate",
-                data={
-                    "file": (io.BytesIO(b"Study material"), "notes.txt"),
-                    "count": "1",
-                    "focus": "mixed",
-                },
-                content_type="multipart/form-data",
-            )
+    def test_worker_generates_saves_and_completes_a_deck(self):
+        job_id, source_path, job_path = self._create_job_files()
+        cards = [{"question": "What?", "answer": "This."}]
+        with self.client.session_transaction() as session_data:
+            user_id = session_data["user_id"]
+        with patch("static.flashcard_generator.generate_flashcards", return_value=cards):
+            _run_flashcard_generation(user_id, job_id, source_path, job_path, 1, "mixed")
 
-        self.assertEqual(response.status_code, 502)
-        self.assertEqual(
-            response.get_json(),
-            {"error": "Could not create a deck."},
-        )
+        job = json.loads(job_path.read_text(encoding="utf-8"))
+        saved = self.client.get("/api/flashcards").get_json()
+        self.assertEqual(job["status"], "completed")
+        self.assertEqual(job["deck"]["cards"], [{"term": "What?", "definition": "This."}])
+        self.assertEqual(saved[0]["id"], job["deck"]["id"])
+        self.assertFalse(source_path.exists())
+
+    def test_worker_reports_generation_errors_and_cleans_up_upload(self):
+        job_id, source_path, job_path = self._create_job_files()
+        with self.client.session_transaction() as session_data:
+            user_id = session_data["user_id"]
+        with patch("static.flashcard_generator.generate_flashcards", side_effect=FlashcardGenerationError("Could not create a deck.")):
+            _run_flashcard_generation(user_id, job_id, source_path, job_path, 1, "mixed")
+
+        job = json.loads(job_path.read_text(encoding="utf-8"))
+        self.assertEqual(job["status"], "failed")
+        self.assertEqual(job["error"], "Could not create a deck.")
+        self.assertFalse(source_path.exists())
+
+    def test_saved_deck_progress_survives_reopen_and_title_edit(self):
+        created = self.client.post("/api/flashcards", json={
+            "title": "Biology",
+            "cards": [{"term": "Cell", "definition": "Basic unit of life"}, {"term": "DNA", "definition": "Genetic material"}],
+        })
+        deck_id = created.get_json()["id"]
+        progress = {"order": [1, 0], "current_index": 1, "known_cards": [1], "mode": "learn", "flipped": True}
+
+        saved = self.client.put(f"/api/flashcards/{deck_id}/progress", json=progress)
+        edited = self.client.put(f"/api/flashcards/{deck_id}", json={"title": "Biology review", "cards": created.get_json()["cards"]})
+        reopened = self.client.get(f"/api/flashcards/{deck_id}")
+
+        self.assertEqual(saved.status_code, 200)
+        self.assertEqual(edited.status_code, 200)
+        self.assertEqual(reopened.get_json()["title"], "Biology review")
+        self.assertEqual(reopened.get_json()["progress"]["order"], [1, 0])
+        self.assertEqual(reopened.get_json()["progress"]["current_index"], 1)
+
+    def test_progress_rejects_invalid_card_order(self):
+        created = self.client.post("/api/flashcards", json={"title": "Deck", "cards": [{"term": "A", "definition": "B"}]})
+        deck_id = created.get_json()["id"]
+        response = self.client.put(f"/api/flashcards/{deck_id}/progress", json={
+            "order": [1], "current_index": 0, "known_cards": [], "mode": "random",
+        })
+        self.assertEqual(response.status_code, 400)

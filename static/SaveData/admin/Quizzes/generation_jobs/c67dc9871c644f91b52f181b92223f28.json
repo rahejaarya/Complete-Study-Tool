@@ -1,0 +1,112 @@
+{
+  "id": "c67dc9871c644f91b52f181b92223f28",
+  "status": "completed",
+  "quiz": {
+    "id": "190919c335b546cdb5ba280ab71dc92b",
+    "title": "A_History_of_Western_Society_from_p406_dragged_10.54.39_PM_2",
+    "questions": [
+      {
+        "question": "According to the text, what were two major factors that led to food shortages and shrinking population rates in the seventeenth century?",
+        "options": [
+          "Religious wars and dynastic conflicts",
+          "Lavish lifestyles of wealthy nobles and royals",
+          "Agricultural and manufacturing slumps",
+          "Increased government taxes"
+        ],
+        "answer": "Agricultural and manufacturing slumps"
+      },
+      {
+        "question": "Which European states are identified in the text as constitutionalist states?",
+        "options": [
+          "France and Spain",
+          "England and the Dutch Republic",
+          "Russia and the Ottoman Empire",
+          "Prussia and Austria"
+        ],
+        "answer": "England and the Dutch Republic"
+      },
+      {
+        "question": "What was the primary cause of the Thirty Years' War as described in the text?",
+        "options": [
+          "Religious divides between Catholics and Protestants",
+          "The rise of absolutist monarchies",
+          "Climate changes known as the 'little ice age'",
+          "Expansion of European colonies"
+        ],
+        "answer": "Religious divides between Catholics and Protestants"
+      },
+      {
+        "question": "How did the French state address the challenges of governing a vast empire during the seventeenth century?",
+        "options": [
+          "By reducing taxes to maintain peace",
+          "By establishing new government bureaucracies and higher taxes",
+          "By abolishing all local power structures",
+          "By limiting the size of its standing army"
+        ],
+        "answer": "By establishing new government bureaucracies and higher taxes"
+      },
+      {
+        "question": "What was the main obstacle faced by absolutist rulers in achieving central control over their realms?",
+        "options": [
+          "Lack of modern technology",
+          "Resistance from local nobles, the church, and provincial assemblies",
+          "Insufficient funding for armies",
+          "Opposition from foreign powers"
+        ],
+        "answer": "Resistance from local nobles, the church, and provincial assemblies"
+      },
+      {
+        "question": "Which military force did Great Britain develop instead of a land army during the seventeenth century?",
+        "options": [
+          "A large standing army",
+          "A navy",
+          "An air force",
+          "A mercenary band"
+        ],
+        "answer": "A navy"
+      },
+      {
+        "question": "What was the outcome of the Battle of the White Mountain in 1620?",
+        "options": [
+          "Catholic forces defeated Protestants",
+          "Protestants defeated Catholics at the Battle of the White Mountain",
+          "The war ended with a peace treaty",
+          "Louis XIV was assassinated"
+        ],
+        "answer": "Protestants defeated Catholics at the Battle of the White Mountain"
+      },
+      {
+        "question": "Which event marked a turning point in European history regarding religious conflicts?",
+        "options": [
+          "The Peace of Westphalia",
+          "The Glorious Revolution",
+          "The Cossack revolt",
+          "The Edict of Nantes"
+        ],
+        "answer": "The Peace of Westphalia"
+      },
+      {
+        "question": "How did the French army size change by the end of the seventeenth century?",
+        "options": [
+          "It remained roughly at 125,000 men",
+          "It grew to approximately 340,000 men",
+          "It decreased significantly due to war casualties",
+          "It was reduced by foreign mercenaries"
+        ],
+        "answer": "It grew to approximately 340,000 men"
+      },
+      {
+        "question": "What role did Cardinal Richelieu play in the context of French state-building?",
+        "options": [
+          "He was a favorite who acquired power and fortune from his position",
+          "He led the Swedish army against the Habsburgs",
+          "He negotiated the Peace of Westphalia",
+          "He abolished the nobility"
+        ],
+        "answer": "He was a favorite who acquired power and fortune from his position"
+      }
+    ],
+    "created_at": "2026-10-25T07:08:11.294346+00:00"
+  },
+  "requested_count": 10
+}

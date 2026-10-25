@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Generator - Meridian</title>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
-    <script src="{{ url_for('static', filename='quiz_generator.js', v='5') }}" defer></script>
+    <script src="{{ url_for('static', filename='quiz_generator.js', v='6') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='flashcard_generator.css', v='7') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='quiz_generator.css', v='2') }}">
@@ -39,7 +39,6 @@
                     <div class="welcome-icon" aria-hidden="true">✓</div>
                     <div>
                         <h1>Quiz Generator</h1>
-                        <p>Turn your study material into a multiple-choice quiz.</p>
                     </div>
                 </div>
                 <div class="flashcard-header-links">
@@ -49,12 +48,6 @@
             </header>
 
             <section id="quiz-builder" class="flashcard-builder">
-                <div class="flashcard-intro">
-                    <p class="flashcard-eyebrow">MCQ STUDY SET</p>
-                    <h2 id="quiz-builder-heading">Create a quiz</h2>
-                    <p>Choose a study file or a link. We’ll build questions from that source.</p>
-                </div>
-
                 <form id="quiz-source-form" class="quiz-source-form">
                     <div class="quiz-source-picker">
                         <p class="quiz-section-label">1. Choose your source</p>
@@ -93,6 +86,7 @@
                             <span class="quiz-section-label">2. Number of questions</span>
                             <input id="quiz-count" name="count" type="number" min="1" max="50" value="10" inputmode="numeric" required>
                             <span class="quiz-field-help">Choose between 1 and 50 questions.</span>
+                            <span class="quiz-time-estimate" id="quiz-time-estimate" aria-live="polite">Estimated time: about 5 minutes</span>
                         </label>
                         <button class="flashcard-submit" id="quiz-generate" type="submit">
                             Generate quiz <span aria-hidden="true">→</span>
@@ -103,7 +97,8 @@
                 <p class="flashcard-error" id="quiz-error" role="alert" hidden></p>
                 <div class="flashcard-loading" id="quiz-loading" role="status" aria-live="polite" hidden>
                     <span class="flashcard-spinner" aria-hidden="true"></span>
-                    <span>Reading your source and creating questions…</span>
+                    <span class="flashcard-loading-message">Reading your source and creating questions…</span>
+                    <small>Approx. 30–60 seconds; larger sources can take longer.</small>
                 </div>
             </section>
 
@@ -122,12 +117,17 @@
                 <article class="quiz-question-card">
                     <div class="quiz-question-meta">
                         <span id="quiz-question-number"></span>
-                        <span>Choose one answer</span>
                     </div>
                     <h3 id="quiz-question"></h3>
                     <div id="quiz-options" class="quiz-options" role="group" aria-label="Answer choices"></div>
                     <p id="quiz-feedback" class="quiz-feedback" aria-live="polite"></p>
                 </article>
+                <section class="quiz-results" id="quiz-results" aria-live="polite" hidden>
+                    <p class="flashcard-eyebrow">QUIZ COMPLETE</p>
+                    <h3>Your score</h3>
+                    <p class="quiz-results-score" id="quiz-results-score"></p>
+                    <p class="quiz-results-detail" id="quiz-results-detail"></p>
+                </section>
                 <div class="quiz-review-controls">
                     <button class="flashcard-action secondary" id="quiz-previous" type="button">← Previous</button>
                     <p class="quiz-score" id="quiz-score" aria-live="polite"></p>

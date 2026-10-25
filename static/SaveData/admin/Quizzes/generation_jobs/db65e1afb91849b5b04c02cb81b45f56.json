@@ -1,0 +1,112 @@
+{
+  "id": "db65e1afb91849b5b04c02cb81b45f56",
+  "status": "completed",
+  "quiz": {
+    "id": "7bbe71800e734defbd2f6207973ee739",
+    "title": "webportalapp.com",
+    "questions": [
+      {
+        "question": "What is the primary purpose of the 'Sign In/Sign Up' instructions for new users?",
+        "options": [
+          "To allow users to create accounts without an email address.",
+          "To guide users on how to invite teammates via the application portal.",
+          "To explain that team members 2-4 do not need to sign in to receive credit.",
+          "To provide a link for users who are having trouble logging in."
+        ],
+        "answer": "To guide users on how to invite teammates via the application portal."
+      },
+      {
+        "question": "Which of the following is NOT required for team members 2-4 to receive credit?",
+        "options": [
+          "Signing into their own account.",
+          "Having their contact information listed on the primary team member's application.",
+          "The eligibility form being fully submitted and approved.",
+          "Being listed as a primary team member."
+        ],
+        "answer": "Signing into their own account."
+      },
+      {
+        "question": "What happens if a user attempts to use the 'Sign Up' button after creating an account?",
+        "options": [
+          "The system will automatically create a new team member profile.",
+          "The user will receive an error message.",
+          "The user will be prompted to enter their email address again.",
+          "The user will gain access to the portal immediately."
+        ],
+        "answer": "The user will receive an error message."
+      },
+      {
+        "question": "How can a user reset their password if they have forgotten it?",
+        "options": [
+          "By clicking the 'Sign Up' button.",
+          "By contacting the support team directly.",
+          "By clicking the 'Forgot your password?' link and following prompts.",
+          "By using the primary team member's email address."
+        ],
+        "answer": "By clicking the 'Forgot your password?' link and following prompts."
+      },
+      {
+        "question": "What is the minimum length requirement for a user-created password?",
+        "options": [
+          "At least 5 characters.",
+          "At least 8 characters.",
+          "Exactly 10 characters.",
+          "No specific length requirement."
+        ],
+        "answer": "At least 8 characters."
+      },
+      {
+        "question": "Which portal URL is provided for Team Member 2?",
+        "options": [
+          "https://webportalapp.com/sp/team_member_2_portal_2026",
+          "https://webportalapp.com/sp/team_member_3_portal_2026",
+          "https://webportalapp.com/sp/team_member_4_portal_2026",
+          "https://webportalapp.com/sp/primary_team_portal"
+        ],
+        "answer": "https://webportalapp.com/sp/team_member_2_portal_2026"
+      },
+      {
+        "question": "What is the eligibility form requirement for team members 2-4?",
+        "options": [
+          "It must be fully submitted and approved before they can sign in.",
+          "It does not need to be submitted or approved.",
+          "It must be submitted by the primary team member only.",
+          "It is optional if the user has an email address."
+        ],
+        "answer": "It must be fully submitted and approved before they can sign in."
+      },
+      {
+        "question": "What should a user do if their session expires due to inactivity?",
+        "options": [
+          "Stay logged in.",
+          "Logout.",
+          "Toggle navigation.",
+          "Click 'Stay Logged In'."
+        ],
+        "answer": "Logout."
+      },
+      {
+        "question": "Where can users find full submission guidelines and rules?",
+        "options": [
+          "In the footer of the page.",
+          "By clicking a link provided in the welcome message.",
+          "Via the 'Forgot your password?' function.",
+          "On the primary team member's profile."
+        ],
+        "answer": "By clicking a link provided in the welcome message."
+      },
+      {
+        "question": "Which email address is used for Team Member 3?",
+        "options": [
+          "team_member_2_portal_2026",
+          "team_member_3_portal_2026",
+          "team_member_4_portal_2026",
+          "primary_team_portal"
+        ],
+        "answer": "team_member_3_portal_2026"
+      }
+    ],
+    "created_at": "2026-10-25T07:11:25.187808+00:00"
+  },
+  "requested_count": 10
+}

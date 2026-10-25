@@ -69,6 +69,8 @@ flashcard_generation_futures_lock = threading.Lock()
 quiz_generation_pool = ThreadPoolExecutor(max_workers=3, thread_name_prefix="quiz-generation")
 quiz_generation_futures = {}
 quiz_generation_futures_lock = threading.Lock()
+quiz_decks_lock = threading.RLock()
+flashcard_decks_lock = threading.RLock()
 
 
 class _HideAIChatAccessLogs(logging.Filter):
@@ -1448,12 +1450,13 @@ def flashcard_decks_path():
 
 
 def read_flashcard_decks():
-    path = flashcard_decks_path()
-    if not path.is_file():
-        return []
-    with path.open("r", encoding="utf-8") as file:
-        data = json.load(file)
-    return data.get("decks", []) if isinstance(data, dict) and isinstance(data.get("decks"), list) else []
+    with flashcard_decks_lock:
+        path = flashcard_decks_path()
+        if not path.is_file():
+            return []
+        with path.open("r", encoding="utf-8") as file:
+            data = json.load(file)
+        return data.get("decks", []) if isinstance(data, dict) and isinstance(data.get("decks"), list) else []
 
 
 @app.route("/flashcard-library")
@@ -1479,21 +1482,21 @@ def quiz_decks_path():
 
 
 def read_quizzes():
-    path = quiz_decks_path()
-    if not path.is_file():
-        return []
-    with path.open("r", encoding="utf-8") as file:
-        data = json.load(file)
-    return data.get("quizzes", []) if isinstance(data, dict) and isinstance(data.get("quizzes"), list) else []
+    with quiz_decks_lock:
+        path = quiz_decks_path()
+        if not path.is_file():
+            return []
+        with path.open("r", encoding="utf-8") as file:
+            data = json.load(file)
+        return data.get("quizzes", []) if isinstance(data, dict) and isinstance(data.get("quizzes"), list) else []
 
 
 @app.route("/api/quizzes", methods=["GET", "POST"])
 @login_required
 def saved_quizzes_api():
     try:
-        quizzes = read_quizzes()
         if request.method == "GET":
-            return jsonify(quizzes)
+            return jsonify(read_quizzes())
         data = request.get_json(silent=True)
         if not isinstance(data, dict):
             return jsonify({"error": "Invalid quiz data."}), 400
@@ -1511,8 +1514,10 @@ def saved_quizzes_api():
             clean.append({"question": question.strip()[:1000], "options": [option.strip()[:500] for option in options], "answer": answer.strip()})
         now = datetime.now(timezone.utc).isoformat()
         quiz = {"id": uuid.uuid4().hex, "title": title.strip()[:100] or "Untitled quiz", "questions": clean, "created_at": now}
-        quizzes.insert(0, quiz)
-        write_json_atomically(quiz_decks_path(), {"quizzes": quizzes[:500]})
+        with quiz_decks_lock:
+            quizzes = read_quizzes()
+            quizzes.insert(0, quiz)
+            write_json_atomically(quiz_decks_path(), {"quizzes": quizzes[:500]})
         return jsonify(quiz), 201
     except (OSError, ValueError, json.JSONDecodeError):
         app.logger.exception("Could not access saved quizzes")
@@ -1523,13 +1528,14 @@ def saved_quizzes_api():
 @login_required
 def saved_quiz_api(quiz_id):
     try:
-        quizzes = read_quizzes()
-        quiz = next((item for item in quizzes if item.get("id") == quiz_id), None)
-        if quiz is None:
-            return jsonify({"error": "Quiz not found."}), 404
-        if request.method == "GET":
-            return jsonify(quiz)
-        write_json_atomically(quiz_decks_path(), {"quizzes": [item for item in quizzes if item.get("id") != quiz_id]})
+        with quiz_decks_lock:
+            quizzes = read_quizzes()
+            quiz = next((item for item in quizzes if item.get("id") == quiz_id), None)
+            if quiz is None:
+                return jsonify({"error": "Quiz not found."}), 404
+            if request.method == "GET":
+                return jsonify(quiz)
+            write_json_atomically(quiz_decks_path(), {"quizzes": [item for item in quizzes if item.get("id") != quiz_id]})
         folders_dir = get_user_folders_dir()
         if folders_dir:
             for folder_path in folders_dir.iterdir():
@@ -1549,45 +1555,48 @@ def saved_quiz_api(quiz_id):
 def quiz_progress_api(quiz_id):
     """Persist answers and position for a saved quiz."""
     try:
-        quizzes = read_quizzes()
-        quiz = next((item for item in quizzes if item.get("id") == quiz_id), None)
-        if quiz is None:
-            return jsonify({"error": "Quiz not found."}), 404
         data = request.get_json(silent=True)
-        questions = quiz.get("questions")
-        if not isinstance(data, dict) or not isinstance(questions, list) or not questions:
+        if not isinstance(data, dict):
             return jsonify({"error": "Could not save quiz progress."}), 400
-        answers = data.get("answers")
-        index = data.get("index")
-        complete = data.get("complete")
-        invalid_answer = False
-        if isinstance(answers, list) and len(answers) == len(questions):
-            for answer, question in zip(answers, questions):
-                choices = question.get("options") if isinstance(question, dict) else None
-                if answer is not None and (
-                    not isinstance(answer, str)
-                    or not isinstance(choices, list)
-                    or answer not in choices
-                ):
-                    invalid_answer = True
-                    break
-        if (
-            not isinstance(answers, list)
-            or len(answers) != len(questions)
-            or not isinstance(index, int)
-            or isinstance(index, bool)
-            or not 0 <= index < len(questions)
-            or not isinstance(complete, bool)
-            or invalid_answer
-        ):
-            return jsonify({"error": "Invalid quiz progress."}), 400
-        quiz["progress"] = {
-            "answers": answers,
-            "index": index,
-            "complete": complete,
-            "updated_at": datetime.now(timezone.utc).isoformat(),
-        }
-        write_json_atomically(quiz_decks_path(), {"quizzes": quizzes})
+        with quiz_decks_lock:
+            quizzes = read_quizzes()
+            quiz = next((item for item in quizzes if item.get("id") == quiz_id), None)
+            if quiz is None:
+                return jsonify({"error": "Quiz not found."}), 404
+            questions = quiz.get("questions")
+            if not isinstance(questions, list) or not questions:
+                return jsonify({"error": "Could not save quiz progress."}), 400
+            answers = data.get("answers")
+            index = data.get("index")
+            complete = data.get("complete")
+            invalid_answer = False
+            if isinstance(answers, list) and len(answers) == len(questions):
+                for answer, question in zip(answers, questions):
+                    choices = question.get("options") if isinstance(question, dict) else None
+                    if answer is not None and (
+                        not isinstance(answer, str)
+                        or not isinstance(choices, list)
+                        or answer not in choices
+                    ):
+                        invalid_answer = True
+                        break
+            if (
+                not isinstance(answers, list)
+                or len(answers) != len(questions)
+                or not isinstance(index, int)
+                or isinstance(index, bool)
+                or not 0 <= index < len(questions)
+                or not isinstance(complete, bool)
+                or invalid_answer
+            ):
+                return jsonify({"error": "Invalid quiz progress."}), 400
+            quiz["progress"] = {
+                "answers": answers,
+                "index": index,
+                "complete": complete,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }
+            write_json_atomically(quiz_decks_path(), {"quizzes": quizzes})
         return jsonify({"success": True})
     except (OSError, ValueError, json.JSONDecodeError):
         app.logger.exception("Could not save quiz progress")
@@ -1619,9 +1628,8 @@ def add_quiz_to_folder(quiz_id, folder_id):
 def saved_flashcards_api():
     path = flashcard_decks_path()
     try:
-        decks = read_flashcard_decks()
         if request.method == "GET":
-            return jsonify(decks)
+            return jsonify(read_flashcard_decks())
         data = request.get_json(silent=True)
         title = data.get("title", "").strip() if isinstance(data, dict) and isinstance(data.get("title", ""), str) else ""
         cards = data.get("cards") if isinstance(data, dict) else None
@@ -1637,8 +1645,10 @@ def saved_flashcards_api():
             clean_cards.append({"term": term.strip(), "definition": definition.strip()})
         now = datetime.now(timezone.utc).isoformat()
         deck = {"id": uuid.uuid4().hex, "title": title[:60] or "Untitled flashcards", "cards": clean_cards, "created_at": now, "updated_at": now}
-        decks.insert(0, deck)
-        write_json_atomically(path, {"decks": decks[:500]})
+        with flashcard_decks_lock:
+            decks = read_flashcard_decks()
+            decks.insert(0, deck)
+            write_json_atomically(path, {"decks": decks[:500]})
         return jsonify(deck), 201
     except (OSError, ValueError, json.JSONDecodeError):
         app.logger.exception("Could not access saved flashcards")
@@ -1649,12 +1659,13 @@ def saved_flashcards_api():
 @login_required
 def saved_flashcard_api(deck_id):
     try:
-        decks = read_flashcard_decks()
-        deck = next((item for item in decks if item.get("id") == deck_id), None)
-        if deck is None:
-            return jsonify({"error": "Flashcard deck not found."}), 404
-        if request.method == "GET":
-            return jsonify(deck)
+        with flashcard_decks_lock:
+            decks = read_flashcard_decks()
+            deck = next((item for item in decks if item.get("id") == deck_id), None)
+            if deck is None:
+                return jsonify({"error": "Flashcard deck not found."}), 404
+            if request.method == "GET":
+                return jsonify(deck)
         if request.method == "PUT":
             data = request.get_json(silent=True)
             cards = data.get("cards") if isinstance(data, dict) else None
@@ -1672,7 +1683,17 @@ def saved_flashcard_api(deck_id):
             if deck.get("cards") != clean_cards:
                 deck.pop("progress", None)
             deck.update({"title": title[:60] or "Untitled flashcards", "cards": clean_cards, "updated_at": datetime.now(timezone.utc).isoformat()})
-            write_json_atomically(flashcard_decks_path(), {"decks": decks})
+            with flashcard_decks_lock:
+                # Reload before writing to avoid overwriting another request's progress.
+                latest_decks = read_flashcard_decks()
+                latest_deck = next((item for item in latest_decks if item.get("id") == deck_id), None)
+                if latest_deck is None:
+                    return jsonify({"error": "Flashcard deck not found."}), 404
+                if latest_deck.get("cards") != clean_cards:
+                    latest_deck.pop("progress", None)
+                latest_deck.update({"title": title[:60] or "Untitled flashcards", "cards": clean_cards, "updated_at": datetime.now(timezone.utc).isoformat()})
+                write_json_atomically(flashcard_decks_path(), {"decks": latest_decks})
+                deck = latest_deck
             folders_dir = get_user_folders_dir()
             if folders_dir:
                 for folder_path in folders_dir.iterdir():
@@ -1685,7 +1706,9 @@ def saved_flashcard_api(deck_id):
                             item["card_count"] = len(deck["cards"])
                     write_folder_data(folder_path, folder)
             return jsonify(deck)
-        write_json_atomically(flashcard_decks_path(), {"decks": [item for item in decks if item.get("id") != deck_id]})
+        with flashcard_decks_lock:
+            decks = read_flashcard_decks()
+            write_json_atomically(flashcard_decks_path(), {"decks": [item for item in decks if item.get("id") != deck_id]})
         folders_dir = get_user_folders_dir()
         if folders_dir:
             for folder_path in folders_dir.iterdir():
@@ -1705,44 +1728,45 @@ def saved_flashcard_api(deck_id):
 def flashcard_progress_api(deck_id):
     """Save a user's place and learning marks in a flashcard deck."""
     try:
-        decks = read_flashcard_decks()
-        deck = next((item for item in decks if item.get("id") == deck_id), None)
-        if deck is None:
-            return jsonify({"error": "Flashcard deck not found."}), 404
         data = request.get_json(silent=True)
-        cards = deck.get("cards")
-        if not isinstance(data, dict) or not isinstance(cards, list) or not cards:
+        if not isinstance(data, dict):
             return jsonify({"error": "Could not save study progress."}), 400
-
-        order = data.get("order")
-        current_index = data.get("current_index")
-        known_cards = data.get("known_cards", [])
-        mode = data.get("mode")
-        if (
-            not isinstance(order, list)
-            or len(order) != len(cards)
-            or any(not isinstance(value, int) or isinstance(value, bool) for value in order)
-            or set(order) != set(range(len(cards)))
-            or not isinstance(current_index, int)
-            or isinstance(current_index, bool)
-            or not 0 <= current_index < len(cards)
-            or not isinstance(known_cards, list)
-            or any(not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < len(cards) for value in known_cards)
-            or len(set(known_cards)) != len(known_cards)
-            or not isinstance(mode, str)
-            or mode not in {"random", "learn"}
-        ):
-            return jsonify({"error": "Invalid study progress."}), 400
-
-        deck["progress"] = {
-            "order": order,
-            "current_index": current_index,
-            "known_cards": known_cards,
-            "mode": mode,
-            "flipped": bool(data.get("flipped", False)),
-            "updated_at": datetime.now(timezone.utc).isoformat(),
-        }
-        write_json_atomically(flashcard_decks_path(), {"decks": decks})
+        with flashcard_decks_lock:
+            decks = read_flashcard_decks()
+            deck = next((item for item in decks if item.get("id") == deck_id), None)
+            if deck is None:
+                return jsonify({"error": "Flashcard deck not found."}), 404
+            cards = deck.get("cards")
+            if not isinstance(cards, list) or not cards:
+                return jsonify({"error": "Could not save study progress."}), 400
+            order = data.get("order")
+            current_index = data.get("current_index")
+            known_cards = data.get("known_cards", [])
+            mode = data.get("mode")
+            if (
+                not isinstance(order, list)
+                or len(order) != len(cards)
+                or any(not isinstance(value, int) or isinstance(value, bool) for value in order)
+                or set(order) != set(range(len(cards)))
+                or not isinstance(current_index, int)
+                or isinstance(current_index, bool)
+                or not 0 <= current_index < len(cards)
+                or not isinstance(known_cards, list)
+                or any(not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < len(cards) for value in known_cards)
+                or len(set(known_cards)) != len(known_cards)
+                or not isinstance(mode, str)
+                or mode not in {"random", "learn"}
+            ):
+                return jsonify({"error": "Invalid study progress."}), 400
+            deck["progress"] = {
+                "order": order,
+                "current_index": current_index,
+                "known_cards": known_cards,
+                "mode": mode,
+                "flipped": bool(data.get("flipped", False)),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }
+            write_json_atomically(flashcard_decks_path(), {"decks": decks})
         return jsonify({"success": True})
     except (OSError, ValueError, json.JSONDecodeError):
         app.logger.exception("Could not save flashcard progress")
@@ -1845,12 +1869,6 @@ def _run_flashcard_generation(user_id, job_id, source_path, job_path, count, foc
                 raise ValueError("No complete flashcards could be made from that file. Try another document.")
 
             decks_path = user_save_directory(user_id) / "Flashcards" / "decks.json"
-            decks = []
-            if decks_path.is_file():
-                with decks_path.open("r", encoding="utf-8") as decks_file:
-                    existing = json.load(decks_file)
-                if isinstance(existing, dict) and isinstance(existing.get("decks"), list):
-                    decks = existing["decks"]
             now = datetime.now(timezone.utc).isoformat()
             deck = {
                 "id": uuid.uuid4().hex,
@@ -1859,16 +1877,31 @@ def _run_flashcard_generation(user_id, job_id, source_path, job_path, count, foc
                 "created_at": now,
                 "updated_at": now,
             }
-            decks.insert(0, deck)
-            write_json_atomically(decks_path, {"decks": decks[:500]})
+            with flashcard_decks_lock:
+                decks = []
+                if decks_path.is_file():
+                    with decks_path.open("r", encoding="utf-8") as decks_file:
+                        existing = json.load(decks_file)
+                    if isinstance(existing, dict) and isinstance(existing.get("decks"), list):
+                        decks = existing["decks"]
+                decks.insert(0, deck)
+                write_json_atomically(decks_path, {"decks": decks[:500]})
             write_json_atomically(job_path, {"id": job_id, "status": "completed", "deck": deck})
     except Exception as error:
-        app.logger.exception("Flashcard generation job %s failed", job_id)
+        if "Failed to connect to Ollama" in str(error):
+            app.logger.warning("Flashcard generation job %s could not reach the local AI service", job_id)
+            error_message = "The AI service is not running. Start Ollama, then upload the file again."
+        elif isinstance(error, ValueError) or type(error).__name__ == "FlashcardGenerationError":
+            app.logger.warning("Flashcard generation job %s could not create a usable deck: %s", job_id, error)
+            error_message = str(error) or "Flashcards could not be generated. Please try again."
+        else:
+            app.logger.exception("Flashcard generation job %s failed", job_id)
+            error_message = str(error) or "Flashcards could not be generated. Please try again."
         try:
             write_json_atomically(job_path, {
                 "id": job_id,
                 "status": "failed",
-                "error": str(error) or "Flashcards could not be generated. Please try again.",
+                "error": error_message,
             })
         except OSError:
             app.logger.exception("Could not save failed flashcard job %s", job_id)
@@ -1999,14 +2032,15 @@ def _run_quiz_generation(user_id, job_id, job_path, count):
             quiz = {"id": uuid.uuid4().hex, "title": title, "questions": questions, "created_at": now}
             quizzes_path = user_save_directory(user_id) / "Quizzes" / "quizzes.json"
             quizzes_path.parent.mkdir(parents=True, exist_ok=True)
-            quizzes = []
-            if quizzes_path.is_file():
-                with quizzes_path.open("r", encoding="utf-8") as quizzes_file:
-                    existing = json.load(quizzes_file)
-                if isinstance(existing, dict) and isinstance(existing.get("quizzes"), list):
-                    quizzes = existing["quizzes"]
-            quizzes.insert(0, quiz)
-            write_json_atomically(quizzes_path, {"quizzes": quizzes[:500]})
+            with quiz_decks_lock:
+                quizzes = []
+                if quizzes_path.is_file():
+                    with quizzes_path.open("r", encoding="utf-8") as quizzes_file:
+                        existing = json.load(quizzes_file)
+                    if isinstance(existing, dict) and isinstance(existing.get("quizzes"), list):
+                        quizzes = existing["quizzes"]
+                quizzes.insert(0, quiz)
+                write_json_atomically(quizzes_path, {"quizzes": quizzes[:500]})
             write_json_atomically(job_path, {
                 "id": job_id, "status": "completed", "quiz": quiz,
                 "requested_count": count,
