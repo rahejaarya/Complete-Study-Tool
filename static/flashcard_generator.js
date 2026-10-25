@@ -19,7 +19,6 @@
     const cardInner = document.getElementById("flashcard-card-inner");
     const question = document.getElementById("flashcard-question");
     const answer = document.getElementById("flashcard-answer");
-    const revealButton = document.getElementById("flashcard-reveal");
     const previousButton = document.getElementById("flashcard-previous");
     const nextButton = document.getElementById("flashcard-next");
     const shuffleButton = document.getElementById("flashcard-shuffle");
@@ -103,7 +102,6 @@
         cardButton.setAttribute("aria-label", flipped
             ? "Flashcard definition. Click or press Space to see the term."
             : "Flashcard term. Click or press Space to flip and reveal the definition.");
-        revealButton.textContent = flipped ? "Show term" : "Show definition";
         practiceActions.hidden = mode !== "learn" || !flipped;
         queueProgressSave();
     }
@@ -224,9 +222,9 @@
         answer.textContent = card.definition;
         progress.textContent = `${mode === "random" ? "Random · " : ""}Card ${currentIndex + 1} of ${cards.length}`;
         previousButton.disabled = currentIndex === 0;
-        if (nextButton) nextButton.disabled = currentIndex === cards.length - 1;
+        nextButton.hidden = mode === "learn";
+        nextButton.disabled = currentIndex === cards.length - 1;
         cardButton.hidden = false;
-        revealButton.hidden = true;
         learnHint.hidden = mode !== "learn";
         practiceActions.hidden = mode !== "learn" || !isFlipped;
         setFlipped(false);
@@ -234,6 +232,18 @@
     }
 
     function advance() {
+        if (mode === "learn") {
+            for (let step = 1; step <= order.length; step += 1) {
+                const candidateIndex = (currentIndex + step) % order.length;
+                if (!knownCards.has(order[candidateIndex])) {
+                    currentIndex = candidateIndex;
+                    renderCard();
+                    return;
+                }
+            }
+            sessionScore.textContent = `${knownCards.size} of ${cards.length} cards marked learned. You’re done!`;
+            return;
+        }
         if (currentIndex < cards.length - 1) {
             currentIndex += 1;
             renderCard();
@@ -356,7 +366,6 @@
     });
 
     cardButton.addEventListener("click", () => setFlipped(!isFlipped));
-    revealButton.addEventListener("click", () => setFlipped(!isFlipped));
     previousButton.addEventListener("click", () => {
         if (currentIndex > 0) {
             currentIndex -= 1;
@@ -377,7 +386,8 @@
         if (currentIndex >= lastIndexAfterRemoval) currentIndex = 0;
         if (currentIndex >= order.length) currentIndex = 0;
         sessionScore.textContent = "Moved to the end of your study stack.";
-        renderCard();
+        if (knownCards.has(order[currentIndex])) advance();
+        else renderCard();
     });
 
     shuffleButton.addEventListener("click", () => {

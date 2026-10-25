@@ -107,6 +107,15 @@ class FlashcardGenerationApiTests(unittest.TestCase):
         app.config["TESTING"] = self.original_testing
         self.temporary_directory.cleanup()
 
+    def test_flashcard_study_page_has_mode_and_next_card_controls(self):
+        response = self.client.get("/flashcard-generator")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'data-mode="learn"', response.data)
+        self.assertIn(b'data-mode="random"', response.data)
+        self.assertIn(b'id="flashcard-next"', response.data)
+        self.assertNotIn(b'id="flashcard-reveal"', response.data)
+
     def test_upload_queues_generation_and_returns_before_model_work(self):
         with patch("app._schedule_flashcard_generation") as schedule:
             response = self.client.post(

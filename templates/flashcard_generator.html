@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flashcard Studio - Meridian</title>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
-    <script src="{{ url_for('static', filename='flashcard_generator.js', v='9') }}" defer></script>
+    <script src="{{ url_for('static', filename='flashcard_generator.js', v='10') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='flashcard_generator.css', v='7') }}">
 </head>
@@ -113,6 +113,7 @@
                 <p class="flashcard-learn-hint" id="flashcard-learn-hint" hidden>Flip the card, then mark it as learned or send it to the end of your review stack.</p>
                 <div class="flashcard-controls">
                     <button class="flashcard-action secondary" id="flashcard-previous" type="button">Previous</button>
+                    <button class="flashcard-action secondary" id="flashcard-next" type="button">Next card →</button>
                     <div class="flashcard-practice-actions" id="flashcard-practice-actions">
                         <button class="flashcard-action secondary" id="flashcard-again" type="button">↻ Still learning</button>
                         <button class="flashcard-action" id="flashcard-known" type="button">✓ Got it</button>
