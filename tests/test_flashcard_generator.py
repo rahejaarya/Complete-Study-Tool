@@ -162,6 +162,58 @@ class FlashcardGenerationApiTests(unittest.TestCase):
         self.assertEqual(job["error"], "Could not create a deck.")
         self.assertFalse(source_path.exists())
 
+    def test_worker_gives_clear_message_when_ollama_is_unavailable(self):
+        job_id, source_path, job_path = self._create_job_files()
+        with self.client.session_transaction() as session_data:
+            user_id = session_data["user_id"]
+        with patch("static.flashcard_generator.generate_flashcards", side_effect=ConnectionError("Failed to connect to Ollama")):
+            _run_flashcard_generation(user_id, job_id, source_path, job_path, 1, "mixed")
+
+        job = json.loads(job_path.read_text(encoding="utf-8"))
+        self.assertEqual(job["status"], "failed")
+        self.assertEqual(job["error"], "The AI service is not running. Start Ollama, then upload the file again.")
+        self.assertFalse(source_path.exists())
+
+    def test_user_upload_study_save_leave_and_reopen_flow(self):
+        with patch("app._schedule_flashcard_generation") as schedule:
+            uploaded = self.client.post(
+                "/api/flashcards/generate",
+                data={
+                    "file": (io.BytesIO(b"Cells are the basic unit of life."), "biology.txt"),
+                    "count": "2",
+                },
+                content_type="multipart/form-data",
+            )
+        self.assertEqual(uploaded.status_code, 202)
+        user_id, job_id, source_path, job_path, count, focus = schedule.call_args.args
+        self.assertEqual(job_id, uploaded.get_json()["job_id"])
+        self.assertEqual(count, 2)
+        self.assertEqual(focus, "mixed")
+
+        generated = [
+            {"question": "What is a cell?", "answer": "The basic unit of life."},
+            {"question": "What does DNA carry?", "answer": "Genetic instructions."},
+        ]
+        with patch("static.flashcard_generator.generate_flashcards", return_value=generated):
+            _run_flashcard_generation(user_id, job_id, source_path, job_path, count, focus)
+
+        status = self.client.get(f"/api/flashcards/generate/{job_id}")
+        self.assertEqual(status.status_code, 200)
+        self.assertEqual(status.get_json()["status"], "completed")
+        deck_id = status.get_json()["deck"]["id"]
+        library = self.client.get("/flashcard-library")
+        reopened = self.client.get(f"/api/flashcards/{deck_id}")
+        self.assertEqual(library.status_code, 200)
+        self.assertEqual(reopened.status_code, 200)
+        progress = {"order": [1, 0], "current_index": 1, "known_cards": [1], "mode": "learn", "flipped": True}
+        saved_progress = self.client.put(f"/api/flashcards/{deck_id}/progress", json=progress)
+        self.assertEqual(saved_progress.status_code, 200)
+
+        self.client.get("/noise-songs")
+        returned = self.client.get(f"/api/flashcards/{deck_id}")
+        self.assertEqual(returned.get_json()["progress"]["current_index"], 1)
+        self.assertEqual(returned.get_json()["progress"]["known_cards"], [1])
+
     def test_saved_deck_progress_survives_reopen_and_title_edit(self):
         created = self.client.post("/api/flashcards", json={
             "title": "Biology",

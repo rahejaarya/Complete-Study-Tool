@@ -1,0 +1,20 @@
+{
+  "id": "09000ac8b78a453a83aaafd7ec2a9e1e",
+  "status": "completed",
+  "deck": {
+    "id": "9b32f531261e45a98302198d34e5efb1",
+    "title": "ap_euro_worksheet_completed",
+    "cards": [
+      {
+        "term": "What unique powers did the Dutch East India Company (VOC) possess that distinguished it from other trading entities?",
+        "definition": "The VOC could wage war, make treaties, build forts, and govern overseas territories, effectively functioning as a state within a state."
+      },
+      {
+        "term": "How did land reclamation in the Netherlands contribute to economic growth during this period?",
+        "definition": "By draining lakes and marshes using windmill-powered pumps, the Dutch increased farmland area and protected settlements from flooding."
+      }
+    ],
+    "created_at": "2026-10-25T07:20:25.531720+00:00",
+    "updated_at": "2026-10-25T07:20:25.531720+00:00"
+  }
+}

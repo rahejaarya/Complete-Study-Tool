@@ -154,9 +154,24 @@
                     body: payload,
                     keepalive: true,
                 });
+                if (response.status === 404) {
+                    const missingQuizError = new Error("This quiz is no longer in your saved quizzes.");
+                    missingQuizError.quizMissing = true;
+                    throw missingQuizError;
+                }
                 return readResponse(response, "Could not save quiz progress.");
             });
         return progressSaveQueue;
+    }
+
+    function showProgressSaveError(saveError) {
+        if (saveError.quizMissing) {
+            quizId = null;
+            folderButton.disabled = true;
+            saveStatus.textContent = "This quiz is missing from My quizzes, so progress cannot sync.";
+            return;
+        }
+        saveStatus.textContent = "Could not save quiz progress. Check your connection.";
     }
 
     function queueProgressSave() {
@@ -164,16 +179,14 @@
         window.clearTimeout(progressSaveTimer);
         progressSaveTimer = window.setTimeout(() => {
             progressSaveTimer = null;
-            saveProgressNow().catch(() => {
-                saveStatus.textContent = "Could not save quiz progress. Check your connection.";
-            });
+            saveProgressNow().catch(showProgressSaveError);
         }, 250);
     }
 
     function flushProgressSave() {
         window.clearTimeout(progressSaveTimer);
         progressSaveTimer = null;
-        saveProgressNow().catch(() => {});
+        saveProgressNow().catch(showProgressSaveError);
     }
 
     function render() {

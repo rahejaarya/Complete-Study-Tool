@@ -1562,7 +1562,26 @@ def quiz_progress_api(quiz_id):
             quizzes = read_quizzes()
             quiz = next((item for item in quizzes if item.get("id") == quiz_id), None)
             if quiz is None:
-                return jsonify({"error": "Quiz not found."}), 404
+                # A completed generation job keeps its quiz payload so progress
+                # can restore the deck if another write removed it from the index.
+                jobs_dir = user_save_directory(session["user_id"]) / "Quizzes" / "generation_jobs"
+                if jobs_dir.is_dir():
+                    for job_path in jobs_dir.glob("*.json"):
+                        if job_path.is_symlink():
+                            continue
+                        try:
+                            with job_path.open("r", encoding="utf-8") as job_file:
+                                job = json.load(job_file)
+                        except (OSError, ValueError, json.JSONDecodeError):
+                            continue
+                        recovered = job.get("quiz") if isinstance(job, dict) and job.get("status") == "completed" else None
+                        if isinstance(recovered, dict) and recovered.get("id") == quiz_id:
+                            quiz = recovered
+                            quizzes.insert(0, quiz)
+                            break
+                if quiz is None:
+                    app.logger.warning("Progress save referenced missing quiz %s for user %s", quiz_id, session["user_id"])
+                    return jsonify({"error": "Quiz not found."}), 404
             questions = quiz.get("questions")
             if not isinstance(questions, list) or not questions:
                 return jsonify({"error": "Could not save quiz progress."}), 400

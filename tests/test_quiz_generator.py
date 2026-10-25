@@ -191,6 +191,33 @@ class QuizGeneratorApiTests(unittest.TestCase):
         self.assertEqual(loaded.get_json()["progress"]["answers"], ["DNA"])
         self.assertTrue(loaded.get_json()["progress"]["complete"])
 
+    def test_progress_recovers_a_generated_quiz_missing_from_the_saved_index(self):
+        quiz = {
+            "id": "b" * 32,
+            "title": "Recovered cells",
+            "questions": [{
+                "question": "What do cells contain?",
+                "options": ["DNA", "Metal", "Rock", "Plastic"],
+                "answer": "DNA",
+            }],
+        }
+        jobs_dir = Path(app.config["SAVE_DATA_DIR"]) / "admin" / "Quizzes" / "generation_jobs"
+        jobs_dir.mkdir(parents=True, exist_ok=True)
+        (jobs_dir / f"{'c' * 32}.json").write_text(json.dumps({
+            "id": "c" * 32,
+            "status": "completed",
+            "quiz": quiz,
+        }), encoding="utf-8")
+
+        saved = self.client.put(f"/api/quizzes/{quiz['id']}/progress", json={
+            "answers": ["DNA"], "index": 0, "complete": True,
+        })
+        reopened = self.client.get(f"/api/quizzes/{quiz['id']}")
+
+        self.assertEqual(saved.status_code, 200)
+        self.assertEqual(reopened.status_code, 200)
+        self.assertEqual(reopened.get_json()["progress"]["answers"], ["DNA"])
+
     def test_quiz_progress_can_be_updated_repeatedly(self):
         created = self.client.post("/api/quizzes", json={
             "title": "Cells",
