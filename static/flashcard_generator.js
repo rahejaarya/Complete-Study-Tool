@@ -124,11 +124,13 @@
         order = cards.map((_, index) => index);
         currentIndex = 0;
         mode = "random";
+        shuffleOrder();
         knownCards = new Set();
         currentDeckTitle = title || "";
         currentDeckId = deckId;
         saveStatus.textContent = "";
         saveButton.textContent = "Save deck";
+        saveButton.hidden = false;
         sessionScore.textContent = "";
         subtitle.textContent = title || `${cards.length} ${cards.length === 1 ? "card" : "cards"} · Term and definition`;
         showError();
@@ -339,18 +341,24 @@
     });
 
     async function persistDeck() {
-        const response = await fetch(currentDeckId ? `/api/flashcards/${encodeURIComponent(currentDeckId)}` : "/api/flashcards", {
-            method: currentDeckId ? "PUT" : "POST",
-            headers: { "Content-Type": "application/json", Accept: "application/json" },
-            body: JSON.stringify({ title: currentDeckTitle, cards })
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || "Could not save this deck.");
-        currentDeckId = data.id;
-        currentDeckTitle = data.title;
-        saveButton.textContent = "Saved";
-        saveStatus.textContent = "Saved to My flashcards";
-        return data;
+        saveStatus.textContent = "Saving…";
+        saveButton.disabled = true;
+        try {
+            const response = await fetch(currentDeckId ? `/api/flashcards/${encodeURIComponent(currentDeckId)}` : "/api/flashcards", {
+                method: currentDeckId ? "PUT" : "POST",
+                headers: { "Content-Type": "application/json", Accept: "application/json" },
+                body: JSON.stringify({ title: currentDeckTitle, cards })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "Could not save this deck.");
+            currentDeckId = data.id;
+            currentDeckTitle = data.title;
+            saveButton.textContent = "Saved";
+            saveStatus.textContent = "Saved to My flashcards";
+            return data;
+        } finally {
+            saveButton.disabled = false;
+        }
     }
 
     saveButton.addEventListener("click", async () => {

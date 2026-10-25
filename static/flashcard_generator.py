@@ -9,7 +9,7 @@ from docx import Document
 from docx.opc.exceptions import PackageNotFoundError
 
 
-MODEL = "qwen3.5:9b"
+MODEL = "qwen3.5:2b"
 MAX_FILE_SIZE = 10 * 1024 * 1024
 MAX_TEXT_CHARS = 40_000
 SUPPORTED_EXTENSIONS = {".txt", ".pdf", ".docx"}
@@ -227,8 +227,10 @@ def generate_flashcards(file_path, count=20, focus="mixed"):
 
             seen_questions.add(normalized_question)
             validated_cards.append({
-                "question": question[:1000],
-                "answer": answer[:3000],
+                # Match the limits enforced by the saved-deck API so every
+                # generated card can later be edited and saved again.
+                "question": question[:240],
+                "answer": answer[:1200],
             })
 
             if len(validated_cards) >= count:

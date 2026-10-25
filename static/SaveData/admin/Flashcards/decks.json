@@ -1,6 +1,66 @@
 {
   "decks": [
     {
+      "id": "a75ec29347ae4292b8e1b7171d1a0012",
+      "title": "ap_euro_worksheet_completed",
+      "cards": [
+        {
+          "term": "What was the primary function of the Dutch East India Company (VOC) established in 1602?",
+          "definition": "It received a monopoly on Dutch trade east of the Cape of Good Hope and had the power to wage war, make treaties, build forts, and govern overseas territory."
+        },
+        {
+          "term": "How did land reclamation benefit the Dutch economy and settlements?",
+          "definition": "By draining lakes and marshes using windmill-powered pumps, the Dutch increased farmland and protected settlements from flooding."
+        },
+        {
+          "term": "What role did Amsterdam's exchange play in the development of modern finance?",
+          "definition": "It enabled investors to buy and sell company shares, which spread risk and allowed businesses to raise large amounts of capital for global trade."
+        },
+        {
+          "term": "According to critics, what were the negative moral effects of increased consumerism in the Dutch Republic?",
+          "definition": "Critics argued that luxury encouraged greed, vanity, and waste, while spending on nonessential goods could weaken thrift and moral values."
+        },
+        {
+          "term": "What factors contributed to the decline of the VOC by 1799?",
+          "definition": "The VOC declined due to competition from other European powers reducing profits, as well as war, corruption, debt, and high operating costs."
+        },
+        {
+          "term": "What specific powers did the Dutch East India Company (VOC) possess that allowed it to function as a state-like entity?",
+          "definition": "The VOC could wage war, make treaties, build forts, and govern overseas territories."
+        },
+        {
+          "term": "How did windmills contribute to the process of land reclamation in the Dutch Republic?",
+          "definition": "Windmills powered pumps that removed water from drained lakes and marshes, creating new farmland and protecting settlements."
+        },
+        {
+          "term": "What was the primary economic benefit of Amsterdam's exchange for investors?",
+          "definition": "It enabled investors to buy and sell company shares, which spread risk and helped businesses raise large amounts of capital."
+        },
+        {
+          "term": "According to critics, what negative moral effects did increased consumerism have on society?",
+          "definition": "Critics argued that luxury encouraged greed, vanity, and waste, while spending on nonessential goods could weaken thrift and moral values."
+        },
+        {
+          "term": "What combination of factors led to the decline of the VOC by 1799?",
+          "definition": "The VOC declined due to competition from other European powers reducing profits, as well as war, corruption, debt, and high operating costs."
+        },
+        {
+          "term": "What specific powers allowed the Dutch East India Company (VOC) to function as a state-like entity?",
+          "definition": "The VOC could wage war, make treaties, build forts, and govern overseas territory."
+        },
+        {
+          "term": "How did windmills contribute to land reclamation in the Dutch Republic?",
+          "definition": "Windmills powered pumps that removed water from drained lakes and marshes, increasing farmland and protecting settlements."
+        },
+        {
+          "term": "How did Amsterdam's exchange contribute to the development of modern finance?",
+          "definition": "Amsterdam's exchange enabled investors to buy and sell company shares, which spread risk and helped businesses raise large amounts of capital."
+        }
+      ],
+      "created_at": "2026-10-25T06:50:19.380730+00:00",
+      "updated_at": "2026-10-25T06:50:19.380730+00:00"
+    },
+    {
       "id": "e6f4c9f003f6440b8465e22ff0757f43",
       "title": "volunteer_waiver_forms-3_gallardo_filled",
       "cards": [
