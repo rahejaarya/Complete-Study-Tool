@@ -85,9 +85,7 @@
                         {% if profile_picture_url %}
                         <img class="welcome-icon welcome-profile-picture" src="{{ profile_picture_url }}" alt="">
                         {% else %}
-                        <div class="welcome-icon">
-                            ☀
-                        </div>
+                        <img class="welcome-icon welcome-profile-picture welcome-default-profile-picture" src="{{ url_for('static', filename='default-profile.svg') }}" alt="">
                         {% endif %}
                         <div>
                             <h1>Welcome back, {{ username }}</h1>

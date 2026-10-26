@@ -22,7 +22,7 @@
     const themeCards = Array.from(document.querySelectorAll("[data-theme-choice]"));
     const status = document.getElementById("appearance-status");
     const applyRow = document.querySelector(".appearance-apply-row");
-    let selectedTheme = document.documentElement.dataset.theme || "light-lavender";
+    let selectedTheme = document.documentElement.dataset.theme || "dark-neon";
     let appliedTheme = selectedTheme;
     let isSaving = false;
 
