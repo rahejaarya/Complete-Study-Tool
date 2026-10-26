@@ -1,0 +1,18 @@
+{
+  "id": "899dbef8003d40d0af10f07a538d79f8",
+  "title": "Can you put flashcards for conjucating with passe compose in french into the Ai ",
+  "created_at": "2026-10-26T01:07:05.795358+00:00",
+  "updated_at": "2026-10-26T01:07:21.080958+00:00",
+  "summary": "",
+  "summary_through": 0,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Can you put flashcards for conjucating with passe compose in french into the Ai Folder"
+    },
+    {
+      "role": "assistant",
+      "content": "Yes, I can help you generate French Past Tense (Passé Composé) flashcards directly here! Since I don't have a built-in \"AI Folder\" feature to upload files, I will create a structured list of high-quality cards for you right now. These include common verbs and their conjugations in the *passé composé* tense, formatted as study aids.\n\nHere are some key examples:\n\n*   **Verb:** Avoir\n    *   **Card 1:** Question: \"Avez-vous mangé ?\" (Have you eaten?) | Answer: Oui, j'ai mangé.\n*   **Verb:** Être\n    *   **Card 2:** Question: \"Êtes-vous allé(e) à l'école ?\" (Are you to school?) | Answer: Non, je n'étais pas allé(e).\n*   **Verb:** Faire\n    *   **Card 3:** Question: \"As-tu fait la maison ?\" (Have you done the housework?) | Answer: Oui, j'ai fait la maison.\n\nWould you like me to generate more cards for specific verbs or create a downloadable list?"
+    }
+  ]
+}

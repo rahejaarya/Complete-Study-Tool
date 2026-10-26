@@ -123,13 +123,15 @@ def extract_url_text(url):
 
 
 def generate_quiz(text, count):
+    if not isinstance(count, int) or isinstance(count, bool) or not 1 <= count <= 50:
+        raise ValueError("Choose between 1 and 50 questions.")
     cards = []
     seen = set()
     attempts = 0
     # Each request asks for up to ten questions. Keep retries proportional to
     # the number of batches so malformed model output cannot hold the request
     # open for dozens of inference calls.
-    max_attempts = min(count + 4, max(2, (count + 9) // 10 + 1))
+    max_attempts = max(2, (count + 9) // 10 + 1)
     while len(cards) < count and attempts < max_attempts:
         attempts += 1
         amount = min(10, count - len(cards))
@@ -137,7 +139,7 @@ def generate_quiz(text, count):
         response = ollama.chat(
             model="qwen3.5:2b",
             messages=[
-                {"role": "system", "content": "Write accurate student multiple-choice questions using only the source. Return JSON with a questions array. Every item has question, options (exactly four strings), and answer (exactly one option string)."},
+                {"role": "system", "content": "Write accurate student multiple-choice questions using only the source. Return JSON with a questions array. Every item has question, options (exactly four strings), and answer (exactly one option string). Return exactly the requested number of distinct questions."},
                 {"role": "user", "content": f"Create exactly {amount} distinct MCQ questions. Do not repeat these questions:\n{prior or '(none)'}\nReturn JSON only. Source:\n{text[:24000]}"},
             ],
             format=QUIZ_RESPONSE_FORMAT, think=False, stream=False,
@@ -170,8 +172,8 @@ def generate_quiz(text, count):
                 cards.append({"question": question[:1000], "options": options, "answer": answer})
                 if len(cards) == count:
                     break
-    if not cards:
+    if len(cards) != count:
         raise QuizGenerationError(
-            "The source did not support any usable questions. Try a longer source or choose another file."
+            f"The AI created {len(cards)} of {count} requested questions. Try a longer source or a smaller question count."
         )
     return cards

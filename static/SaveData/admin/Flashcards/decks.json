@@ -1,6 +1,78 @@
 {
   "decks": [
     {
+      "id": "0102ea0c3c8d4a3db7c69aceb2fa927b",
+      "title": "69",
+      "cards": [
+        {
+          "term": "What is the Spanish word for 'park'?",
+          "definition": "el parque"
+        },
+        {
+          "term": "How do you say 'I'm going to the park'?",
+          "definition": "Voy al parque."
+        },
+        {
+          "term": "What is the correct Spanish for 'movie theater'?",
+          "definition": "el cine"
+        },
+        {
+          "term": "How do you say 'I'm going to the movies'?",
+          "definition": "Voy al cine."
+        },
+        {
+          "term": "What is the Spanish for 'restaurant'?",
+          "definition": "el restaurante"
+        },
+        {
+          "term": "How do you say 'Let's go to the restaurant'?",
+          "definition": "Vamos al restaurante."
+        },
+        {
+          "term": "What is the Spanish for 'bank'?",
+          "definition": "el banco"
+        },
+        {
+          "term": "How do you say 'The bank is nearby'?",
+          "definition": "El banco está cerca."
+        },
+        {
+          "term": "What is the Spanish for 'school'?",
+          "definition": "la escuela"
+        },
+        {
+          "term": "How do you say 'I'm going to school'?",
+          "definition": "Voy a la escuela."
+        },
+        {
+          "term": "What is the Spanish for 'movie theater'?",
+          "definition": "el cine"
+        }
+      ],
+      "created_at": "2026-10-26T00:34:24.885466+00:00",
+      "updated_at": "2026-10-26T00:34:24.885466+00:00",
+      "progress": {
+        "order": [
+          10,
+          3,
+          7,
+          1,
+          9,
+          2,
+          6,
+          5,
+          0,
+          8,
+          4
+        ],
+        "current_index": 0,
+        "known_cards": [],
+        "mode": "random",
+        "flipped": false,
+        "updated_at": "2026-10-26T00:52:38.292380+00:00"
+      }
+    },
+    {
       "id": "9b32f531261e45a98302198d34e5efb1",
       "title": "ap_euro_worksheet_completed",
       "cards": [

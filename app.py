@@ -1884,8 +1884,8 @@ def _run_flashcard_generation(user_id, job_id, source_path, job_path, count, foc
                 for card in generated
                 if isinstance(card, dict) and str(card.get("question", "")).strip() and str(card.get("answer", "")).strip()
             ]
-            if not cards:
-                raise ValueError("No complete flashcards could be made from that file. Try another document.")
+            if len(cards) != count:
+                raise ValueError(f"The AI created {len(cards)} of {count} requested flashcards. Try a longer document or a smaller card count.")
 
             decks_path = user_save_directory(user_id) / "Flashcards" / "decks.json"
             now = datetime.now(timezone.utc).isoformat()
@@ -2047,6 +2047,8 @@ def _run_quiz_generation(user_id, job_id, job_path, count):
             })
             from static.quiz_generator import generate_quiz
             questions = generate_quiz(source_text, count)
+            if len(questions) != count:
+                raise ValueError(f"The AI created {len(questions)} of {count} requested questions. Try a longer source or a smaller question count.")
             now = datetime.now(timezone.utc).isoformat()
             quiz = {"id": uuid.uuid4().hex, "title": title, "questions": questions, "created_at": now}
             quizzes_path = user_save_directory(user_id) / "Quizzes" / "quizzes.json"

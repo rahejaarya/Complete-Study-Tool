@@ -77,7 +77,7 @@ class QuizGeneratorTests(unittest.TestCase):
             with self.assertRaises(QuizGenerationError):
                 generate_quiz("Cells contain DNA.", 1)
 
-    def test_returns_valid_partial_quiz_when_source_supports_fewer_questions(self):
+    def test_does_not_return_partial_quiz_when_source_supports_fewer_questions(self):
         question = {
             "question": "What do cells contain?",
             "options": ["DNA", "Metal", "Rock", "Plastic"],
@@ -86,10 +86,20 @@ class QuizGeneratorTests(unittest.TestCase):
         model_response = {"message": {"content": json.dumps({"questions": [question]})}}
 
         with patch("static.quiz_generator.ollama.chat", return_value=model_response) as chat:
-            questions = generate_quiz("Cells contain DNA.", 2)
-
-        self.assertEqual(questions, [question])
+            with self.assertRaisesRegex(QuizGenerationError, "created 1 of 2"):
+                generate_quiz("Cells contain DNA.", 2)
         self.assertEqual(chat.call_count, 2)
+
+    def test_retries_short_batches_until_requested_count_is_met(self):
+        def response(start, end):
+            return {"message": {"content": json.dumps({"questions": [{
+                "question": f"Question {index}", "options": [f"A{index}", f"B{index}", f"C{index}", f"D{index}"], "answer": f"A{index}"
+            } for index in range(start, end)]})}}
+        with patch("static.quiz_generator.ollama.chat", side_effect=[response(0, 9), response(9, 11), response(11, 20)]) as chat:
+            questions = generate_quiz("A sufficiently long study source.", 20)
+        self.assertEqual(len(questions), 20)
+        self.assertEqual(chat.call_count, 3)
+        self.assertIn("exactly 9 distinct", chat.call_args.kwargs["messages"][1]["content"])
 
 
 class QuizGeneratorApiTests(unittest.TestCase):

@@ -83,6 +83,22 @@ class FlashcardGeneratorTests(unittest.TestCase):
 
         chat.assert_not_called()
 
+    def test_keeps_requesting_short_batches_until_requested_count_is_met(self):
+        def response(start, end):
+            return {"message": {"content": json.dumps({"flashcards": [
+                {"question": f"Question {index}", "answer": f"Answer {index}"}
+                for index in range(start, end)
+            ]})}}
+
+        with patch("static.flashcard_generator.ollama.chat", side_effect=[
+            response(0, 9), response(9, 11), response(11, 20),
+        ]) as chat:
+            cards = generate_flashcards(self.text_path, count=20)
+
+        self.assertEqual(len(cards), 20)
+        self.assertEqual(chat.call_count, 3)
+        self.assertIn("exactly 9 new flashcards", chat.call_args.kwargs["messages"][1]["content"])
+
 
 class FlashcardGenerationApiTests(unittest.TestCase):
     def setUp(self):
@@ -170,6 +186,15 @@ class FlashcardGenerationApiTests(unittest.TestCase):
         self.assertEqual(job["status"], "failed")
         self.assertEqual(job["error"], "Could not create a deck.")
         self.assertFalse(source_path.exists())
+
+    def test_worker_does_not_save_a_partial_deck(self):
+        job_id, source_path, job_path = self._create_job_files()
+        with self.client.session_transaction() as session_data:
+            user_id = session_data["user_id"]
+        with patch("static.flashcard_generator.generate_flashcards", return_value=[]):
+            _run_flashcard_generation(user_id, job_id, source_path, job_path, 1, "mixed")
+        self.assertEqual(json.loads(job_path.read_text(encoding="utf-8"))["status"], "failed")
+        self.assertEqual(self.client.get("/api/flashcards").get_json(), [])
 
     def test_worker_gives_clear_message_when_ollama_is_unavailable(self):
         job_id, source_path, job_path = self._create_job_files()
